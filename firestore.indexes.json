@@ -1,0 +1,96 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "lapangan",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pemilikId", "order": "ASCENDING" },
+        { "fieldPath": "nama", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aktivitasBermain",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "waktu", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aktivitasBermain",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "jenisOlahraga", "order": "ASCENDING" },
+        { "fieldPath": "waktu", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aktivitasBermain",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pembuatId", "order": "ASCENDING" },
+        { "fieldPath": "waktu", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aktivitasBermain",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "peserta", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "waktu", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rating",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lapanganId", "order": "ASCENDING" },
+        { "fieldPath": "tanggal", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "booking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "dibuatPada", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "booking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pemilikId", "order": "ASCENDING" },
+        { "fieldPath": "dibuatPada", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "booking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pemilikId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "dibuatPada", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "slotBooking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lapanganId", "order": "ASCENDING" },
+        { "fieldPath": "tanggal", "order": "ASCENDING" },
+        { "fieldPath": "jam", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notifikasi",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "untukUserId", "order": "ASCENDING" },
+        { "fieldPath": "dibuatPada", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
