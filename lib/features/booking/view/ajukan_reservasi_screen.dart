@@ -49,7 +49,16 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
   int _durasi = 1;
 
   int get _jamBukaHour => int.parse(widget.lapangan.jamBuka.split(':')[0]);
-  int get _jamTutupHour => int.parse(widget.lapangan.jamTutup.split(':')[0]);
+
+  /// Jam tutup dalam skala 24 jam. Lapangan yang tutup tengah malam
+  /// ("00:00") atau lewat tengah malam akan punya jam lebih kecil (atau
+  /// sama) dari jam buka kalau dibaca literal — mis. `06:00–00:00` bisa
+  /// terbaca 6..0 yang kosong. Ditambah 24 supaya rentang jamBuka..jamTutup
+  /// tetap benar (6..24), bukan rentang kosong.
+  int get _jamTutupHour {
+    final jam = int.parse(widget.lapangan.jamTutup.split(':')[0]);
+    return jam <= _jamBukaHour ? jam + 24 : jam;
+  }
 
   /// Jam mulai yang bisa dipilih: dalam jam operasional, muat sampai
   /// selesai sebelum tutup, tidak bentrok slot terisi, dan (kalau
