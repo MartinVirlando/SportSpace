@@ -7,16 +7,20 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../widgets/chip_olahraga.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/aktivitas_viewmodel.dart';
 import 'buat_aktivitas_screen.dart';
+import 'detail_aktivitas_screen.dart';
 
 /// Halaman Cari Rekan — PRD L-07. Dibuka dari tab Teman.
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 ///
-/// Sesuai SPRINT-PLAN T-17, layar ini masih SENGAJA belum punya alur
-/// "Gabung" sungguhan (kirim permintaan, AB-06) → T-19/T-20. Tombol
-/// tetap digambar per kartu (sesuai PRD), belum berfungsi.
+/// Sesuai SPRINT-PLAN T-19, tombol "Gabung" di kartu mengirim permintaan
+/// gabung langsung (AB-06, BB-16) lewat [AktivitasViewModel]. Menekan
+/// kartu membuka Detail Aktivitas (L-09) — daftar peserta lengkap dan
+/// alur Terima/Tolak permintaan (untuk pembuat) ada di sana, baru
+/// berfungsi penuh di T-20.
 class CariRekanScreen extends StatelessWidget {
   const CariRekanScreen({super.key});
 
@@ -113,12 +117,39 @@ class _KartuAktivitas extends StatelessWidget {
 
   const _KartuAktivitas({required this.aktivitas});
 
+  Future<void> _gabung(BuildContext context) async {
+    final vm = context.read<AktivitasViewModel>();
+    final user = context.read<AuthViewModel>().user;
+    if (user == null) return;
+
+    final pesanError = await vm.kirimPermintaanGabung(
+      aktivitas,
+      userId: user.userId,
+      namaUser: user.nama,
+    );
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(pesanError ?? AppStrings.permintaanTerkirim),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final warna = _warnaOlahraga(aktivitas.jenisOlahraga);
     final progres = aktivitas.jumlahPemainDibutuhkan == 0
         ? 0.0
         : aktivitas.jumlahPemainSaatIni / aktivitas.jumlahPemainDibutuhkan;
+
+    final userId = context.watch<AuthViewModel>().user?.userId;
+    final bisaGabung = userId != null &&
+        userId != aktivitas.pembuatId &&
+        !aktivitas.peserta.contains(userId);
+    final sedangDiproses = context
+        .watch<AktivitasViewModel>()
+        .sedangDiproses(aktivitas.aktivitasId);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -128,93 +159,112 @@ class _KartuAktivitas extends StatelessWidget {
         boxShadow: AppColors.shadowKartu,
       ),
       clipBehavior: Clip.antiAlias,
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: 6, color: warna),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          AppSports.ikonDari(aktivitas.jenisOlahraga),
-                          style: const TextStyle(fontSize: 22),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${aktivitas.namaPembuat} · '
-                                '${AppSports.labelDari(aktivitas.jenisOlahraga)}',
-                                style: AppTextStyles.namaLapangan,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '📍 ${aktivitas.namaLapangan}',
-                                style: AppTextStyles.metaLapangan,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                '🕐 ${Formatter.tanggalDanJam(aktivitas.waktu)}',
-                                style: AppTextStyles.metaLapangan,
-                              ),
-                            ],
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                DetailAktivitasScreen(aktivitasId: aktivitas.aktivitasId),
+          ),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 6, color: warna),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            AppSports.ikonDari(aktivitas.jenisOlahraga),
+                            style: const TextStyle(fontSize: 22),
                           ),
-                        ),
-                        // TODO(T-19): kirim permintaan gabung (AB-06).
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppSizes.radiusChip,
-                              ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${aktivitas.namaPembuat} · '
+                                  '${AppSports.labelDari(aktivitas.jenisOlahraga)}',
+                                  style: AppTextStyles.namaLapangan,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '📍 ${aktivitas.namaLapangan}',
+                                  style: AppTextStyles.metaLapangan,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '🕐 ${Formatter.tanggalDanJam(aktivitas.waktu)}',
+                                  style: AppTextStyles.metaLapangan,
+                                ),
+                              ],
                             ),
                           ),
-                          child: const Text(
-                            AppStrings.gabung,
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progres.clamp(0.0, 1.0),
-                        minHeight: 6,
-                        backgroundColor: AppColors.surfaceVariant,
-                        valueColor: AlwaysStoppedAnimation(warna),
+                          if (bisaGabung)
+                            ElevatedButton(
+                              onPressed: sedangDiproses
+                                  ? null
+                                  : () => _gabung(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppSizes.radiusChip,
+                                  ),
+                                ),
+                              ),
+                              child: sedangDiproses
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      AppStrings.gabung,
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                            ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${aktivitas.jumlahPemainSaatIni}/'
-                      '${aktivitas.jumlahPemainDibutuhkan} pemain',
-                      style: AppTextStyles.metaLapangan,
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progres.clamp(0.0, 1.0),
+                          minHeight: 6,
+                          backgroundColor: AppColors.surfaceVariant,
+                          valueColor: AlwaysStoppedAnimation(warna),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${aktivitas.jumlahPemainSaatIni}/'
+                        '${aktivitas.jumlahPemainDibutuhkan} pemain',
+                        style: AppTextStyles.metaLapangan,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

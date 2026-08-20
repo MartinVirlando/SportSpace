@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/app_sports.dart';
 import '../models/aktivitas_bermain_model.dart';
+import '../models/notifikasi_model.dart';
+import '../models/permintaan_gabung_model.dart';
 
 /// Satu-satunya lapisan yang boleh menyentuh Firestore untuk data
 /// aktivitas bermain.
@@ -94,6 +96,107 @@ class AktivitasRepository {
         throw Exception('Tidak punya izin membuat aktivitas.');
       }
       throw Exception('Gagal membuat aktivitas. Coba lagi.');
+    }
+  }
+
+  /// Stream satu aktivitas — dipakai Detail Aktivitas (L-09) supaya
+  /// `jumlahPemainSaatIni`/`status` ikut hidup begitu ada permintaan yang
+  /// diterima (T-20), tanpa pengguna menarik untuk menyegarkan.
+  Stream<AktivitasBermainModel> streamDetailAktivitas(String aktivitasId) {
+    return _db
+        .collection('aktivitasBermain')
+        .doc(aktivitasId)
+        .snapshots()
+        .map((doc) {
+      if (!doc.exists) {
+        throw Exception('Aktivitas tidak ditemukan.');
+      }
+      return AktivitasBermainModel.fromFirestore(doc);
+    }).handleError((Object error) {
+      if (error is FirebaseException && error.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membaca aktivitas ini.');
+      }
+      throw Exception('Gagal memuat detail aktivitas. Coba lagi.');
+    });
+  }
+
+  /// Stream SELURUH subkoleksi `permintaan`, tanpa filter/orderBy — sesuai
+  /// `FIRESTORE-INDEXES.md` ("Subkoleksi permintaan di L-09: ambil seluruh
+  /// subkoleksi, tanpa filter"), jadi tidak butuh composite index apa pun.
+  ///
+  /// Dipakai untuk DUA hal sekaligus di L-09, supaya tidak ada listener
+  /// dobel: (1) nama peserta yang sudah `DITERIMA` digabung dengan
+  /// [AktivitasBermainModel.namaPembuat] untuk daftar peserta, dan (2)
+  /// daftar permintaan berstatus `MENUNGGU` untuk pembuat (Terima/Tolak,
+  /// tombolnya baru berfungsi di T-20).
+  Stream<List<PermintaanGabungModel>> streamPermintaan(String aktivitasId) {
+    return _db
+        .collection('aktivitasBermain')
+        .doc(aktivitasId)
+        .collection('permintaan')
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => PermintaanGabungModel.fromFirestore(doc))
+              .toList(),
+        )
+        .handleError((Object error) {
+      if (error is FirebaseException && error.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membaca permintaan gabung.');
+      }
+      throw Exception('Gagal memuat permintaan gabung. Coba lagi.');
+    });
+  }
+
+  /// Kirim permintaan gabung — PRD AB-06, BB-16.
+  ///
+  /// ID dokumen permintaan sengaja = [userId] (lihat PermintaanGabungModel)
+  /// supaya satu pengguna tidak bisa mengirim permintaan ganda — mengirim
+  /// ulang cukup menimpa dokumen MENUNGGU yang sama, aman tanpa Query.
+  ///
+  /// Bukan transaction: tidak ada penghitung bersama yang dibaca-lalu-
+  /// ditulis di sini (beda dari [terimaPermintaan] nanti di T-20). Dua
+  /// tulisan (permintaan + notifikasi) cukup digabung lewat `WriteBatch`
+  /// supaya tetap atomik.
+  Future<void> kirimPermintaanGabung({
+    required String aktivitasId,
+    required String pembuatId,
+    required String userId,
+    required String namaUser,
+  }) async {
+    try {
+      final permintaanRef = _db
+          .collection('aktivitasBermain')
+          .doc(aktivitasId)
+          .collection('permintaan')
+          .doc(userId);
+      final notifRef = _db.collection('notifikasi').doc();
+
+      final permintaan = PermintaanGabungModel(
+        userId: userId,
+        namaUser: namaUser,
+        status: 'MENUNGGU',
+        dibuatPada: DateTime.now(),
+      );
+      final notifikasi = NotifikasiModel(
+        notifikasiId: notifRef.id,
+        untukUserId: pembuatId,
+        tipe: 'PERMINTAAN_GABUNG',
+        judul: 'Permintaan gabung baru',
+        pesan: '$namaUser ingin bergabung ke aktivitasmu.',
+        refId: aktivitasId,
+        dibuatPada: DateTime.now(),
+      );
+
+      final batch = _db.batch();
+      batch.set(permintaanRef, permintaan.toFirestore());
+      batch.set(notifRef, notifikasi.toFirestore());
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin mengirim permintaan gabung.');
+      }
+      throw Exception('Gagal mengirim permintaan gabung. Coba lagi.');
     }
   }
 }

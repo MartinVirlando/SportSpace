@@ -34,4 +34,50 @@ class AktivitasViewModel extends ChangeNotifier {
     _filterOlahraga = kode;
     notifyListeners();
   }
+
+  /// ID aktivitas yang tombol "Gabung" kartunya sedang memproses —
+  /// dipakai untuk menonaktifkan tombol itu saja, bukan seluruh layar,
+  /// selagi menunggu Firestore.
+  final Set<String> _sedangDiproses = {};
+  bool sedangDiproses(String aktivitasId) =>
+      _sedangDiproses.contains(aktivitasId);
+
+  /// Kirim permintaan gabung langsung dari kartu (L-07) — PRD AB-06,
+  /// BB-16. Mengembalikan `null` kalau berhasil, atau pesan kesalahan
+  /// yang siap ditampilkan lewat `SnackBar` kalau gagal.
+  ///
+  /// Aturan tambahan AB-06 (pembuat tidak bisa gabung ke aktivitasnya
+  /// sendiri, peserta tidak bisa kirim ulang) dicek di sini dari data
+  /// [AktivitasBermainModel] yang sudah ada di kartu — tidak perlu baca
+  /// subkoleksi `permintaan` sama sekali untuk dua aturan ini.
+  Future<String?> kirimPermintaanGabung(
+    AktivitasBermainModel aktivitas, {
+    required String userId,
+    required String namaUser,
+  }) async {
+    if (aktivitas.pembuatId == userId) {
+      return 'Tidak bisa gabung ke aktivitas buatan sendiri.';
+    }
+    if (aktivitas.peserta.contains(userId)) {
+      return 'Kamu sudah jadi peserta aktivitas ini.';
+    }
+
+    _sedangDiproses.add(aktivitas.aktivitasId);
+    notifyListeners();
+
+    try {
+      await _repository.kirimPermintaanGabung(
+        aktivitasId: aktivitas.aktivitasId,
+        pembuatId: aktivitas.pembuatId,
+        userId: userId,
+        namaUser: namaUser,
+      );
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      _sedangDiproses.remove(aktivitas.aktivitasId);
+      notifyListeners();
+    }
+  }
 }

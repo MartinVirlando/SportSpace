@@ -79,6 +79,16 @@ class AppStrings {
   static const errSlotPenuh = 'Slot penuh';
   static const kosongAktivitas = 'Belum ada aktivitas untuk filter ini.';
 
+  // ---------- Detail Aktivitas (L-09) ----------
+  static const detailAktivitas = 'Detail Aktivitas';
+  static const daftarPeserta = 'Daftar Peserta';
+  static const permintaanMasuk = 'Permintaan Masuk';
+  static const kosongPermintaan = 'Belum ada permintaan gabung.';
+  static const permintaanTerkirim = 'Permintaan gabung terkirim.';
+  static const menungguPersetujuan = 'Menunggu persetujuan pembuat';
+  static const sudahBergabung = 'Kamu sudah bergabung';
+  static const pembuatAktivitas = 'Pembuat';
+
   // ---------- Booking (L-10) ----------
   static const pilihSlot = 'Pilih Slot';
   static const slotPenuh = 'Penuh';
