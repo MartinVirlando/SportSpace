@@ -208,16 +208,18 @@ Minggu 1–2   [ ] T-00a  [ ] T-00b  [ ] T-00c  [ ] T-00d  [ ] T-00e  [ ] T-00f
 Minggu 3     [x] T-01  [x] T-02  [x] T-03  [x] T-04  [x] T-05  [ ] T-06
 Minggu 4     [x] T-07  [x] T-08  [x] T-09  [ ] T-10
 Minggu 5–6   [x] T-11  [x] T-12  [x] T-13
-Minggu 7     [x] T-14                                    [ ] T-40 (keputusan Storage)
+Minggu 7     [x] T-14                                    [x] T-40 (Opsi A, tanpa Storage)
 Minggu 8     [x] T-15  [x] T-16  [x] T-17
 Minggu 9     [x] T-18  [x] T-19  [x] T-20
 Minggu 10    [x] T-21  [x] T-22  [x] T-23  [ ] T-36
-Minggu 11    [ ] T-24  [ ] T-25  [ ] T-26  [ ] T-27  [ ] T-35  [ ] T-37  [ ] T-38
+Minggu 11    [x] T-24  [x] T-25  [x] T-26  [x] T-27  [ ] T-35  [ ] T-37  [ ] T-38
 Minggu 12    [ ] T-28  [ ] T-29                          [ ] T-39 (revisi Bab 1–3)
 Minggu 13    [ ] T-30  [ ] T-31
 Minggu 14    [ ] T-32  [ ] T-33  [ ] T-34
 ```
 
-> **Catatan status per 20 Agustus 2026:** T-06 dan T-10 SENGAJA belum ditandai meski sebagian kodenya ada. T-06 karena status "Enabled" 11 index hanya bisa dicek manual di Firebase Console, bukan dari kode. T-10 karena `lapangan_repository.dart` baru punya `seedPrototipe()` (7 lapangan koordinat terverifikasi), bukan `AdminSeedScreen` sungguhan dengan 30 lapangan. T-00a–T-00f juga belum ditandai — itu tugas persiapan tim (instalasi, survei manual, verifikasi koordinat) yang tidak bisa diverifikasi lewat kode. Ketiganya perlu dicek/diselesaikan manual sebelum Sprint 5 (T-28 pengujian).
+> **Catatan status per 20 Agustus 2026:** Seluruh alur reservasi + dashboard mitra (T-23–T-27) dan keputusan T-40 (Opsi A, tanpa Firebase Storage — lihat PRD §12b) sudah selesai. Sisa Minggu 11 tinggal tiga tugas v1.1 (T-35, T-37, T-38) plus T-36 yang mundur dari Minggu 10.
+>
+> T-06 dan T-10 SENGAJA belum ditandai meski sebagian kodenya ada. T-06 karena status "Enabled" 11 index hanya bisa dicek manual di Firebase Console, bukan dari kode. T-10 karena `lapangan_repository.dart` baru punya `seedPrototipe()` (7 lapangan koordinat terverifikasi), bukan `AdminSeedScreen` sungguhan dengan 30 lapangan. T-00a–T-00f juga belum ditandai — itu tugas persiapan tim (instalasi, survei manual, verifikasi koordinat) yang tidak bisa diverifikasi lewat kode. Ketiganya perlu dicek/diselesaikan manual sebelum Sprint 5 (T-28 pengujian).
 
 > Minggu 11 terlihat padat karena empat tugas v1.1 menumpuk di sana. Kalau minggu 10 mundur, geser T-37 dan T-38 ke minggu 12 — keduanya tidak menghalangi tugas lain.

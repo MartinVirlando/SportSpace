@@ -103,6 +103,101 @@ class LapanganRepository {
     return entri.length;
   }
 
+  /// Stream lapangan milik satu mitra — PRD L-14, T-25.
+  ///
+  /// `Stream`, bukan `Future` (CLAUDE.md aturan 6): dashboard mitra perlu
+  /// langsung menunjukkan lapangan yang baru didaftarkan (T-26) tanpa
+  /// menyegarkan layar. Beda dari [ambilSemuaLapangan] (Home, AB-02) yang
+  /// sengaja sekali ambil karena datanya besar dan diolah di klien.
+  ///
+  /// Index #1 — (pemilikId ASC, nama ASC).
+  Stream<List<LapanganModel>> streamLapanganMitra(String pemilikId) {
+    return _db
+        .collection('lapangan')
+        .where('pemilikId', isEqualTo: pemilikId)
+        .orderBy('nama')
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => LapanganModel.fromFirestore(doc))
+              .toList(),
+        )
+        .handleError((Object error) {
+      if (error is FirebaseException && error.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membaca lapangan milikmu.');
+      }
+      throw Exception('Gagal memuat lapangan milikmu. Coba lagi.');
+    });
+  }
+
+  /// Tambah lapangan baru oleh mitra — PRD L-15, T-26, BB-29.
+  ///
+  /// `isMitra`, `pemilikId`, `sumberData`, dan field rating awal DITENTUKAN
+  /// di sini, bukan diisi form — PRD Bagian 10: lapangan yang didaftarkan
+  /// lewat aplikasi selalu `sumberData: "mitra"` dan `isMitra: true`.
+  Future<LapanganModel> tambahLapangan({
+    required String nama,
+    required String alamat,
+    required double latitude,
+    required double longitude,
+    required List<String> jenisOlahraga,
+    required int harga,
+    required String jamBuka,
+    required String jamTutup,
+    required List<String> fasilitas,
+    required List<String> fotoURL,
+    required String pemilikId,
+  }) async {
+    try {
+      final ref = _db.collection('lapangan').doc();
+      final lapangan = LapanganModel(
+        lapanganId: ref.id,
+        nama: nama,
+        alamat: alamat,
+        latitude: latitude,
+        longitude: longitude,
+        jenisOlahraga: jenisOlahraga,
+        harga: harga,
+        jamBuka: jamBuka,
+        jamTutup: jamTutup,
+        fasilitas: fasilitas,
+        fotoURL: fotoURL,
+        isMitra: true,
+        pemilikId: pemilikId,
+        sumberData: 'mitra',
+        ratingTotal: 0,
+        jumlahRating: 0,
+        ratingRata2: 0.0,
+      );
+      await ref.set(lapangan.toFirestore());
+      return lapangan;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin menambah lapangan.');
+      }
+      throw Exception('Gagal menambah lapangan. Coba lagi.');
+    }
+  }
+
+  /// Perbarui lapangan milik mitra — PRD L-15, T-26.
+  ///
+  /// [lapangan] harus sudah membawa `lapanganId`, `pemilikId`, `isMitra`,
+  /// `sumberData`, dan field rating APA ADANYA (tidak diubah form edit)
+  /// — lihat cara `_FormLapanganBody` menyusunnya di `form_lapangan_screen.dart`.
+  Future<void> perbaruiLapangan(LapanganModel lapangan) async {
+    try {
+      await _db
+          .collection('lapangan')
+          .doc(lapangan.lapanganId)
+          .set(lapangan.toFirestore());
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin mengubah lapangan ini.');
+      }
+      throw Exception('Gagal menyimpan perubahan lapangan. Coba lagi.');
+    }
+  }
+
   /// Mengambil satu lapangan — dipakai halaman Detail (L-06).
   Future<LapanganModel> ambilSatuLapangan(String lapanganId) async {
     try {

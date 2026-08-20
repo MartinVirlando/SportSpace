@@ -11,6 +11,7 @@ import '../../../models/rating_model.dart';
 import '../../../repositories/lapangan_repository.dart';
 import '../../../repositories/rating_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../booking/view/ajukan_reservasi_screen.dart';
 import '../../rating/view/beri_rating_sheet.dart';
 import '../viewmodel/detail_lapangan_viewmodel.dart';
 
@@ -19,17 +20,15 @@ import '../viewmodel/detail_lapangan_viewmodel.dart';
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 ///
-/// Sesuai SPRINT-PLAN T-13, layar ini SENGAJA belum punya:
+/// Sesuai SPRINT-PLAN T-13, layar ini SENGAJA masih belum punya:
 /// - Badge status "Mitra Terdaftar"/"Terverifikasi" → T-36 (AB-11)
-/// - Alur "Ajukan Reservasi" yang sesungguhnya (form L-10) → T-24
 ///
 /// Daftar ulasan (T-22) sudah ada — lewat `StreamBuilder` yang membaca
 /// `RatingRepository.streamUlasan()`, mengikuti pola CLAUDE.md aturan 6
 /// untuk daftar yang perlu langsung hidup.
 ///
-/// Tombol "Ajukan Reservasi" TETAP digambar (kondisional pada `isMitra`)
-/// karena itu justru inti yang diuji BB-11/BB-12 — hanya belum
-/// menjalankan apa-apa saat ditekan.
+/// Tombol "Ajukan Reservasi" (kondisional pada `isMitra`, BB-11/BB-12)
+/// membuka `AjukanReservasiScreen` (L-10, T-24) sejak T-24 selesai.
 class DetailLapanganScreen extends StatelessWidget {
   final String lapanganId;
 
@@ -211,8 +210,7 @@ class _Isi extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      // TODO(T-24): buka form Ajukan Reservasi (L-10).
-                      onPressed: () {},
+                      onPressed: () => _bukaFormReservasi(context, lapangan),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -285,6 +283,20 @@ class _Isi extends StatelessWidget {
           .showSnackBar(const SnackBar(content: Text(AppStrings.ratingTerkirim)));
       context.read<DetailLapanganViewModel>().muatDetail(lapangan.lapanganId);
     }
+  }
+
+  /// Membuka form Ajukan Reservasi (L-10, T-24, AB-04). Tombol pemanggil
+  /// hanya digambar bila `lapangan.isMitra == true` (BB-11/BB-12), jadi
+  /// tidak perlu dicek ulang di sini.
+  Future<void> _bukaFormReservasi(
+    BuildContext context,
+    LapanganModel lapangan,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AjukanReservasiScreen(lapangan: lapangan),
+      ),
+    );
   }
 }
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../core/constants/app_colors.dart';
 import '../core/services/location_service.dart';
 import '../features/aktivitas/view/cari_rekan_screen.dart';
 import '../features/aktivitas/viewmodel/aktivitas_viewmodel.dart';
 import '../features/lapangan/view/home_screen.dart';
 import '../features/lapangan/view/map_screen.dart';
 import '../features/lapangan/viewmodel/map_viewmodel.dart';
+import '../features/profil/view/profil_screen.dart';
 import '../repositories/aktivitas_repository.dart';
 import '../repositories/lapangan_repository.dart';
 
@@ -47,10 +47,6 @@ class AppRoutes {
 }
 
 /// Kerangka navigasi 4 tab — PRD v1.1 Bagian 8.
-///
-/// Tab Profil masih `_SegeraHadir` sampai T-27 dikerjakan — sengaja
-/// begitu (lihat SPRINT-PLAN) supaya strukturnya sudah 4 tab sejak awal
-/// dan tidak ada yang keliru membangun 3 tab.
 class ShellNavigasi extends StatefulWidget {
   const ShellNavigasi({super.key});
 
@@ -85,10 +81,7 @@ class _ShellNavigasiState extends State<ShellNavigasi> {
         ),
         child: const CariRekanScreen(), // L-07 · T-17
       ),
-      const _SegeraHadir(
-        ikon: Icons.person_outline,
-        label: 'Profil',
-      ), // L-13 · T-27
+      const ProfilScreen(), // L-13 · T-27
     ];
 
     return Scaffold(
@@ -110,35 +103,6 @@ class _ShellNavigasiState extends State<ShellNavigasi> {
             label: 'Profil',
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Tampilan sementara untuk tab yang belum dibangun. Bukan kondisi
-/// kosong/kesalahan — ini tab yang memang belum ada fiturnya, jadi
-/// pesannya beda: bukan "coba lagi", tapi "belum tersedia".
-class _SegeraHadir extends StatelessWidget {
-  final IconData ikon;
-  final String label;
-
-  const _SegeraHadir({required this.ikon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(ikon, size: 48, color: AppColors.textSecondary),
-            const SizedBox(height: 12),
-            Text(label, style: AppTextStyles.judulSeksi),
-            const SizedBox(height: 6),
-            const Text('Segera hadir.', style: AppTextStyles.lokasi),
-          ],
-        ),
       ),
     );
   }

@@ -57,6 +57,34 @@ class AktivitasRepository {
     });
   }
 
+  /// Stream aktivitas yang dibuat MAUPUN diikuti pengguna — PRD L-13,
+  /// T-27.
+  ///
+  /// Cukup satu query `peserta arrayContains uid`, bukan dua query
+  /// terpisah untuk "dibuat" dan "diikuti": pembuat aktivitas selalu ikut
+  /// masuk ke `peserta` sejak [buatAktivitas] (PRD 6.3), jadi query ini
+  /// otomatis mencakup keduanya — sesuai catatan di
+  /// `FIRESTORE-INDEXES.md` index #5.
+  ///
+  /// Index #5 — (peserta CONTAINS, waktu DESC).
+  Stream<List<AktivitasBermainModel>> streamAktivitasSaya(String userId) {
+    return _db
+        .collection('aktivitasBermain')
+        .where('peserta', arrayContains: userId)
+        .orderBy('waktu', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => AktivitasBermainModel.fromFirestore(doc))
+          .toList();
+    }).handleError((Object error) {
+      if (error is FirebaseException && error.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membaca aktivitas kamu.');
+      }
+      throw Exception('Gagal memuat aktivitas kamu. Coba lagi.');
+    });
+  }
+
   /// Membuat aktivitas baru — PRD L-08, dipakai T-18.
   ///
   /// `jumlahPemainSaatIni` awal 1 dan `peserta` awal berisi [pembuatId]

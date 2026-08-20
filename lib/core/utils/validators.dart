@@ -72,4 +72,45 @@ class Validators {
     if (nilai.length > 500) return 'Ulasan maksimal 500 karakter.';
     return null;
   }
+
+  /// Harga sewa pada form Tambah/Edit Lapangan — PRD L-15: wajib, angka
+  /// bulat positif (rupiah, tanpa desimal — PRD Bagian 6.2).
+  static String? harga(String? nilai) {
+    if (nilai == null || nilai.trim().isEmpty) return 'Harga wajib diisi.';
+    final angka = int.tryParse(nilai.trim());
+    if (angka == null) return 'Harga harus berupa angka.';
+    if (angka <= 0) return 'Harga harus lebih dari 0.';
+    return null;
+  }
+
+  /// Latitude/longitude pada form Tambah/Edit Lapangan — PRD L-15.
+  /// [min]/[max] beda untuk latitude (-90..90) dan longitude (-180..180).
+  static String? koordinat(
+    String? nilai, {
+    required String namaField,
+    required double min,
+    required double max,
+  }) {
+    if (nilai == null || nilai.trim().isEmpty) {
+      return '$namaField wajib diisi.';
+    }
+    final angka = double.tryParse(nilai.trim());
+    if (angka == null) return '$namaField harus berupa angka.';
+    if (angka < min || angka > max) {
+      return '$namaField harus antara $min dan $max.';
+    }
+    return null;
+  }
+
+  /// URL foto pada form Tambah/Edit Lapangan — PRD L-15: opsional, kalau
+  /// diisi harus URL http/https yang sah (foto lapangan tidak diunggah,
+  /// hanya tautan eksternal — PRD Bagian 2.1, Firebase Storage dilarang).
+  static String? urlOpsional(String? nilai) {
+    if (nilai == null || nilai.trim().isEmpty) return null; // opsional
+    final uri = Uri.tryParse(nilai.trim());
+    if (uri == null || !uri.isAbsolute || !uri.scheme.startsWith('http')) {
+      return 'URL foto tidak valid.';
+    }
+    return null;
+  }
 }

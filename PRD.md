@@ -39,6 +39,8 @@ Ditemukan dan diperbaiki selama implementasi Sprint 4 (T-15, T-19). Sama seperti
 |---|---|---|
 | 3 | "Daftar peserta" di L-09 diturunkan dari `namaPembuat` (6.3) + `namaUser` pada dokumen subkoleksi `permintaan` berstatus `DITERIMA` (6.4) — BUKAN field baru. Dibutuhkan karena `peserta` di 6.3 cuma `List<String>` berisi `userId`, tanpa nama, jadi tidak bisa dipakai langsung untuk tampilan. | §6.3, §6.4, §8 L-09 |
 | 4 | "Menekan item membuka objek terkait" di L-12 untuk sekarang hanya berlaku untuk tipe `PERMINTAAN_GABUNG`/`PERMINTAAN_DITERIMA`/`PERMINTAAN_DITOLAK` (`refId` = aktivitasId → Detail Aktivitas). Tipe `BOOKING_*` belum punya layar tujuan: `booking_repository.dart` (T-23) sudah bisa menulis dan membaca data booking, tapi layar Detail/Dashboard yang jadi tujuan navigasi baru dikerjakan di T-24…T-25 — item tetap bisa ditandai `sudahDibaca`, cuma belum berpindah layar. Perlu disambungkan saat T-25 selesai. | §8 L-12 |
+| 5 | Koreksi #4 di atas kini sebagian tersambung (T-25): tipe `BOOKING_BARU` (penerimanya mitra) membuka Dashboard Mitra (L-14). Tipe `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` (penerimanya pemesan) SENGAJA masih belum — tujuan yang benar adalah "Riwayat Pemesanan" di Profil (L-13), bukan Dashboard Mitra, dan layar itu baru ada di T-27. Sampai T-27 selesai, Dashboard Mitra sendiri juga belum punya jalan masuk permanen (menu di Profil) — untuk sekarang hanya bisa dibuka lewat notifikasi `BOOKING_BARU`. | §8 L-12, L-13, L-14 |
+| 6 | T-27 selesai: Profil (L-13) sekarang punya menu "Dashboard Mitra" permanen (`role == "mitra"`), jadi koreksi #5 di atas soal "belum ada jalan masuk permanen" sudah tidak berlaku. Riwayat Pemesanan (dengan AB-07) dan Aktivitas Saya juga sudah hidup penuh. Yang MASIH belum tersambung: tap pada notifikasi `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` belum berpindah ke tab Profil — Profil adalah tab di dalam `IndexedStack` milik `ShellNavigasi`, bukan layar yang di-`push`, jadi butuh mekanisme navigasi lintas-shell yang sengaja belum dibangun di T-27 (di luar cakupannya). Untuk sekarang, riwayat pemesanan tetap bisa dicek manual lewat tab Profil. Tiga bagian L-13 lain (kotak statistik, Lapangan Favorit, ubah Olahraga Favorit/Lokasi Default) juga sengaja masih placeholder "Segera hadir" — masing-masing menunggu T-38, T-35, T-37. | §8 L-12, L-13 |
 
 ---
 
@@ -824,16 +826,20 @@ Satu fitur dianggap selesai jika:
 
 ---
 
-## 12b. Keputusan Terbuka — perlu disepakati sebelum Sprint 4
+## 12b. Keputusan T-40 — SELESAI (20 Agustus 2026): Opsi A dipilih
 
 **Firebase Storage.** Tabel 3.4 dan Bab 2.9 skripsi mencantumkan Firebase Storage sebagai teknologi yang dipakai untuk menyimpan foto lapangan dan foto profil. PRD ini melarangnya (Bagian 2.1) karena menambah kompleksitas untuk pemula.
 
-Keduanya tidak bisa benar sekaligus. Pilih salah satu sebelum masuk Sprint 4:
+Keduanya tidak bisa benar sekaligus. Dua opsi yang dipertimbangkan:
 
-- **Opsi A — hapus Firebase Storage dari skripsi.** Revisi Tabel 3.4 (hapus baris 4) dan Bab 2.9 (hapus poin 3). Foto lapangan memakai URL hasil seeding, foto profil memakai avatar inisial. Paling hemat waktu.
-- **Opsi B — implementasikan versi minimal.** Tambah `image_picker` + `firebase_storage`, aktifkan upload foto **hanya** pada form Tambah/Edit Lapangan milik mitra (T-26). Sekitar 2–4 jam kerja tambahan, dan klaim di skripsi jadi terbukti. Membutuhkan paket Blaze — yang memang sudah disiapkan di T-00d.
+- **Opsi A — hapus Firebase Storage dari skripsi.** Foto lapangan memakai URL (mitra tempel link yang sudah ada, bukan upload), foto profil memakai avatar inisial. Paling hemat waktu, dan tidak menambah risiko bug menjelang deadline.
+- **Opsi B — implementasikan versi minimal.** Tambah `image_picker` + `firebase_storage`, aktifkan upload foto **hanya** pada form Tambah/Edit Lapangan milik mitra (T-26). Sekitar 2–4 jam kerja tambahan, dan klaim di skripsi jadi terbukti. Membutuhkan paket Blaze.
 
-Selama belum diputuskan, ikuti larangan di Bagian 2.1.
+**Keputusan: Opsi A.** Alasan: fitur upload foto tidak menjawab satu pun dari tiga rumusan masalah (pencarian lapangan berbasis lokasi, cari rekan bermain, reservasi), jadi Opsi B tidak menambah nilai ke penelitian — hanya menambah kompleksitas dan titik gagal baru untuk tim pemula Flutter. Kode T-26 (`form_lapangan_screen.dart`) sudah dibangun sesuai Opsi A: kolom "URL Foto" biasa, bukan `image_picker`.
+
+**Sisa pekerjaan dari keputusan ini (dokumen, bukan kode):** revisi Tabel 3.4 (hapus baris Firebase Storage) dan Bab 2.9 (hapus poin yang menyebut Storage) bersama Pak Gintoro — lihat §14 daftar revisi dokumen skripsi.
+
+> **Catatan untuk masa depan:** kalau tim berubah pikiran dan ingin upload foto asli (Opsi B), ini bukan perubahan besar — cukup tambah `image_picker`+`firebase_storage` ke `pubspec.yaml`, ganti `TextFormField` URL di `form_lapangan_screen.dart` jadi pemilih gambar, dan upload ke Storage sebelum `tambahLapangan()`/`perbaruiLapangan()` dipanggil (field `fotoURL` di model sudah `List<String>`, tidak perlu berubah). Butuh paket Blaze aktif (T-00d).
 
 ---
 
@@ -883,3 +889,4 @@ Kerjakan bersama Pak Gintoro sebelum Bab 4 ditulis:
 | 5 | Bab 3 use case | Tambah use case "Simpan Lapangan Favorit" |
 | 6 | Bab 4 tabel Black Box | Tambah BB-31 sampai BB-37 |
 | 7 | Bab 5 saran | Tambah rating antar-pengguna sebagai pengembangan lanjutan (§12c) |
+| 8 | Tabel 3.4, Bab 2.9 | Hapus Firebase Storage dari daftar teknologi — keputusan T-40 (§12b, bukan akibat v1.1, tapi tenggatnya sama: sebelum Bab 4) |

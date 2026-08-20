@@ -103,6 +103,15 @@ class AppStrings {
   static const slotPenuh = 'Penuh';
   static const estimasiDibayarDiLokasi = 'Estimasi, dibayar di lokasi';
   static const errSlotSudahDipesan = 'Slot sudah dipesan';
+  static const tanggal = 'Tanggal';
+  static const jamMulai = 'Jam Mulai';
+  static const durasi = 'Durasi';
+  static const satuanJam = 'jam';
+  static const totalEstimasi = 'Total Estimasi';
+  static const reservasiTerkirim = 'Reservasi berhasil diajukan.';
+  static const errPilihTanggalDulu = 'Pilih tanggal dulu.';
+  static const errPilihJamMulai = 'Pilih jam mulai.';
+  static const kosongJamTersedia = 'Tidak ada jam tersedia di tanggal ini.';
 
   // ---------- Profil (L-13) ----------
   static const editProfil = 'Edit Profil';
@@ -117,7 +126,69 @@ class AppStrings {
   static const dashboardMitra = 'Dashboard Mitra';
   static const errMasukDuluFavorit = 'Masuk dulu untuk menyimpan favorit.';
 
+  // ---------- Dashboard Mitra (L-14) ----------
+  static const lapanganSaya = 'Lapangan Saya';
+  static const tambahLapangan = 'Tambah Lapangan';
+  static const bookingMasuk = 'Booking Masuk';
+  static const konfirmasi = 'Konfirmasi';
+  static const kosongLapanganMitra = 'Belum ada lapangan terdaftar.';
+  static const kosongBookingMasuk = 'Belum ada booking masuk.';
+  static const bookingDikonfirmasi = 'Booking dikonfirmasi.';
+  static const bookingDitolak = 'Booking ditolak.';
+
+  // ---------- Tambah/Edit Lapangan (L-15) ----------
+  static const tambahLapanganJudul = 'Tambah Lapangan';
+  static const editLapanganJudul = 'Edit Lapangan';
+  static const alamat = 'Alamat';
+  static const latitude = 'Latitude';
+  static const longitude = 'Longitude';
+  static const ambilLokasiSaatIni = 'Ambil Lokasi Saat Ini';
+  static const jamTutup = 'Jam Tutup';
+  static const urlFotoOpsional = 'URL Foto (opsional)';
+  static const lapanganTersimpan = 'Lapangan berhasil disimpan.';
+  static const errPilihOlahraga = 'Pilih minimal satu jenis olahraga.';
+  static const errGagalAmbilLokasi =
+      'Gagal mengambil lokasi. Isi koordinat manual.';
+
   // ---------- Kesalahan umum ----------
   static const errGagalMuat = 'Gagal memuat';
   static const errTanpaKoneksi = 'Tidak ada koneksi internet. Coba lagi.';
+
+  // ---------- Profil (L-13) lanjutan ----------
+  static const segeraHadir = 'Segera hadir.';
+  static const belumDipilih = 'Belum dipilih';
+  static const belumDiatur = 'Belum diatur';
+  static const ubah = 'Ubah';
+  static const kosongRiwayatBooking = 'Belum ada riwayat pemesanan.';
+  static const kosongAktivitasSaya = 'Belum ada aktivitas yang kamu buat atau ikuti.';
+  static const bantuan = 'Bantuan';
+  static const kebijakanPrivasi = 'Kebijakan Privasi';
+  static const tentang = 'Tentang';
+
+  static const isiBantuan =
+      'Sport Space membantu kamu menemukan lapangan olahraga dan rekan '
+      'bermain di sekitarmu.\n\n'
+      '• Cari lapangan lewat tab Home, urut berdasarkan jarak terdekat.\n'
+      '• Buka tab Map untuk melihat lapangan di peta.\n'
+      '• Buat atau gabung aktivitas bermain lewat tab Teman.\n'
+      '• Lapangan bertanda "Mitra Terdaftar" bisa direservasi langsung '
+      'lewat aplikasi; pembayaran dilakukan di lokasi.\n\n'
+      'Ada kendala? Hubungi peneliti lewat kontak yang tertera pada '
+      'lembar kuesioner.';
+
+  static const isiKebijakanPrivasi =
+      'Data yang kamu masukkan (nama, surel, nomor telepon, lokasi) '
+      'hanya dipakai untuk menjalankan fitur aplikasi ini: pencarian '
+      'lapangan berbasis lokasi, rekan bermain, dan reservasi.\n\n'
+      'Data disimpan di Firebase (Google Cloud) dan tidak dibagikan ke '
+      'pihak ketiga di luar keperluan operasional aplikasi. Aplikasi ini '
+      'dibangun untuk keperluan penelitian skripsi, bukan produk '
+      'komersial.';
+
+  static const isiTentang =
+      'Sport Space v1.1\n\n'
+      'Aplikasi pencarian lapangan olahraga dan rekan bermain berbasis '
+      'lokasi, dikembangkan sebagai bagian dari tugas akhir (skripsi).\n\n'
+      'Dibangun dengan Flutter dan Firebase. Perhitungan jarak memakai '
+      'rumus Haversine yang ditulis manual sebagai kontribusi penelitian.';
 }

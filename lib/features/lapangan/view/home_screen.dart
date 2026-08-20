@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../models/notifikasi_model.dart';
 import '../../../repositories/notifikasi_repository.dart';
 import '../../../widgets/chip_olahraga.dart';
 import '../../../widgets/kartu_lapangan.dart';
-import '../../auth/view/login_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../notifikasi/view/notifikasi_screen.dart';
 import '../../notifikasi/viewmodel/notifikasi_viewmodel.dart';
@@ -215,23 +213,6 @@ class _Header extends StatelessWidget {
               ),
               child: const _IkonLonceng(),
             ),
-          // Sementara di sini, bukan di PRD L-04 — Keluar sebenarnya milik
-          // Profil (L-13, T-27) yang belum dibangun. Tanpa ini, menguji
-          // BB-03/BB-04 berulang kali butuh hapus data app manual lewat adb.
-          IconButton(
-            icon: const Icon(Icons.logout),
-            color: AppColors.textSecondary,
-            tooltip: AppStrings.keluar,
-            onPressed: () async {
-              await context.read<AuthViewModel>().keluar();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-          ),
         ],
       ),
     );

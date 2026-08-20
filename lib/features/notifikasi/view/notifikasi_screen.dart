@@ -8,18 +8,23 @@ import '../../../models/notifikasi_model.dart';
 import '../../../repositories/notifikasi_repository.dart';
 import '../../aktivitas/view/detail_aktivitas_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../mitra/view/dashboard_mitra_screen.dart';
 import '../viewmodel/notifikasi_viewmodel.dart';
 
 /// Halaman Notifikasi — PRD L-12.
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 ///
-/// Menekan item menandai `sudahDibaca = true` lalu membuka objek terkait.
-/// Untuk sekarang cuma tipe `PERMINTAAN_*` (dari AB-06, `refId` =
-/// aktivitasId) yang punya layar tujuan — Detail Aktivitas (L-09) sudah
-/// ada sejak T-19. Tipe `BOOKING_*` belum punya layar tujuan karena fitur
-/// booking (T-23…T-25) belum dikerjakan, jadi untuk sekarang item itu
-/// cuma ditandai dibaca tanpa berpindah layar.
+/// Menekan item menandai `sudahDibaca = true` lalu membuka objek terkait:
+/// - `PERMINTAAN_*` (AB-06, `refId` = aktivitasId) → Detail Aktivitas
+///   (L-09), sejak T-19.
+/// - `BOOKING_BARU` (AB-04, penerimanya mitra) → Dashboard Mitra (L-14),
+///   sejak T-25 — layar itu membaca ulang booking milik mitra lewat
+///   `Stream`, jadi cukup dibuka tanpa membawa `refId`.
+/// - `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` (penerimanya pemesan)
+///   BELUM punya layar tujuan — tujuannya "Riwayat Pemesanan" di Profil
+///   (L-13), baru dikerjakan T-27. Untuk sekarang item itu cuma ditandai
+///   dibaca tanpa berpindah layar.
 class NotifikasiScreen extends StatelessWidget {
   const NotifikasiScreen({super.key});
 
@@ -52,6 +57,10 @@ class _NotifikasiBody extends StatelessWidget {
         MaterialPageRoute(
           builder: (_) => DetailAktivitasScreen(aktivitasId: item.refId),
         ),
+      );
+    } else if (item.tipe == 'BOOKING_BARU') {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const DashboardMitraScreen()),
       );
     }
   }
