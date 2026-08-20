@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../core/constants/app_colors.dart';
 import '../core/services/location_service.dart';
+import '../features/aktivitas/view/cari_rekan_screen.dart';
+import '../features/aktivitas/viewmodel/aktivitas_viewmodel.dart';
 import '../features/lapangan/view/home_screen.dart';
 import '../features/lapangan/view/map_screen.dart';
 import '../features/lapangan/viewmodel/map_viewmodel.dart';
+import '../repositories/aktivitas_repository.dart';
 import '../repositories/lapangan_repository.dart';
 
 /// Daftar rute aplikasi — PRD Bagian 8 (L-01 sampai L-15).
@@ -45,9 +48,9 @@ class AppRoutes {
 
 /// Kerangka navigasi 4 tab — PRD v1.1 Bagian 8.
 ///
-/// Tab Teman dan Profil masih `_SegeraHadir` sampai T-17/T-27 dikerjakan
-/// — sengaja begitu (lihat SPRINT-PLAN) supaya strukturnya sudah 4 tab
-/// sejak awal dan tidak ada yang keliru membangun 3 tab.
+/// Tab Profil masih `_SegeraHadir` sampai T-27 dikerjakan — sengaja
+/// begitu (lihat SPRINT-PLAN) supaya strukturnya sudah 4 tab sejak awal
+/// dan tidak ada yang keliru membangun 3 tab.
 class ShellNavigasi extends StatefulWidget {
   const ShellNavigasi({super.key});
 
@@ -76,10 +79,12 @@ class _ShellNavigasiState extends State<ShellNavigasi> {
         ),
         child: const MapScreen(), // L-05 · T-14
       ),
-      const _SegeraHadir(
-        ikon: Icons.people_outline,
-        label: 'Cari Rekan',
-      ), // L-07 · T-17
+      ChangeNotifierProvider<AktivitasViewModel>(
+        create: (context) => AktivitasViewModel(
+          repository: context.read<AktivitasRepository>(),
+        ),
+        child: const CariRekanScreen(), // L-07 · T-17
+      ),
       const _SegeraHadir(
         ikon: Icons.person_outline,
         label: 'Profil',

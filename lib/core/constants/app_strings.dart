@@ -77,6 +77,7 @@ class AppStrings {
   static const terima = 'Terima';
   static const tolak = 'Tolak';
   static const errSlotPenuh = 'Slot penuh';
+  static const kosongAktivitas = 'Belum ada aktivitas untuk filter ini.';
 
   // ---------- Booking (L-10) ----------
   static const pilihSlot = 'Pilih Slot';
