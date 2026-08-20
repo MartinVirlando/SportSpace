@@ -89,6 +89,10 @@ class AppStrings {
   static const sudahBergabung = 'Kamu sudah bergabung';
   static const pembuatAktivitas = 'Pembuat';
 
+  // ---------- Notifikasi (L-12) ----------
+  static const notifikasi = 'Notifikasi';
+  static const kosongNotifikasi = 'Belum ada notifikasi.';
+
   // ---------- Booking (L-10) ----------
   static const pilihSlot = 'Pilih Slot';
   static const slotPenuh = 'Penuh';

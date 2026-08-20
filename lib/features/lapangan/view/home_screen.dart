@@ -3,10 +3,14 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../models/notifikasi_model.dart';
+import '../../../repositories/notifikasi_repository.dart';
 import '../../../widgets/chip_olahraga.dart';
 import '../../../widgets/kartu_lapangan.dart';
 import '../../auth/view/login_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../notifikasi/view/notifikasi_screen.dart';
+import '../../notifikasi/viewmodel/notifikasi_viewmodel.dart';
 import '../viewmodel/home_viewmodel.dart';
 import 'detail_lapangan_screen.dart';
 
@@ -171,7 +175,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nama = context.watch<AuthViewModel>().user?.nama ?? '';
+    final user = context.watch<AuthViewModel>().user;
+    final nama = user?.nama ?? '';
 
     return Container(
       color: AppColors.surface,
@@ -197,30 +202,19 @@ class _Header extends StatelessWidget {
             ),
           ),
           // Ikon lonceng + badge — PRD L-04, belum ada di Figma.
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none),
-                color: AppColors.textPrimary,
-                // TODO(T-15): buka halaman Notifikasi (L-12)
-                onPressed: () {},
+          //
+          // NotifikasiViewModel dibuat LOKAL di sini (bukan Provider
+          // global — CLAUDE.md aturan 6), terpisah dari instance yang
+          // dibuat NotifikasiScreen saat dibuka. Lihat catatan di
+          // notifikasi_viewmodel.dart.
+          if (user != null)
+            ChangeNotifierProvider<NotifikasiViewModel>(
+              create: (context) => NotifikasiViewModel(
+                repository: context.read<NotifikasiRepository>(),
+                userId: user.userId,
               ),
-              // TODO(T-15): tampilkan hanya kalau ada notifikasi belum dibaca
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
+              child: const _IkonLonceng(),
+            ),
           // Sementara di sini, bukan di PRD L-04 — Keluar sebenarnya milik
           // Profil (L-13, T-27) yang belum dibangun. Tanpa ini, menguji
           // BB-03/BB-04 berulang kali butuh hapus data app manual lewat adb.
@@ -240,6 +234,52 @@ class _Header extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Ikon lonceng dengan badge titik — hanya muncul kalau ada notifikasi
+/// yang belum dibaca. Dihitung dari daftar `StreamBuilder` yang sama,
+/// BUKAN query kedua (lihat catatan di `notifikasi_repository.dart`).
+class _IkonLonceng extends StatelessWidget {
+  const _IkonLonceng();
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<NotifikasiViewModel>();
+
+    return StreamBuilder<List<NotifikasiModel>>(
+      stream: vm.streamNotifikasi,
+      builder: (context, snapshot) {
+        final adaBelumDibaca =
+            (snapshot.data ?? const []).any((n) => !n.sudahDibaca);
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_none),
+              color: AppColors.textPrimary,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
+              ),
+            ),
+            if (adaBelumDibaca)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

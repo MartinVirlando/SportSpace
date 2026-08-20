@@ -11,6 +11,7 @@ import 'features/lapangan/viewmodel/home_viewmodel.dart';
 import 'repositories/aktivitas_repository.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/lapangan_repository.dart';
+import 'repositories/notifikasi_repository.dart';
 import 'routes/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -44,6 +45,7 @@ class SportSpaceApp extends StatelessWidget {
         Provider<LapanganRepository>(create: (_) => LapanganRepository()),
         Provider<AuthRepository>(create: (_) => AuthRepository()),
         Provider<AktivitasRepository>(create: (_) => AktivitasRepository()),
+        Provider<NotifikasiRepository>(create: (_) => NotifikasiRepository()),
 
         // Status autentikasi lintas layar (CLAUDE.md aturan 6) — dipasang
         // sekali di sini, bukan dibuat ulang tiap layar seperti
