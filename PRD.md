@@ -38,7 +38,7 @@ Ditemukan dan diperbaiki selama implementasi Sprint 4 (T-15, T-19). Sama seperti
 | # | Koreksi | Bagian yang terdampak |
 |---|---|---|
 | 3 | "Daftar peserta" di L-09 diturunkan dari `namaPembuat` (6.3) + `namaUser` pada dokumen subkoleksi `permintaan` berstatus `DITERIMA` (6.4) — BUKAN field baru. Dibutuhkan karena `peserta` di 6.3 cuma `List<String>` berisi `userId`, tanpa nama, jadi tidak bisa dipakai langsung untuk tampilan. | §6.3, §6.4, §8 L-09 |
-| 4 | "Menekan item membuka objek terkait" di L-12 untuk sekarang hanya berlaku untuk tipe `PERMINTAAN_GABUNG`/`PERMINTAAN_DITERIMA`/`PERMINTAAN_DITOLAK` (`refId` = aktivitasId → Detail Aktivitas). Tipe `BOOKING_*` belum punya layar tujuan karena fitur booking (T-23…T-25) belum dikerjakan — item tetap bisa ditandai `sudahDibaca`, cuma belum berpindah layar. Perlu disambungkan saat T-25 selesai. | §8 L-12 |
+| 4 | "Menekan item membuka objek terkait" di L-12 untuk sekarang hanya berlaku untuk tipe `PERMINTAAN_GABUNG`/`PERMINTAAN_DITERIMA`/`PERMINTAAN_DITOLAK` (`refId` = aktivitasId → Detail Aktivitas). Tipe `BOOKING_*` belum punya layar tujuan: `booking_repository.dart` (T-23) sudah bisa menulis dan membaca data booking, tapi layar Detail/Dashboard yang jadi tujuan navigasi baru dikerjakan di T-24…T-25 — item tetap bisa ditandai `sudahDibaca`, cuma belum berpindah layar. Perlu disambungkan saat T-25 selesai. | §8 L-12 |
 
 ---
 
