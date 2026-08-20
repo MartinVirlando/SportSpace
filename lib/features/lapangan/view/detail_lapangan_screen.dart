@@ -8,6 +8,8 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/lapangan_repository.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../rating/view/beri_rating_sheet.dart';
 import '../viewmodel/detail_lapangan_viewmodel.dart';
 
 /// Halaman Detail Lapangan — PRD L-06. BB-11 (tombol reservasi tidak
@@ -17,7 +19,7 @@ import '../viewmodel/detail_lapangan_viewmodel.dart';
 ///
 /// Sesuai SPRINT-PLAN T-13, layar ini SENGAJA belum punya:
 /// - Badge status "Mitra Terdaftar"/"Terverifikasi" → T-36 (AB-11)
-/// - Tombol "Beri Rating" dan daftar ulasan sungguhan → T-21/T-22
+/// - Daftar ulasan sungguhan → T-22 (tombol "Beri Rating" sudah T-21)
 /// - Alur "Ajukan Reservasi" yang sesungguhnya (form L-10) → T-24
 ///
 /// Tombol "Ajukan Reservasi" TETAP digambar (kondisional pada `isMitra`)
@@ -220,14 +222,27 @@ class _Isi extends StatelessWidget {
                   ),
                 ],
                 const Divider(height: 40),
-                const Text(
-                  AppStrings.ulasanPengguna,
-                  style: AppTextStyles.judulSeksi,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      AppStrings.ulasanPengguna,
+                      style: AppTextStyles.judulSeksi,
+                    ),
+                    TextButton(
+                      onPressed: () => _bukaFormRating(context, lapangan),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                      ),
+                      child: const Text(AppStrings.beriRating),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 // TODO(T-22): tampilkan daftar ulasan sungguhan dari
                 // rating_repository.dart. Untuk sekarang selalu kosong
-                // karena repository-nya belum ada.
+                // karena stream-nya belum ada.
                 const Text(
                   AppStrings.belumAdaUlasan,
                   style: AppTextStyles.metaLapangan,
@@ -249,6 +264,27 @@ class _Isi extends StatelessWidget {
   String _barisRating(LapanganModel l) {
     if (l.jumlahRating == 0) return AppStrings.belumAdaUlasan;
     return '⭐ ${l.ratingRata2.toStringAsFixed(1)} (${l.jumlahRating} ulasan)';
+  }
+
+  /// Membuka modal Beri Rating (L-11, T-21, AB-05/AB-09) dan memuat
+  /// ulang detail lapangan sesudahnya supaya `ratingRata2` yang baru
+  /// langsung tampil.
+  Future<void> _bukaFormRating(BuildContext context, LapanganModel lapangan) async {
+    final user = context.read<AuthViewModel>().user;
+    if (user == null) return; // AB-09: hanya pengguna yang sudah login
+
+    final berhasil = await showBeriRatingSheet(
+      context,
+      lapanganId: lapangan.lapanganId,
+      userId: user.userId,
+      namaUser: user.nama,
+    );
+
+    if (berhasil == true && context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text(AppStrings.ratingTerkirim)));
+      context.read<DetailLapanganViewModel>().muatDetail(lapangan.lapanganId);
+    }
   }
 }
 

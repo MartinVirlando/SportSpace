@@ -70,6 +70,11 @@ class AppStrings {
   static const badgeMitra = '✅ Mitra Terdaftar';
   static const badgeTerverifikasi = '🏅 Terverifikasi';
 
+  // ---------- Beri Rating (L-11) ----------
+  static const ulasanOpsional = 'Ulasan (opsional)';
+  static const errPilihBintang = 'Pilih rating bintang dulu.';
+  static const ratingTerkirim = 'Terima kasih atas ratingmu!';
+
   // ---------- Cari Rekan (L-07) ----------
   static const cariRekan = 'Cari Rekan Bermain';
   static const buatAktivitas = 'Buat Aktivitas';
