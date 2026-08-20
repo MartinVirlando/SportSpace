@@ -73,4 +73,25 @@ class UserModel {
         'olahragaFavorit': olahragaFavorit,
         'lokasiDefault': lokasiDefault,
       };
+
+  /// Menyalin objek sambil mengganti `olahragaFavorit` dan/atau
+  /// `lokasiDefault` — dipakai AuthViewModel setelah T-37 berhasil
+  /// menulis perubahan ke Firestore, supaya salinan lokal (`AuthViewModel.user`)
+  /// ikut terbarui tanpa perlu `ambilUser()` ulang. Objeknya immutable
+  /// (semua field `final`), sama seperti `LapanganModel.salinDenganJarak`.
+  UserModel salinDengan({
+    List<String>? olahragaFavorit,
+    Map<String, dynamic>? lokasiDefault,
+  }) =>
+      UserModel(
+        userId: userId,
+        nama: nama,
+        surel: surel,
+        nomorTelepon: nomorTelepon,
+        fotoProfilURL: fotoProfilURL,
+        role: role,
+        tanggalDaftar: tanggalDaftar,
+        olahragaFavorit: olahragaFavorit ?? this.olahragaFavorit,
+        lokasiDefault: lokasiDefault ?? this.lokasiDefault,
+      );
 }

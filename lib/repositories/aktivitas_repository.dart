@@ -85,6 +85,24 @@ class AktivitasRepository {
     });
   }
 
+  /// Hitung jumlah aktivitas yang dibuat/diikuti pengguna — PRD L-13,
+  /// T-38, AB-12. Query sama dengan [streamAktivitasSaya], jadi ikut
+  /// index #5 — tapi lewat `count()`, bukan `.snapshots()`, karena
+  /// statistik profil sekali ambil (CLAUDE.md aturan 6), bukan daftar
+  /// yang perlu tetap hidup.
+  Future<int> hitungAktivitasSaya(String userId) async {
+    try {
+      final hasil = await _db
+          .collection('aktivitasBermain')
+          .where('peserta', arrayContains: userId)
+          .count()
+          .get();
+      return hasil.count ?? 0;
+    } on FirebaseException {
+      throw Exception('Gagal menghitung aktivitas.');
+    }
+  }
+
   /// Membuat aktivitas baru — PRD L-08, dipakai T-18.
   ///
   /// `jumlahPemainSaatIni` awal 1 dan `peserta` awal berisi [pembuatId]

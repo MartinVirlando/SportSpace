@@ -8,6 +8,7 @@ import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/lapangan_model.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/map_viewmodel.dart';
 import 'detail_lapangan_screen.dart';
 
@@ -35,7 +36,7 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MapViewModel>().muatPeta();
+      _muatPetaDenganLokasiDefault(context);
     });
   }
 
@@ -48,6 +49,17 @@ class _MapScreenState extends State<MapScreen> {
       body: SafeArea(child: _Isi(vm: vm)),
     );
   }
+}
+
+/// Memuat peta dengan `lokasiDefault` milik pengguna (bila ada) sebagai
+/// cadangan saat GPS ditolak/mati — PRD AB-03, T-37. Pola yang sama
+/// dengan `home_screen.dart`.
+Future<void> _muatPetaDenganLokasiDefault(BuildContext context) {
+  final lokasiDefault = context.read<AuthViewModel>().user?.lokasiDefault;
+  return context.read<MapViewModel>().muatPeta(
+        latDefault: (lokasiDefault?['latitude'] as num?)?.toDouble(),
+        lonDefault: (lokasiDefault?['longitude'] as num?)?.toDouble(),
+      );
 }
 
 class _Isi extends StatelessWidget {
@@ -67,7 +79,7 @@ class _Isi extends StatelessWidget {
           judul: AppStrings.errGagalMuat,
           keterangan: vm.pesanError ?? 'Terjadi kesalahan.',
           labelTombol: AppStrings.cobaLagi,
-          onTekan: () => context.read<MapViewModel>().muatPeta(),
+          onTekan: () => _muatPetaDenganLokasiDefault(context),
         );
 
       case KondisiMap.lokasiDitolak:
@@ -80,7 +92,7 @@ class _Isi extends StatelessWidget {
           onTekan: () async {
             await context.read<MapViewModel>().bukaPengaturanLokasi();
             if (context.mounted) {
-              await context.read<MapViewModel>().muatPeta();
+              await _muatPetaDenganLokasiDefault(context);
             }
           },
         );

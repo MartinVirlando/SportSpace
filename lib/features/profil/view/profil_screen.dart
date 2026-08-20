@@ -7,28 +7,29 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/booking_model.dart';
+import '../../../models/favorit_model.dart';
 import '../../../models/user_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
 import '../../../repositories/booking_repository.dart';
+import '../../../repositories/favorit_repository.dart';
 import '../../aktivitas/view/detail_aktivitas_screen.dart';
 import '../../auth/view/login_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../lapangan/view/detail_lapangan_screen.dart';
 import '../../mitra/view/dashboard_mitra_screen.dart';
 import '../viewmodel/profil_viewmodel.dart';
 import 'halaman_statis_screen.dart';
+import 'ubah_lokasi_default_sheet.dart';
+import 'ubah_olahraga_favorit_sheet.dart';
 
 /// Tab Profil — PRD L-13, T-27. BB-28 (booking lewat jam selesai tampil
 /// SELESAI), BB-30 (logout).
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 ///
-/// Sesuai SPRINT-PLAN, tiga bagian di layar ini SENGAJA masih placeholder
-/// "Segera hadir" — masing-masing tugas terpisah, bukan bagian T-27:
-/// - Kotak statistik (Booking · Aktivitas · Favorit) → T-38, AB-12
-/// - Lapangan Favorit → T-35, AB-10
-/// - Ubah Olahraga Favorit / Lokasi Default → T-37 (nilainya sendiri
-///   SUDAH ditampilkan dari `UserModel`, cuma tombol "Ubah"-nya belum
-///   berfungsi)
+/// Kotak statistik (T-38, AB-12), Lapangan Favorit (T-35, AB-10), dan
+/// Olahraga Favorit / Lokasi Default (T-37) — masing-masing tugas
+/// terpisah dari T-27 — sudah hidup penuh di layar ini.
 ///
 /// Riwayat Pemesanan dan Aktivitas Saya SUDAH hidup penuh lewat `Stream`
 /// (CLAUDE.md aturan 6), termasuk AB-07 (status SELESAI dihitung klien).
@@ -43,8 +44,9 @@ class ProfilScreen extends StatelessWidget {
       create: (context) => ProfilViewModel(
         bookingRepository: context.read<BookingRepository>(),
         aktivitasRepository: context.read<AktivitasRepository>(),
+        favoritRepository: context.read<FavoritRepository>(),
         userId: userId,
-      ),
+      )..muatStatistik(),
       child: const _ProfilBody(),
     );
   }
@@ -92,7 +94,7 @@ class _ProfilBody extends StatelessWidget {
           children: [
             _Header(user: user),
             const SizedBox(height: 20),
-            const _KotakStatistik(),
+            _KotakStatistik(vm: vm),
             const Divider(height: 36),
             _SeksiOlahragaFavorit(olahragaFavorit: user.olahragaFavorit),
             const SizedBox(height: 20),
@@ -102,8 +104,8 @@ class _ProfilBody extends StatelessWidget {
               AppStrings.lapanganFavorit,
               style: AppTextStyles.judulSeksi,
             ),
-            const SizedBox(height: 8),
-            const Text(AppStrings.segeraHadir, style: AppTextStyles.metaLapangan),
+            const SizedBox(height: 10),
+            _SeksiLapanganFavorit(vm: vm),
             const Divider(height: 36),
             const Text(
               AppStrings.riwayatPemesanan,
@@ -225,20 +227,49 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// TODO(T-38, AB-12): hitung dari `count()` sungguhan. Untuk sekarang
-/// hanya kerangka tampilan supaya tata letak Figma tetap utuh.
+/// Kotak statistik Booking · Aktivitas · Favorit — PRD L-13, T-38, AB-12.
+/// `vm` dioper dari `_ProfilBody` yang sudah `context.watch<ProfilViewModel>()`
+/// — begitu [ProfilViewModel.muatStatistik] selesai dan memanggil
+/// `notifyListeners()`, seluruh `_ProfilBody` (termasuk kotak ini) ikut
+/// dibangun ulang.
 class _KotakStatistik extends StatelessWidget {
-  const _KotakStatistik();
+  final ProfilViewModel vm;
+
+  const _KotakStatistik({required this.vm});
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    final gagal = vm.kondisiStatistik == KondisiStatistik.gagal;
+    final memuat = vm.kondisiStatistik == KondisiStatistik.memuat;
+
+    return Row(
       children: [
-        Expanded(child: _KotakAngka(label: AppStrings.statBooking)),
-        SizedBox(width: 10),
-        Expanded(child: _KotakAngka(label: AppStrings.statAktivitas)),
-        SizedBox(width: 10),
-        Expanded(child: _KotakAngka(label: AppStrings.statFavorit)),
+        Expanded(
+          child: _KotakAngka(
+            label: AppStrings.statBooking,
+            nilai: vm.jumlahBooking,
+            memuat: memuat,
+            gagal: gagal,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _KotakAngka(
+            label: AppStrings.statAktivitas,
+            nilai: vm.jumlahAktivitas,
+            memuat: memuat,
+            gagal: gagal,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _KotakAngka(
+            label: AppStrings.statFavorit,
+            nilai: vm.jumlahFavorit,
+            memuat: memuat,
+            gagal: gagal,
+          ),
+        ),
       ],
     );
   }
@@ -246,8 +277,16 @@ class _KotakStatistik extends StatelessWidget {
 
 class _KotakAngka extends StatelessWidget {
   final String label;
+  final int nilai;
+  final bool memuat;
+  final bool gagal;
 
-  const _KotakAngka({required this.label});
+  const _KotakAngka({
+    required this.label,
+    required this.nilai,
+    required this.memuat,
+    required this.gagal,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -260,14 +299,21 @@ class _KotakAngka extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Text(
-            '—',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
+          if (memuat)
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Text(
+              gagal ? '—' : '$nilai',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
             ),
-          ),
           const SizedBox(height: 2),
           Text(label, style: AppTextStyles.metaLapangan),
         ],
@@ -293,9 +339,11 @@ class _SeksiOlahragaFavorit extends StatelessWidget {
               AppStrings.olahragaFavorit,
               style: AppTextStyles.judulSeksi,
             ),
-            // TODO(T-37): buka form ubah olahraga favorit.
             TextButton(
-              onPressed: () {},
+              onPressed: () => showUbahOlahragaFavoritSheet(
+                context,
+                olahragaFavoritSaatIni: olahragaFavorit,
+              ),
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: const Size(0, 0),
@@ -346,9 +394,8 @@ class _SeksiLokasiDefault extends StatelessWidget {
               AppStrings.lokasiDefault,
               style: AppTextStyles.judulSeksi,
             ),
-            // TODO(T-37): buka form ubah lokasi default.
             TextButton(
-              onPressed: () {},
+              onPressed: () => showUbahLokasiDefaultSheet(context),
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: const Size(0, 0),
@@ -363,6 +410,106 @@ class _SeksiLokasiDefault extends StatelessWidget {
           style: AppTextStyles.metaLapangan,
         ),
       ],
+    );
+  }
+}
+
+/// Daftar Lapangan Favorit (L-13, T-35) — `StreamBuilder` supaya baris
+/// langsung hilang begitu dibatalkan lewat ikon ♥ di L-04/L-06, tanpa
+/// menyegarkan layar (CLAUDE.md aturan 6).
+class _SeksiLapanganFavorit extends StatelessWidget {
+  final ProfilViewModel vm;
+
+  const _SeksiLapanganFavorit({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<FavoritModel>>(
+      stream: vm.streamDaftarFavorit,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Text(
+            snapshot.error.toString().replaceFirst('Exception: ', ''),
+            style: AppTextStyles.metaLapangan,
+          );
+        }
+        final daftar = snapshot.data ?? const [];
+        if (daftar.isEmpty) {
+          return const Text(
+            AppStrings.kosongLapanganFavorit,
+            style: AppTextStyles.metaLapangan,
+          );
+        }
+        return Column(
+          children: [
+            for (final f in daftar) ...[
+              _KartuFavorit(favorit: f, vm: vm),
+              const SizedBox(height: 10),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _KartuFavorit extends StatelessWidget {
+  final FavoritModel favorit;
+  final ProfilViewModel vm;
+
+  const _KartuFavorit({required this.favorit, required this.vm});
+
+  Future<void> _batalFavorit(BuildContext context) async {
+    try {
+      await vm.hapusFavorit(favorit.lapanganId, favorit.namaLapangan);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => DetailLapanganScreen(lapanganId: favorit.lapanganId),
+        ),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
+          boxShadow: AppColors.shadowKartu,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                favorit.namaLapangan,
+                style: AppTextStyles.namaLapangan,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => _batalFavorit(context),
+              behavior: HitTestBehavior.opaque,
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.favorite, size: 18, color: AppColors.primary),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

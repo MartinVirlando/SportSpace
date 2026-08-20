@@ -120,6 +120,41 @@ class AuthRepository {
     }
   }
 
+  /// Ubah Olahraga Favorit di Profil — PRD L-13, T-37.
+  Future<void> perbaruiOlahragaFavorit(
+    String uid,
+    List<String> olahragaFavorit,
+  ) async {
+    try {
+      await _db
+          .collection('users')
+          .doc(uid)
+          .update({'olahragaFavorit': olahragaFavorit}).timeout(_batasWaktu);
+    } on FirebaseException {
+      throw Exception('Gagal menyimpan olahraga favorit. Coba lagi.');
+    } on TimeoutException {
+      throw Exception('Tidak ada koneksi internet. Coba lagi.');
+    }
+  }
+
+  /// Ubah Lokasi Default di Profil — PRD L-13, T-37, dipakai sebagai
+  /// cadangan AB-03 saat GPS ditolak.
+  Future<void> perbaruiLokasiDefault(
+    String uid,
+    Map<String, dynamic> lokasiDefault,
+  ) async {
+    try {
+      await _db
+          .collection('users')
+          .doc(uid)
+          .update({'lokasiDefault': lokasiDefault}).timeout(_batasWaktu);
+    } on FirebaseException {
+      throw Exception('Gagal menyimpan lokasi default. Coba lagi.');
+    } on TimeoutException {
+      throw Exception('Tidak ada koneksi internet. Coba lagi.');
+    }
+  }
+
   Future<void> keluar() => _auth.signOut();
 
   String _pesanKesalahanLogin(String kode) {

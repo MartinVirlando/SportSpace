@@ -8,10 +8,12 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../models/rating_model.dart';
+import '../../../repositories/favorit_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
 import '../../../repositories/rating_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../booking/view/ajukan_reservasi_screen.dart';
+import '../../favorit/viewmodel/favorit_viewmodel.dart';
 import '../../rating/view/beri_rating_sheet.dart';
 import '../viewmodel/detail_lapangan_viewmodel.dart';
 
@@ -20,8 +22,9 @@ import '../viewmodel/detail_lapangan_viewmodel.dart';
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 ///
-/// Sesuai SPRINT-PLAN T-13, layar ini SENGAJA masih belum punya:
-/// - Badge status "Mitra Terdaftar"/"Terverifikasi" → T-36 (AB-11)
+/// Badge status "Mitra Terdaftar"/"Terverifikasi" (T-36, AB-11) diturunkan
+/// langsung dari `isMitra`/`sumberData` yang sudah ada di `LapanganModel`
+/// — tanpa field baru.
 ///
 /// Daftar ulasan (T-22) sudah ada — lewat `StreamBuilder` yang membaca
 /// `RatingRepository.streamUlasan()`, mengikuti pola CLAUDE.md aturan 6
@@ -36,12 +39,23 @@ class DetailLapanganScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Layar ini hanya bisa dibuka dari dalam ShellNavigasi (Home, Map,
+    // Profil), yang semuanya sudah di balik gerbang login — lihat
+    // splash_screen.dart. Jadi user di sini selalu ada.
+    final userId = context.read<AuthViewModel>().user!.userId;
+
     return ChangeNotifierProvider<DetailLapanganViewModel>(
       create: (context) => DetailLapanganViewModel(
         repository: context.read<LapanganRepository>(),
         ratingRepository: context.read<RatingRepository>(),
       )..muatDetail(lapanganId),
-      child: const _DetailLapanganBody(),
+      child: ChangeNotifierProvider<FavoritViewModel>(
+        create: (context) => FavoritViewModel(
+          repository: context.read<FavoritRepository>(),
+          userId: userId,
+        ),
+        child: const _DetailLapanganBody(),
+      ),
     );
   }
 }
@@ -175,6 +189,7 @@ class _Isi extends StatelessWidget {
                 Text(lapangan.nama, style: _judulLayar),
                 const SizedBox(height: 6),
                 Text(_barisRating(lapangan), style: AppTextStyles.lokasi),
+                _BarisBadge(lapangan: lapangan),
                 const SizedBox(height: 16),
                 _BarisAlamat(lapangan: lapangan),
                 const Divider(height: 32),
@@ -429,8 +444,7 @@ class _Hero extends StatelessWidget {
                     ikon: Icons.arrow_back,
                     onTap: () => Navigator.of(context).pop(),
                   ),
-                  // TODO(T-35): sambungkan ke FavoritViewModel (AB-10).
-                  _TombolBulat(ikon: Icons.favorite_border, onTap: () {}),
+                  _TombolFavorit(lapangan: lapangan),
                 ],
               ),
             ),
@@ -493,6 +507,112 @@ class _TombolBulat extends StatelessWidget {
         ),
         child: Icon(ikon, size: 18, color: AppColors.textPrimary),
       ),
+    );
+  }
+}
+
+/// Badge status lapangan (L-06, T-36, AB-11). Tidak ada field baru —
+/// "✅ Mitra Terdaftar" dari `isMitra`, "🏅 Terverifikasi" dari
+/// `sumberData == "observasi"`. Kalau tidak ada satu pun yang terpenuhi
+/// (`sumberData == "places_api"`), tidak menggambar apa pun.
+class _BarisBadge extends StatelessWidget {
+  final LapanganModel lapangan;
+
+  const _BarisBadge({required this.lapangan});
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = <String>[
+      if (lapangan.isMitra) AppStrings.badgeMitra,
+      if (lapangan.sumberData == 'observasi') AppStrings.badgeTerverifikasi,
+    ];
+
+    if (badge.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [for (final teks in badge) _Badge(teks: teks)],
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String teks;
+
+  const _Badge({required this.teks});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSizes.radiusChip),
+      ),
+      child: Text(
+        teks,
+        style: AppTextStyles.metaLapangan.copyWith(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Ikon ♡/♥ di hero foto (L-06, T-35, AB-10). Dibungkus `StreamBuilder`
+/// sendiri (bukan `context.watch<FavoritViewModel>()` di `_Isi`) supaya
+/// hanya widget ikon ini yang dibangun ulang saat status favorit berubah.
+class _TombolFavorit extends StatelessWidget {
+  final LapanganModel lapangan;
+
+  const _TombolFavorit({required this.lapangan});
+
+  Future<void> _toggle(BuildContext context) async {
+    try {
+      await context
+          .read<FavoritViewModel>()
+          .toggle(lapangan.lapanganId, lapangan.nama);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<FavoritViewModel>();
+
+    return StreamBuilder<Set<String>>(
+      stream: vm.streamIdFavorit,
+      builder: (context, snapshot) {
+        final difavoritkan =
+            (snapshot.data ?? const <String>{}).contains(lapangan.lapanganId);
+
+        return GestureDetector(
+          onTap: () => _toggle(context),
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              difavoritkan ? Icons.favorite : Icons.favorite_border,
+              size: 18,
+              color: difavoritkan ? AppColors.primary : AppColors.textPrimary,
+            ),
+          ),
+        );
+      },
     );
   }
 }

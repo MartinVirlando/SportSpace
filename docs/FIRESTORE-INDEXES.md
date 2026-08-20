@@ -233,6 +233,7 @@ Lebih murah, lebih sederhana, dan badge-nya dijamin sinkron dengan daftarnya.
 | Semua `transaction.get()` di AB-04/05/06 | `DocumentReference`, bukan query |
 | Subkoleksi `permintaan` di L-09 | Ambil seluruh subkoleksi, tanpa filter |
 | Profil pengguna `users/{uid}` | Baca dokumen langsung |
+| Statistik profil (`count()`, AB-12/T-38): `booking` `where userId`, `aktivitasBermain` `where peserta arrayContains`, subkoleksi `favorit` tanpa filter | Tanpa `orderBy` — equality/arrayContains sendirian otomatis terindeks, dan `count()` memakai index yang sama dengan query biasa |
 
 ---
 

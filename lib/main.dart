@@ -11,6 +11,7 @@ import 'features/lapangan/viewmodel/home_viewmodel.dart';
 import 'repositories/aktivitas_repository.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/booking_repository.dart';
+import 'repositories/favorit_repository.dart';
 import 'repositories/lapangan_repository.dart';
 import 'repositories/notifikasi_repository.dart';
 import 'repositories/rating_repository.dart';
@@ -50,6 +51,7 @@ class SportSpaceApp extends StatelessWidget {
         Provider<NotifikasiRepository>(create: (_) => NotifikasiRepository()),
         Provider<RatingRepository>(create: (_) => RatingRepository()),
         Provider<BookingRepository>(create: (_) => BookingRepository()),
+        Provider<FavoritRepository>(create: (_) => FavoritRepository()),
 
         // Status autentikasi lintas layar (CLAUDE.md aturan 6) — dipasang
         // sekali di sini, bukan dibuat ulang tiap layar seperti

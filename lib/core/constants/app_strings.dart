@@ -125,6 +125,8 @@ class AppStrings {
   static const aktivitasSaya = 'Aktivitas Saya';
   static const dashboardMitra = 'Dashboard Mitra';
   static const errMasukDuluFavorit = 'Masuk dulu untuk menyimpan favorit.';
+  static const namaLokasi = 'Nama Lokasi';
+  static const contohNamaLokasi = 'Rumah, Kantor, dll';
 
   // ---------- Dashboard Mitra (L-14) ----------
   static const lapanganSaya = 'Lapangan Saya';
@@ -161,6 +163,7 @@ class AppStrings {
   static const ubah = 'Ubah';
   static const kosongRiwayatBooking = 'Belum ada riwayat pemesanan.';
   static const kosongAktivitasSaya = 'Belum ada aktivitas yang kamu buat atau ikuti.';
+  static const kosongLapanganFavorit = 'Belum ada lapangan favorit.';
   static const bantuan = 'Bantuan';
   static const kebijakanPrivasi = 'Kebijakan Privasi';
   static const tentang = 'Tentang';

@@ -259,6 +259,24 @@ class BookingRepository {
     }
   }
 
+  /// Hitung jumlah booking milik satu pengguna — PRD L-13, T-38, AB-12.
+  ///
+  /// Agregasi `count()`, BUKAN `.get()` lalu `.length` — `count()` hanya
+  /// menagih 1 baca per 1000 dokumen (lihat PRD AB-12), dan tidak butuh
+  /// index tambahan karena tanpa `orderBy`.
+  Future<int> hitungBooking(String userId) async {
+    try {
+      final hasil = await _db
+          .collection('booking')
+          .where('userId', isEqualTo: userId)
+          .count()
+          .get();
+      return hasil.count ?? 0;
+    } on FirebaseException {
+      throw Exception('Gagal menghitung booking.');
+    }
+  }
+
   /// Ambil jam yang sudah terisi untuk satu lapangan pada satu tanggal —
   /// PRD L-10, dipakai mulai T-24 untuk menandai chip jam "Penuh".
   ///

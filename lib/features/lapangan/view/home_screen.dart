@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../models/notifikasi_model.dart';
+import '../../../repositories/favorit_repository.dart';
 import '../../../repositories/notifikasi_repository.dart';
 import '../../../widgets/chip_olahraga.dart';
 import '../../../widgets/kartu_lapangan.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../favorit/viewmodel/favorit_viewmodel.dart';
 import '../../notifikasi/view/notifikasi_screen.dart';
 import '../../notifikasi/viewmodel/notifikasi_viewmodel.dart';
 import '../viewmodel/home_viewmodel.dart';
@@ -38,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // frame pertama selesai — memanggil notifyListeners saat widget
     // masih dibangun akan memicu error.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HomeViewModel>().muatLapangan();
+      _muatLapanganDenganLokasiDefault(context);
     });
   }
 
@@ -48,30 +50,53 @@ class _HomeScreenState extends State<HomeScreen> {
     // ViewModel memanggil notifyListeners().
     final vm = context.watch<HomeViewModel>();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const _Header(),
-            const SizedBox(height: 4),
-            _KolomPencarian(
-              onBerubah: context.read<HomeViewModel>().ubahKataKunci,
-            ),
-            const SizedBox(height: 10),
-            BarisChipOlahraga(
-              terpilih: vm.filterOlahraga,
-              onPilih: context.read<HomeViewModel>().ubahFilterOlahraga,
-            ),
-            const SizedBox(height: 14),
-            if (vm.pakaiLokasiDefault) const _SpandukLokasiDefault(),
-            // Expanded supaya daftar mengisi sisa layar dan bisa digulir.
-            Expanded(child: _Isi(vm: vm)),
-          ],
+    // Home hanya bisa dibuka setelah login (lihat splash_screen.dart —
+    // ShellNavigasi cuma dituju kalau StatusAuth.sudahMasuk), jadi user
+    // di sini selalu ada.
+    final userId = context.read<AuthViewModel>().user!.userId;
+
+    return ChangeNotifierProvider<FavoritViewModel>(
+      create: (context) => FavoritViewModel(
+        repository: context.read<FavoritRepository>(),
+        userId: userId,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              const _Header(),
+              const SizedBox(height: 4),
+              _KolomPencarian(
+                onBerubah: context.read<HomeViewModel>().ubahKataKunci,
+              ),
+              const SizedBox(height: 10),
+              BarisChipOlahraga(
+                terpilih: vm.filterOlahraga,
+                onPilih: context.read<HomeViewModel>().ubahFilterOlahraga,
+              ),
+              const SizedBox(height: 14),
+              if (vm.pakaiLokasiDefault) const _SpandukLokasiDefault(),
+              // Expanded supaya daftar mengisi sisa layar dan bisa digulir.
+              Expanded(child: _Isi(vm: vm)),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Memuat lapangan dengan `lokasiDefault` milik pengguna (bila ada)
+/// sebagai cadangan saat GPS ditolak/mati — PRD AB-03, T-37. Dipakai di
+/// setiap tempat yang memanggil `muatLapangan()`: muat awal, tombol coba
+/// lagi, dan tarik-untuk-menyegarkan.
+Future<void> _muatLapanganDenganLokasiDefault(BuildContext context) {
+  final lokasiDefault = context.read<AuthViewModel>().user?.lokasiDefault;
+  return context.read<HomeViewModel>().muatLapangan(
+        latDefault: (lokasiDefault?['latitude'] as num?)?.toDouble(),
+        lonDefault: (lokasiDefault?['longitude'] as num?)?.toDouble(),
+      );
 }
 
 /// Memilih apa yang digambar berdasarkan kondisi ViewModel.
@@ -95,7 +120,7 @@ class _Isi extends StatelessWidget {
           judul: 'Gagal memuat',
           keterangan: vm.pesanError ?? 'Terjadi kesalahan.',
           labelTombol: 'Coba Lagi',
-          onTekan: () => context.read<HomeViewModel>().muatLapangan(),
+          onTekan: () => _muatLapanganDenganLokasiDefault(context),
         );
 
       case KondisiHome.lokasiDitolak:
@@ -110,7 +135,7 @@ class _Isi extends StatelessWidget {
           onTekan: () async {
             await context.read<HomeViewModel>().bukaPengaturanLokasi();
             if (context.mounted) {
-              await context.read<HomeViewModel>().muatLapangan();
+              await _muatLapanganDenganLokasiDefault(context);
             }
           },
         );
@@ -136,34 +161,62 @@ class _Isi extends StatelessWidget {
           );
         }
 
+        final favoritVm = context.watch<FavoritViewModel>();
+
         return RefreshIndicator(
-          onRefresh: () => context.read<HomeViewModel>().muatLapangan(),
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(
-              AppSizes.marginLayar,
-              0,
-              AppSizes.marginLayar,
-              16,
-            ),
-            itemCount: daftar.length,
-            itemBuilder: (context, i) {
-              final lapangan = daftar[i];
-              return KartuLapangan(
-                lapangan: lapangan,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => DetailLapanganScreen(
-                      lapanganId: lapangan.lapanganId,
-                    ),
-                  ),
+          onRefresh: () => _muatLapanganDenganLokasiDefault(context),
+          child: StreamBuilder<Set<String>>(
+            stream: favoritVm.streamIdFavorit,
+            builder: (context, snapshotFavorit) {
+              final idFavorit = snapshotFavorit.data ?? const <String>{};
+
+              return ListView.builder(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSizes.marginLayar,
+                  0,
+                  AppSizes.marginLayar,
+                  16,
                 ),
-                // TODO(AB-10): baca status favorit dari FavoritViewModel
-                difavoritkan: false,
-                onTapFavorit: () {},
+                itemCount: daftar.length,
+                itemBuilder: (context, i) {
+                  final lapangan = daftar[i];
+                  return KartuLapangan(
+                    lapangan: lapangan,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DetailLapanganScreen(
+                          lapanganId: lapangan.lapanganId,
+                        ),
+                      ),
+                    ),
+                    difavoritkan: idFavorit.contains(lapangan.lapanganId),
+                    onTapFavorit: () => _toggleFavorit(context, favoritVm, lapangan.lapanganId, lapangan.nama),
+                  );
+                },
               );
             },
           ),
         );
+    }
+  }
+
+  /// Menekan ikon ♡/♥ pada kartu — PRD AB-10. Repository melempar pesan
+  /// berbahasa Indonesia yang siap tampil (CLAUDE.md "Menangani kesalahan"),
+  /// jadi cukup ditangkap dan ditampilkan lewat SnackBar.
+  Future<void> _toggleFavorit(
+    BuildContext context,
+    FavoritViewModel vm,
+    String lapanganId,
+    String namaLapangan,
+  ) async {
+    try {
+      await vm.toggle(lapanganId, namaLapangan);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
     }
   }
 }

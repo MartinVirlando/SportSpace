@@ -118,6 +118,48 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  /// Ubah Olahraga Favorit — PRD L-13, T-37. Mengembalikan `true` kalau
+  /// berhasil; kalau `false`, baca [pesanError].
+  Future<bool> ubahOlahragaFavorit(List<String> olahragaFavorit) async {
+    final userSaatIni = _user;
+    if (userSaatIni == null) return false;
+
+    try {
+      await _repository.perbaruiOlahragaFavorit(
+        userSaatIni.userId,
+        olahragaFavorit,
+      );
+      // Salin lokal langsung, tanpa ambilUser() ulang — AuthViewModel
+      // sudah tahu isinya, jadi tidak perlu baca balik dari Firestore.
+      _user = userSaatIni.salinDengan(olahragaFavorit: olahragaFavorit);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _pesanError = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Ubah Lokasi Default — PRD L-13, T-37 (cadangan AB-03 saat GPS
+  /// ditolak). Mengembalikan `true` kalau berhasil; kalau `false`, baca
+  /// [pesanError].
+  Future<bool> ubahLokasiDefault(Map<String, dynamic> lokasiDefault) async {
+    final userSaatIni = _user;
+    if (userSaatIni == null) return false;
+
+    try {
+      await _repository.perbaruiLokasiDefault(userSaatIni.userId, lokasiDefault);
+      _user = userSaatIni.salinDengan(lokasiDefault: lokasiDefault);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _pesanError = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> keluar() => _repository.keluar();
 
   @override

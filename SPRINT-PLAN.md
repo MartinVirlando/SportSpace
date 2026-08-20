@@ -211,15 +211,17 @@ Minggu 5–6   [x] T-11  [x] T-12  [x] T-13
 Minggu 7     [x] T-14                                    [x] T-40 (Opsi A, tanpa Storage)
 Minggu 8     [x] T-15  [x] T-16  [x] T-17
 Minggu 9     [x] T-18  [x] T-19  [x] T-20
-Minggu 10    [x] T-21  [x] T-22  [x] T-23  [ ] T-36
-Minggu 11    [x] T-24  [x] T-25  [x] T-26  [x] T-27  [ ] T-35  [ ] T-37  [ ] T-38
+Minggu 10    [x] T-21  [x] T-22  [x] T-23  [x] T-36
+Minggu 11    [x] T-24  [x] T-25  [x] T-26  [x] T-27  [x] T-35  [x] T-37  [x] T-38
 Minggu 12    [ ] T-28  [ ] T-29                          [ ] T-39 (revisi Bab 1–3)
 Minggu 13    [ ] T-30  [ ] T-31
 Minggu 14    [ ] T-32  [ ] T-33  [ ] T-34
 ```
 
-> **Catatan status per 20 Agustus 2026:** Seluruh alur reservasi + dashboard mitra (T-23–T-27) dan keputusan T-40 (Opsi A, tanpa Firebase Storage — lihat PRD §12b) sudah selesai. Sisa Minggu 11 tinggal tiga tugas v1.1 (T-35, T-37, T-38) plus T-36 yang mundur dari Minggu 10.
+> **Catatan status per 20 Agustus 2026:** Seluruh alur reservasi + dashboard mitra (T-23–T-27), keputusan T-40 (Opsi A, tanpa Firebase Storage — lihat PRD §12b), dan seluruh empat tugas v1.1 (T-35 favorit, T-36 badge, T-37 olahraga favorit + lokasi default, T-38 statistik profil) sudah selesai. **Sprint 3 dan 4 lengkap secara kode.** Sisa pekerjaan: T-00a–T-00f, T-06, T-10 (lihat catatan di bawah — perlu verifikasi/penyelesaian manual sebelum Sprint 5), lalu T-28 dan seterusnya (pengujian, SUS, penulisan Bab 4–5).
 >
 > T-06 dan T-10 SENGAJA belum ditandai meski sebagian kodenya ada. T-06 karena status "Enabled" 11 index hanya bisa dicek manual di Firebase Console, bukan dari kode. T-10 karena `lapangan_repository.dart` baru punya `seedPrototipe()` (7 lapangan koordinat terverifikasi), bukan `AdminSeedScreen` sungguhan dengan 30 lapangan. T-00a–T-00f juga belum ditandai — itu tugas persiapan tim (instalasi, survei manual, verifikasi koordinat) yang tidak bisa diverifikasi lewat kode. Ketiganya perlu dicek/diselesaikan manual sebelum Sprint 5 (T-28 pengujian).
+>
+> **Rencana:** T-00e (survei 8 lapangan `observasi`), T-00f (verifikasi 25 koordinat lewat Google Maps), dan T-06 (cek status index di Firebase Console) dikerjakan bareng saat weekend — meski T-00f dan T-06 sebenarnya tidak wajib menunggu turun lapangan (bisa dikerjakan sendiri di depan laptop kapan saja), tim memilih menyatukannya jadi satu sesi. T-10 (kode `AdminSeedScreen`) menyusul setelah data hasil weekend (harga/jam/fasilitas 8 lapangan `observasi`, plus koordinat) dimasukkan ke `seed_lapangan.dart`.
 
-> Minggu 11 terlihat padat karena empat tugas v1.1 menumpuk di sana. Kalau minggu 10 mundur, geser T-37 dan T-38 ke minggu 12 — keduanya tidak menghalangi tugas lain.
+> Minggu 11 semula terlihat padat karena empat tugas v1.1 menumpuk di sana (T-35, T-36, T-37, T-38) — semuanya sudah selesai.
