@@ -31,6 +31,15 @@ Ditemukan dan diperbaiki selama implementasi Sprint 3 (T-13, T-14). Bukan peruba
 | 1 | Aturan `create` untuk `lapangan` di Security Rules diperlonggar: `pemilikId == request.auth.uid` **atau** `pemilikId == null`. Versi lama akan membuat `AdminSeedScreen` (T-10) gagal total untuk lapangan non-mitra (25 dari 30 punya `pemilikId: null`, yang tidak akan pernah sama dengan uid manapun). | §9 |
 | 2 | Tab Map (L-05) dapat tombol kecil "kembali ke posisi saya" — tidak ada di Figma/PRD awal, ditambahkan karena marker posisi pengguna bisa keluar layar tanpa cara kembali selain geser manual. | §8 L-05 |
 
+### Koreksi teknis pasca-v1.1 (20 Agustus 2026)
+
+Ditemukan dan diperbaiki selama implementasi Sprint 4 (T-15, T-19). Sama seperti koreksi 18 Agustus: bukan perubahan ruang lingkup/fitur, murni supaya dokumen ini tetap cocok dengan kode.
+
+| # | Koreksi | Bagian yang terdampak |
+|---|---|---|
+| 3 | "Daftar peserta" di L-09 diturunkan dari `namaPembuat` (6.3) + `namaUser` pada dokumen subkoleksi `permintaan` berstatus `DITERIMA` (6.4) — BUKAN field baru. Dibutuhkan karena `peserta` di 6.3 cuma `List<String>` berisi `userId`, tanpa nama, jadi tidak bisa dipakai langsung untuk tampilan. | §6.3, §6.4, §8 L-09 |
+| 4 | "Menekan item membuka objek terkait" di L-12 untuk sekarang hanya berlaku untuk tipe `PERMINTAAN_GABUNG`/`PERMINTAAN_DITERIMA`/`PERMINTAAN_DITOLAK` (`refId` = aktivitasId → Detail Aktivitas). Tipe `BOOKING_*` belum punya layar tujuan karena fitur booking (T-23…T-25) belum dikerjakan — item tetap bisa ditandai `sudahDibaca`, cuma belum berpindah layar. Perlu disambungkan saat T-25 selesai. | §8 L-12 |
+
 ---
 
 ## 1. Ringkasan Produk
