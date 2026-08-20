@@ -188,6 +188,17 @@ class AppStrings {
       'dibangun untuk keperluan penelitian skripsi, bukan produk '
       'komersial.';
 
+  // ---------- Admin Seed (T-10, sementara — lihat catatan di admin_seed_screen.dart) ----------
+  static const adminSeedJudul = 'Seed Data Awal';
+  static const adminSeedKeterangan =
+      'Mengisi 7 lapangan prototipe (koordinat sudah terverifikasi) ke '
+      'Firestore, termasuk 3 lapangan mitra yang dimiliki akun ini — '
+      'supaya alur reservasi bisa dicoba sebelum data 30 lapangan penuh '
+      '(T-10) siap.';
+  static const adminSeedTombol = 'Isi Data Awal';
+  static const adminSeedBerhasil = 'lapangan berhasil ditambahkan.';
+  static const adminSeedPerluLogin = 'Masuk dulu untuk menjalankan seed data.';
+
   static const isiTentang =
       'Sport Space v1.1\n\n'
       'Aplikasi pencarian lapangan olahraga dan rekan bermain berbasis '

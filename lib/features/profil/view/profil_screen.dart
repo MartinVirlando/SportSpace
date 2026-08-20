@@ -15,6 +15,7 @@ import '../../../repositories/favorit_repository.dart';
 import '../../aktivitas/view/detail_aktivitas_screen.dart';
 import '../../auth/view/login_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../../routes/admin_seed_screen.dart';
 import '../../lapangan/view/detail_lapangan_screen.dart';
 import '../../mitra/view/dashboard_mitra_screen.dart';
 import '../viewmodel/profil_viewmodel.dart';
@@ -156,6 +157,17 @@ class _ProfilBody extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const DashboardMitraScreen()),
                 ),
               ),
+            // SEMENTARA (T-10): jembatan testing sebelum AdminSeedScreen
+            // sungguhan (30 lapangan) siap — lihat catatan di
+            // admin_seed_screen.dart. HAPUS tile ini begitu T-10 selesai,
+            // dan jangan pernah ikut ke APK yang dibagikan ke responden SUS.
+            _TileMenu(
+              ikon: Icons.dataset_outlined,
+              label: AppStrings.adminSeedJudul,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AdminSeedScreen()),
+              ),
+            ),
             const SizedBox(height: 8),
             _TileMenu(
               ikon: Icons.logout,
