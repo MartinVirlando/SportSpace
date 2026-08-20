@@ -7,7 +7,9 @@ import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/lapangan_model.dart';
+import '../../../models/rating_model.dart';
 import '../../../repositories/lapangan_repository.dart';
+import '../../../repositories/rating_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../rating/view/beri_rating_sheet.dart';
 import '../viewmodel/detail_lapangan_viewmodel.dart';
@@ -19,8 +21,11 @@ import '../viewmodel/detail_lapangan_viewmodel.dart';
 ///
 /// Sesuai SPRINT-PLAN T-13, layar ini SENGAJA belum punya:
 /// - Badge status "Mitra Terdaftar"/"Terverifikasi" → T-36 (AB-11)
-/// - Daftar ulasan sungguhan → T-22 (tombol "Beri Rating" sudah T-21)
 /// - Alur "Ajukan Reservasi" yang sesungguhnya (form L-10) → T-24
+///
+/// Daftar ulasan (T-22) sudah ada — lewat `StreamBuilder` yang membaca
+/// `RatingRepository.streamUlasan()`, mengikuti pola CLAUDE.md aturan 6
+/// untuk daftar yang perlu langsung hidup.
 ///
 /// Tombol "Ajukan Reservasi" TETAP digambar (kondisional pada `isMitra`)
 /// karena itu justru inti yang diuji BB-11/BB-12 — hanya belum
@@ -35,6 +40,7 @@ class DetailLapanganScreen extends StatelessWidget {
     return ChangeNotifierProvider<DetailLapanganViewModel>(
       create: (context) => DetailLapanganViewModel(
         repository: context.read<LapanganRepository>(),
+        ratingRepository: context.read<RatingRepository>(),
       )..muatDetail(lapanganId),
       child: const _DetailLapanganBody(),
     );
@@ -240,13 +246,7 @@ class _Isi extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // TODO(T-22): tampilkan daftar ulasan sungguhan dari
-                // rating_repository.dart. Untuk sekarang selalu kosong
-                // karena stream-nya belum ada.
-                const Text(
-                  AppStrings.belumAdaUlasan,
-                  style: AppTextStyles.metaLapangan,
-                ),
+                _DaftarUlasan(lapanganId: lapangan.lapanganId),
               ],
             ),
           ),
@@ -285,6 +285,99 @@ class _Isi extends StatelessWidget {
           .showSnackBar(const SnackBar(content: Text(AppStrings.ratingTerkirim)));
       context.read<DetailLapanganViewModel>().muatDetail(lapangan.lapanganId);
     }
+  }
+}
+
+/// Daftar ulasan lapangan (L-06, T-22) — `StreamBuilder` supaya ulasan
+/// baru (mis. setelah T-21 mengirim rating) langsung tampil tanpa
+/// menyegarkan layar.
+class _DaftarUlasan extends StatelessWidget {
+  final String lapanganId;
+
+  const _DaftarUlasan({required this.lapanganId});
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<DetailLapanganViewModel>();
+
+    return StreamBuilder<List<RatingModel>>(
+      stream: vm.streamUlasan(lapanganId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Text(
+            snapshot.error.toString().replaceFirst('Exception: ', ''),
+            style: AppTextStyles.metaLapangan,
+          );
+        }
+
+        final ulasan = snapshot.data ?? const [];
+        if (ulasan.isEmpty) {
+          return const Text(
+            AppStrings.belumAdaUlasan,
+            style: AppTextStyles.metaLapangan,
+          );
+        }
+
+        return Column(
+          children: [
+            for (final item in ulasan) ...[
+              _KartuUlasan(rating: item),
+              const SizedBox(height: 10),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _KartuUlasan extends StatelessWidget {
+  final RatingModel rating;
+
+  const _KartuUlasan({required this.rating});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
+        boxShadow: AppColors.shadowKartu,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(rating.namaUser, style: AppTextStyles.namaLapangan),
+              Text(
+                Formatter.tanggal(rating.tanggal),
+                style: AppTextStyles.metaLapangan,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '⭐' * rating.nilaiRating,
+            style: const TextStyle(fontSize: 13),
+          ),
+          if (rating.ulasanTeks != null && rating.ulasanTeks!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(rating.ulasanTeks!, style: AppTextStyles.metaLapangan),
+          ],
+        ],
+      ),
+    );
   }
 }
 

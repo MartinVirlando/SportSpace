@@ -84,4 +84,30 @@ class RatingRepository {
       throw Exception('Gagal mengirim rating. Coba lagi.');
     }
   }
+
+  /// Stream daftar ulasan satu lapangan, terbaru dulu — PRD L-06, T-22.
+  ///
+  /// Index #6 — (lapanganId ASC, tanggal DESC). Batas 20 mengikuti
+  /// `FIRESTORE-INDEXES.md`. Rata-rata rating TIDAK dihitung dari stream
+  /// ini — itu tetap pakai `ratingTotal`/`jumlahRating` yang
+  /// didenormalisasi di dokumen lapangan (AB-05).
+  Stream<List<RatingModel>> streamUlasan(String lapanganId) {
+    return _db
+        .collection('rating')
+        .where('lapanganId', isEqualTo: lapanganId)
+        .orderBy('tanggal', descending: true)
+        .limit(20)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => RatingModel.fromFirestore(doc))
+              .toList(),
+        )
+        .handleError((Object error) {
+      if (error is FirebaseException && error.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membaca ulasan.');
+      }
+      throw Exception('Gagal memuat ulasan. Coba lagi.');
+    });
+  }
 }
