@@ -74,4 +74,48 @@ class DetailAktivitasViewModel extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Terima permintaan gabung dari daftar "Permintaan Masuk" — PRD AB-06,
+  /// T-20, BB-17/BB-18. Mengembalikan `true` kalau berhasil.
+  ///
+  /// Tidak memakai [sedangProses]/[pesanError] bersama seperti
+  /// [kirimPermintaanGabung]: baris permintaan bisa lebih dari satu, jadi
+  /// status proses & error per-baris ditangani View lewat nilai balik dan
+  /// parameter lokal, supaya menekan Terima di satu baris tidak mengunci
+  /// tombol baris lain.
+  Future<String?> terimaPermintaan({
+    required String userId,
+    required String namaUser,
+  }) async {
+    try {
+      await _repository.terimaPermintaan(
+        aktivitasId: aktivitasId,
+        userId: userId,
+        namaUser: namaUser,
+      );
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
+
+  /// Tolak permintaan gabung — PRD AB-06, T-20, BB-19. Mengembalikan
+  /// `null` kalau berhasil, atau pesan kesalahan kalau gagal.
+  Future<String?> tolakPermintaan({
+    required String userId,
+    required String namaUser,
+    required String namaLapangan,
+  }) async {
+    try {
+      await _repository.tolakPermintaan(
+        aktivitasId: aktivitasId,
+        userId: userId,
+        namaUser: namaUser,
+        namaLapangan: namaLapangan,
+      );
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
 }

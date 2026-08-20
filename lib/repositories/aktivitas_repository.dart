@@ -199,4 +199,106 @@ class AktivitasRepository {
       throw Exception('Gagal mengirim permintaan gabung. Coba lagi.');
     }
   }
+
+  /// Terima permintaan gabung — PRD AB-06, T-20, BB-17/BB-18.
+  ///
+  /// Transaction (bukan batch seperti [tolakPermintaan]) karena
+  /// `jumlahPemainSaatIni` dibaca lalu ditulis balik: dua permintaan
+  /// berbeda diterima hampir bersamaan tidak boleh sama-sama lolos kalau
+  /// slot yang tersisa cuma satu (BB-18). `transaction.get()` di sini
+  /// pada `DocumentReference` `aktivitasBermain/{id}`, bukan Query —
+  /// lihat jebakan Firestore Transaction di CLAUDE.md.
+  Future<void> terimaPermintaan({
+    required String aktivitasId,
+    required String userId,
+    required String namaUser,
+  }) async {
+    final aktivitasRef = _db.collection('aktivitasBermain').doc(aktivitasId);
+    final permintaanRef = aktivitasRef.collection('permintaan').doc(userId);
+    final notifRef = _db.collection('notifikasi').doc();
+
+    try {
+      await _db.runTransaction((transaction) async {
+        final aktivitasSnap = await transaction.get(aktivitasRef);
+        if (!aktivitasSnap.exists) {
+          throw Exception('Aktivitas tidak ditemukan.');
+        }
+        final aktivitas = AktivitasBermainModel.fromFirestore(aktivitasSnap);
+
+        if (aktivitas.jumlahPemainSaatIni >= aktivitas.jumlahPemainDibutuhkan) {
+          throw Exception('Slot penuh');
+        }
+
+        final jumlahBaru = aktivitas.jumlahPemainSaatIni + 1;
+        final statusBaru = jumlahBaru >= aktivitas.jumlahPemainDibutuhkan
+            ? 'PENUH'
+            : aktivitas.status;
+
+        transaction.update(aktivitasRef, {
+          'jumlahPemainSaatIni': jumlahBaru,
+          'status': statusBaru,
+          'peserta': FieldValue.arrayUnion([userId]),
+        });
+        transaction.update(permintaanRef, {'status': 'DITERIMA'});
+        transaction.set(
+          notifRef,
+          NotifikasiModel(
+            notifikasiId: notifRef.id,
+            untukUserId: userId,
+            tipe: 'PERMINTAAN_DITERIMA',
+            judul: 'Permintaan gabung diterima',
+            pesan:
+                '$namaUser diterima bergabung ke "${aktivitas.namaLapangan}".',
+            refId: aktivitasId,
+            dibuatPada: DateTime.now(),
+          ).toFirestore(),
+        );
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin menerima permintaan gabung.');
+      }
+      throw Exception('Gagal menerima permintaan. Coba lagi.');
+    }
+  }
+
+  /// Tolak permintaan gabung — PRD AB-06, T-20, BB-19.
+  ///
+  /// Cukup `WriteBatch`, bukan transaction: tidak ada penghitung bersama
+  /// yang dibaca-lalu-ditulis di sini, beda dari [terimaPermintaan].
+  Future<void> tolakPermintaan({
+    required String aktivitasId,
+    required String userId,
+    required String namaUser,
+    required String namaLapangan,
+  }) async {
+    try {
+      final permintaanRef = _db
+          .collection('aktivitasBermain')
+          .doc(aktivitasId)
+          .collection('permintaan')
+          .doc(userId);
+      final notifRef = _db.collection('notifikasi').doc();
+
+      final notifikasi = NotifikasiModel(
+        notifikasiId: notifRef.id,
+        untukUserId: userId,
+        tipe: 'PERMINTAAN_DITOLAK',
+        judul: 'Permintaan gabung ditolak',
+        pesan: 'Permintaan gabungmu ke "$namaLapangan" ditolak.',
+        refId: aktivitasId,
+        dibuatPada: DateTime.now(),
+      );
+
+      final batch = _db.batch();
+      batch.update(permintaanRef, {'status': 'DITOLAK'});
+      batch.set(notifRef, notifikasi.toFirestore());
+      await batch.commit();
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin menolak permintaan gabung.');
+      }
+      throw Exception('Gagal menolak permintaan. Coba lagi.');
+    }
+  }
 }

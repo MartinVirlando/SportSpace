@@ -210,7 +210,7 @@ Minggu 4     [x] T-07  [x] T-08  [x] T-09  [ ] T-10
 Minggu 5–6   [x] T-11  [x] T-12  [x] T-13
 Minggu 7     [x] T-14                                    [ ] T-40 (keputusan Storage)
 Minggu 8     [x] T-15  [x] T-16  [x] T-17
-Minggu 9     [x] T-18  [x] T-19  [ ] T-20
+Minggu 9     [x] T-18  [x] T-19  [x] T-20
 Minggu 10    [ ] T-21  [ ] T-22  [ ] T-23  [ ] T-36
 Minggu 11    [ ] T-24  [ ] T-25  [ ] T-26  [ ] T-27  [ ] T-35  [ ] T-37  [ ] T-38
 Minggu 12    [ ] T-28  [ ] T-29                          [ ] T-39 (revisi Bab 1–3)

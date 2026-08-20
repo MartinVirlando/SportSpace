@@ -177,7 +177,10 @@ class _Isi extends StatelessWidget {
             _BarisPeserta(nama: p.namaUser, pembuat: false),
           const Divider(height: 32),
           if (apakahPembuat)
-            _SeksiPermintaanMasuk(permintaan: permintaanMenunggu)
+            _SeksiPermintaanMasuk(
+              aktivitas: aktivitas,
+              permintaan: permintaanMenunggu,
+            )
           else
             _AksiGabung(
               aktivitas: aktivitas,
@@ -240,12 +243,16 @@ class _BarisPeserta extends StatelessWidget {
 }
 
 /// Ditampilkan kalau pengguna yang membuka layar ini adalah pembuat
-/// aktivitas. Tombol Terima/Tolak digambar (sesuai PRD L-09) tapi belum
-/// berfungsi — lihat TODO(T-20) di dalamnya.
+/// aktivitas — daftar permintaan MENUNGGU dengan tombol Terima/Tolak
+/// (PRD L-09, T-20).
 class _SeksiPermintaanMasuk extends StatelessWidget {
+  final AktivitasBermainModel aktivitas;
   final List<PermintaanGabungModel> permintaan;
 
-  const _SeksiPermintaanMasuk({required this.permintaan});
+  const _SeksiPermintaanMasuk({
+    required this.aktivitas,
+    required this.permintaan,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -261,31 +268,105 @@ class _SeksiPermintaanMasuk extends StatelessWidget {
           )
         else
           for (final p in permintaan)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(p.namaUser, style: AppTextStyles.namaLapangan),
-                  ),
-                  // TODO(T-20): jalankan AB-06 (transaction) — cek slot
-                  // penuh, tambah ke peserta, kirim notifikasi.
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(AppStrings.tolak),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text(AppStrings.terima),
-                  ),
-                ],
-              ),
-            ),
+            _BarisPermintaan(aktivitas: aktivitas, permintaan: p),
       ],
+    );
+  }
+}
+
+/// Satu baris permintaan gabung dengan tombol Terima/Tolak — PRD AB-06,
+/// T-20, BB-17/BB-18/BB-19.
+///
+/// StatefulWidget lokal (bukan lewat [DetailAktivitasViewModel.sedangProses])
+/// supaya menekan Terima/Tolak di satu baris tidak mengunci tombol baris
+/// lain — daftar permintaan MENUNGGU bisa lebih dari satu.
+class _BarisPermintaan extends StatefulWidget {
+  final AktivitasBermainModel aktivitas;
+  final PermintaanGabungModel permintaan;
+
+  const _BarisPermintaan({required this.aktivitas, required this.permintaan});
+
+  @override
+  State<_BarisPermintaan> createState() => _BarisPermintaanState();
+}
+
+class _BarisPermintaanState extends State<_BarisPermintaan> {
+  bool _sedangProses = false;
+
+  Future<void> _terima() async {
+    setState(() => _sedangProses = true);
+    final vm = context.read<DetailAktivitasViewModel>();
+    final error = await vm.terimaPermintaan(
+      userId: widget.permintaan.userId,
+      namaUser: widget.permintaan.namaUser,
+    );
+
+    if (!mounted) return;
+    setState(() => _sedangProses = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          error ?? '${widget.permintaan.namaUser} diterima bergabung.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _tolak() async {
+    setState(() => _sedangProses = true);
+    final vm = context.read<DetailAktivitasViewModel>();
+    final error = await vm.tolakPermintaan(
+      userId: widget.permintaan.userId,
+      namaUser: widget.permintaan.namaUser,
+      namaLapangan: widget.aktivitas.namaLapangan,
+    );
+
+    if (!mounted) return;
+    setState(() => _sedangProses = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'Permintaan ${widget.permintaan.namaUser} ditolak.'),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              widget.permintaan.namaUser,
+              style: AppTextStyles.namaLapangan,
+            ),
+          ),
+          if (_sedangProses)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else ...[
+            TextButton(
+              onPressed: _tolak,
+              child: const Text(AppStrings.tolak),
+            ),
+            ElevatedButton(
+              onPressed: _terima,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(AppStrings.terima),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
