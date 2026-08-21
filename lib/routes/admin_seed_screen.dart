@@ -8,22 +8,24 @@ import '../repositories/lapangan_repository.dart';
 
 /// Halaman tersembunyi "Seed Data Awal" — PRD Bagian 10, T-10.
 ///
-/// **Status: JEMBATAN SEMENTARA, BUKAN T-10 SELESAI.** T-10 sungguhan
-/// mengisi 30 lapangan dengan data yang sudah diverifikasi lewat T-00e
-/// (survei 8 lapangan `observasi`) dan T-00f (koordinat 25 lapangan).
-/// Sampai data itu siap, layar ini memanggil
-/// [LapanganRepository.seedPrototipe] — 7 lapangan yang koordinatnya
-/// SUDAH terverifikasi (lihat catatan di `lapangan_repository.dart`),
-/// termasuk 3 lapangan mitra — supaya alur utama (cari lapangan, detail,
-/// rating, cari rekan, reservasi) bisa dicoba di device/emulator nyata
-/// SEBELUM 30 lapangan lengkap tersedia.
+/// Mengisi seluruh 30 lapangan dari `seed_lapangan.dart` ke Firestore lewat
+/// [LapanganRepository.seedSemuaLapangan] — termasuk 5 lapangan mitra,
+/// supaya alur reservasi (AB-04) langsung bisa didemokan.
+///
+/// **Koordinat sudah terverifikasi untuk seluruh 30 entri** (T-00f selesai,
+/// 21 Agustus 2026 — lihat tanda `// KOORDINAT TERVERIFIKASI` di
+/// `seed_lapangan.dart`). Yang MASIH perlu diselesaikan: T-00e, survei
+/// harga/jam/fasilitas asli untuk 8 lapangan `sumberData: 'observasi'` —
+/// datanya sekarang masih perkiraan pasaran. Kalau datanya diperbarui,
+/// hapus seluruh dokumen `lapangan` di Firebase Console lalu jalankan ulang
+/// seed ini.
 ///
 /// Tombol masuknya sengaja hanya lewat menu Profil (lihat
-/// `profil_screen.dart`, ditandai `// SEMENTARA (T-10)`), bukan navigasi
-/// utama — sesuai PRD: "halaman tersembunyi ... setelah dijalankan sekali,
-/// rutenya dinonaktifkan". **Hapus tile itu dan file ini setelah T-10
-/// sungguhan (AdminSeedScreen 30 lapangan) menggantikannya, dan jangan
-/// pernah ikut dibundel ke APK yang dibagikan ke responden SUS.**
+/// `profil_screen.dart`), bukan navigasi utama — sesuai PRD: "halaman
+/// tersembunyi ... setelah dijalankan sekali, rutenya dinonaktifkan".
+/// **Hapus tile ini dan file ini setelah dijalankan sekali di project
+/// Firestore produksi, dan jangan pernah ikut dibundel ke APK yang
+/// dibagikan ke responden SUS (T-31).**
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini —
 /// lewat `LapanganRepository` seperti layar lain.
@@ -147,7 +149,7 @@ class _AdminSeedViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final jumlah = await _repository.seedPrototipe(uidMitra: uidMitra);
+      final jumlah = await _repository.seedSemuaLapangan(uidMitra: uidMitra);
       _sedangProses = false;
       notifyListeners();
       return jumlah;

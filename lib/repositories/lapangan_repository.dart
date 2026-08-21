@@ -3,19 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/data/seed_lapangan.dart';
 import '../models/lapangan_model.dart';
 
-/// Nama 7 lapangan yang koordinatnya sudah terverifikasi — dipakai
-/// `seedPrototipe()` sebagai seed awal sebelum T-10 (30 lapangan penuh)
-/// dikerjakan. Lihat catatan di `seedPrototipe()`.
-const _namaLapanganTerverifikasi = [
-  'MS Sport Arena',
-  'Kicktopia Mini Soccer Gading Serpong',
-  'KM7 Mini Soccer',
-  'Sabnani Football',
-  'Arsa Sport Mini Soccer',
-  'Candra Wijaya International Badminton Centre',
-  'The Good Padel Club',
-];
-
 /// Satu-satunya lapisan yang boleh menyentuh Firestore untuk data lapangan.
 ///
 /// ATURAN LAPISAN (CLAUDE.md): View dan ViewModel TIDAK BOLEH
@@ -65,33 +52,34 @@ class LapanganRepository {
     }
   }
 
-  /// Seed sementara sebelum T-10 (AdminSeedScreen + 30 lapangan penuh)
-  /// dikerjakan. Menulis 7 lapangan dari [seedLapangan] yang koordinatnya
-  /// SUDAH terverifikasi (lihat `_namaLapanganTerverifikasi`) — bukan data
-  /// karangan, persis nilai yang akan dipakai T-10 nanti untuk 7 entri
-  /// yang sama. [uidMitra] diisi ke `pemilikId` untuk entri yang
-  /// `isMitra == true`.
+  /// Seed data awal — PRD Bagian 10, T-10. Menulis seluruh 30 lapangan dari
+  /// [seedLapangan] ke Firestore lewat satu batch. [uidMitra] diisi ke
+  /// `pemilikId` untuk entri yang `isMitra == true` (5 lapangan) supaya
+  /// alur reservasi (AB-04) bisa langsung didemokan memakai akun yang
+  /// sedang login.
   ///
-  /// TODO(T-10): hapus method ini setelah AdminSeedScreen sungguhan
-  /// (30 lapangan, semua koordinat terverifikasi) menggantikannya —
-  /// jangan lupa hapus 7 dokumen prototipe ini dulu sebelum seed penuh,
-  /// supaya tidak dobel.
-  Future<int> seedPrototipe({required String uidMitra}) async {
+  /// Dipanggil sekali dari `AdminSeedScreen`, halaman tersembunyi yang
+  /// rutenya dinonaktifkan setelah dijalankan (PRD §10).
+  ///
+  /// Cek "sudah pernah di-seed" memakai `whereIn` atas seluruh nama
+  /// lapangan (30 nilai, masih di bawah batas 30 milik `whereIn`) — cukup
+  /// satu dokumen ditemukan untuk menolak, supaya tidak pernah menulis
+  /// dobel. Kalau pernah menjalankan seed prototipe lama (7 lapangan) di
+  /// project Firestore yang sama, hapus dulu 7 dokumen itu di Firebase
+  /// Console sebelum menjalankan ini.
+  Future<int> seedSemuaLapangan({required String uidMitra}) async {
+    final namaSeed = seedLapangan.map((e) => e['nama'] as String).toList();
     final existing = await _db
         .collection('lapangan')
-        .where('nama', whereIn: _namaLapanganTerverifikasi)
+        .where('nama', whereIn: namaSeed)
         .limit(1)
         .get();
     if (existing.docs.isNotEmpty) {
-      throw Exception('Data prototipe sudah pernah di-seed sebelumnya.');
+      throw Exception('Data lapangan sudah pernah di-seed sebelumnya.');
     }
 
-    final entri = seedLapangan
-        .where((e) => _namaLapanganTerverifikasi.contains(e['nama']))
-        .toList();
-
     final batch = _db.batch();
-    for (final data in entri) {
+    for (final data in seedLapangan) {
       final ref = _db.collection('lapangan').doc();
       batch.set(ref, {
         ...data,
@@ -100,7 +88,7 @@ class LapanganRepository {
       });
     }
     await batch.commit();
-    return entri.length;
+    return seedLapangan.length;
   }
 
   /// Stream lapangan milik satu mitra — PRD L-14, T-25.

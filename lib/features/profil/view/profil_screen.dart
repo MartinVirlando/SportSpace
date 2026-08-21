@@ -157,10 +157,10 @@ class _ProfilBody extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const DashboardMitraScreen()),
                 ),
               ),
-            // SEMENTARA (T-10): jembatan testing sebelum AdminSeedScreen
-            // sungguhan (30 lapangan) siap — lihat catatan di
-            // admin_seed_screen.dart. HAPUS tile ini begitu T-10 selesai,
-            // dan jangan pernah ikut ke APK yang dibagikan ke responden SUS.
+            // T-10: halaman tersembunyi untuk seed 30 lapangan awal — lihat
+            // catatan di admin_seed_screen.dart. HAPUS tile ini setelah
+            // dijalankan sekali di project Firestore produksi, dan jangan
+            // pernah ikut ke APK yang dibagikan ke responden SUS.
             _TileMenu(
               ikon: Icons.dataset_outlined,
               label: AppStrings.adminSeedJudul,
