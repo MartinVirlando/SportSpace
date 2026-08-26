@@ -15,7 +15,13 @@ service cloud.firestore {
     function pemilikDok(uid) { return login() && request.auth.uid == uid; }
 
     match /users/{userId} {
-      allow read: if login();
+      // Sebelumnya `if login()` — siapa pun yang login bisa membaca
+      // nomorTelepon dan lokasiDefault (koordinat rumah/kantor) SELURUH
+      // pengguna lain. Tidak ada satu pun kode yang butuh baca profil
+      // pengguna lain (grep `.collection('users')` di seluruh lib/ —
+      // semua pemanggil selalu memakai uid milik sesi sendiri), jadi
+      // kelonggaran ini tidak menopang fitur apa pun, cuma celah privasi.
+      allow read: if pemilikDok(userId);
       allow create, update: if pemilikDok(userId);
       allow delete: if false;
 

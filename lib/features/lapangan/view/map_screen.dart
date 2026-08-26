@@ -157,12 +157,23 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
             ),
           ],
         ),
-        if (vm.pakaiLokasiDefault)
-          const Positioned(
+        if (vm.pakaiLokasiDefault || vm.lapangan.isEmpty)
+          Positioned(
             top: 12,
             left: AppSizes.marginLayar,
             right: AppSizes.marginLayar,
-            child: _SpandukLokasiDefault(),
+            child: Column(
+              children: [
+                if (vm.pakaiLokasiDefault) const _SpandukLokasiDefault(),
+                if (vm.pakaiLokasiDefault && vm.lapangan.isEmpty)
+                  const SizedBox(height: 8),
+                // Peta tetap valid secara visual dengan hanya marker
+                // posisi pengguna, tapi spanduk ini tetap dibutuhkan
+                // supaya "kosong" terlihat sebagai kondisi yang memang
+                // ditangani, bukan cuma peta yang belum selesai memuat.
+                if (vm.lapangan.isEmpty) const _SpandukKosong(),
+              ],
+            ),
           ),
         if (vm.lapanganTerpilih != null)
           Positioned(
@@ -356,6 +367,26 @@ class _SpandukLokasiDefault extends StatelessWidget {
       ),
       child: const Text(
         AppStrings.spandukLokasiDefault,
+        style: AppTextStyles.metaLapangan,
+      ),
+    );
+  }
+}
+
+class _SpandukKosong extends StatelessWidget {
+  const _SpandukKosong();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: AppColors.shadowKartu,
+      ),
+      child: const Text(
+        AppStrings.kosongLapangan,
         style: AppTextStyles.metaLapangan,
       ),
     );

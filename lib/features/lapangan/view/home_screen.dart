@@ -52,8 +52,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Home hanya bisa dibuka setelah login (lihat splash_screen.dart —
     // ShellNavigasi cuma dituju kalau StatusAuth.sudahMasuk), jadi user
-    // di sini selalu ada.
-    final userId = context.read<AuthViewModel>().user!.userId;
+    // di sini biasanya selalu ada. Tapi kalau tab ini tetap hidup di
+    // IndexedStack ShellNavigasi dan alur logout suatu saat berubah
+    // (mis. AuthViewModel dikosongkan sebelum navigasi ke Login selesai),
+    // `user!` di sini bisa crash — jaga dengan spinner, bukan asumsi.
+    final user = context.read<AuthViewModel>().user;
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final userId = user.userId;
 
     return ChangeNotifierProvider<FavoritViewModel>(
       create: (context) => FavoritViewModel(

@@ -68,26 +68,48 @@ class FavoritRepository {
 
   /// Menekan ikon ♡/♥ — PRD AB-10. Dokumen dihapus kalau sudah ada
   /// (batal favorit), dibuat kalau belum ada (favoritkan).
+  ///
+  /// Dibungkus Firestore Transaction (bukan `get()` lalu `set()`/`delete()`
+  /// terpisah seperti sebelumnya) supaya tahan terhadap double-tap cepat
+  /// pada ikon ♡/♥: dua panggilan `toggleFavorit` yang tumpang tindih bisa
+  /// sama-sama membaca `snap.exists` yang SAMA (round-trip Firestore lebih
+  /// lama dari jeda dua tap manusia), lalu sama-sama `set()` atau sama-sama
+  /// `delete()` — hasil akhirnya salah (mis. dua kali favorit-lalu-batal
+  /// malah berakhir tetap difavoritkan). Transaction membuat Firestore
+  /// menyerialkan dua percobaan pada dokumen yang sama: yang kedua otomatis
+  /// membaca ulang state TERBARU (bukan basi) sebelum memutuskan cabangnya.
   Future<void> toggleFavorit({
     required String userId,
     required String lapanganId,
     required String namaLapangan,
   }) async {
+    // Pengaman berlapis (PRD AB-10) — secara struktural `FavoritViewModel`
+    // memang cuma dibuat di layar yang sudah memastikan pengguna login,
+    // jadi `userId` kosong seharusnya tidak pernah terjadi lewat UI yang
+    // ada sekarang. Tetap dicek di sini supaya pemanggil lain di masa
+    // depan tidak bisa diam-diam menulis favorit atas nama "tidak ada
+    // siapa-siapa" kalau lupa memastikan login dulu.
+    if (userId.isEmpty) {
+      throw Exception('Masuk dulu untuk menyimpan favorit.');
+    }
+
     try {
       final ref = _koleksiFavorit(userId).doc(lapanganId);
-      final snap = await ref.get();
-
-      if (snap.exists) {
-        await ref.delete();
-      } else {
-        await ref.set(
-          FavoritModel(
-            lapanganId: lapanganId,
-            namaLapangan: namaLapangan,
-            dibuatPada: DateTime.now(),
-          ).toFirestore(),
-        );
-      }
+      await _db.runTransaction((transaction) async {
+        final snap = await transaction.get(ref);
+        if (snap.exists) {
+          transaction.delete(ref);
+        } else {
+          transaction.set(
+            ref,
+            FavoritModel(
+              lapanganId: lapanganId,
+              namaLapangan: namaLapangan,
+              dibuatPada: DateTime.now(),
+            ).toFirestore(),
+          );
+        }
+      });
     } on FirebaseException {
       throw Exception('Gagal menyimpan favorit. Coba lagi.');
     }

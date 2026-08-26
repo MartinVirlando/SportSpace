@@ -67,9 +67,12 @@ class FormLapanganViewModel extends ChangeNotifier {
     }
   }
 
-  /// Mengembalikan `true` kalau berhasil. [lapanganLama] dipakai untuk
-  /// menyalin `lapanganId`/`pemilikId`/`isMitra`/`sumberData`/field
-  /// rating apa adanya — form edit hanya mengubah field informasional.
+  /// Mengembalikan `true` kalau berhasil. [lapanganLama] cuma dipakai
+  /// untuk `lapanganId` — field lain (`pemilikId`/`isMitra`/`sumberData`/
+  /// `hargaSlot`/rating) TIDAK pernah dikirim ulang ke repository sama
+  /// sekali (lihat `LapanganRepository.perbaruiLapangan`, yang cuma
+  /// `.update()` field yang memang bisa diedit form ini), jadi field-field
+  /// itu tidak mungkin tertimpa apa pun yang dibawa `lapanganLama`.
   Future<bool> perbaruiLapangan(
     LapanganModel lapanganLama, {
     required String nama,
@@ -88,7 +91,7 @@ class FormLapanganViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final lapanganBaru = LapanganModel(
+      await _repository.perbaruiLapangan(
         lapanganId: lapanganLama.lapanganId,
         nama: nama,
         alamat: alamat,
@@ -100,14 +103,7 @@ class FormLapanganViewModel extends ChangeNotifier {
         jamTutup: jamTutup,
         fasilitas: fasilitas,
         fotoURL: fotoURL,
-        isMitra: lapanganLama.isMitra,
-        pemilikId: lapanganLama.pemilikId,
-        sumberData: lapanganLama.sumberData,
-        ratingTotal: lapanganLama.ratingTotal,
-        jumlahRating: lapanganLama.jumlahRating,
-        ratingRata2: lapanganLama.ratingRata2,
       );
-      await _repository.perbaruiLapangan(lapanganBaru);
       _sedangProses = false;
       notifyListeners();
       return true;

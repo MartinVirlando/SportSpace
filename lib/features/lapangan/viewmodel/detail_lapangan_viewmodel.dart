@@ -40,7 +40,13 @@ class DetailLapanganViewModel extends ChangeNotifier {
   String? _pesanError;
   String? get pesanError => _pesanError;
 
+  // Disimpan supaya tombol "Coba Lagi" (kondisi gagal) bisa memuat ulang
+  // lapanganId yang benar — sebelumnya View mengandalkan `vm.lapangan?.id`,
+  // yang masih null persis saat kondisi gagal terjadi di percobaan pertama.
+  String? _lapanganIdTerakhir;
+
   Future<void> muatDetail(String lapanganId) async {
+    _lapanganIdTerakhir = lapanganId;
     _kondisi = KondisiDetail.memuat;
     _pesanError = null;
     notifyListeners();
@@ -54,6 +60,12 @@ class DetailLapanganViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<void> muatUlang() async {
+    if (_lapanganIdTerakhir != null) {
+      await muatDetail(_lapanganIdTerakhir!);
+    }
   }
 
   Stream<List<RatingModel>> streamUlasan(String lapanganId) =>

@@ -169,15 +169,46 @@ class LapanganRepository {
 
   /// Perbarui lapangan milik mitra — PRD L-15, T-26.
   ///
-  /// [lapangan] harus sudah membawa `lapanganId`, `pemilikId`, `isMitra`,
-  /// `sumberData`, dan field rating APA ADANYA (tidak diubah form edit)
-  /// — lihat cara `_FormLapanganBody` menyusunnya di `form_lapangan_screen.dart`.
-  Future<void> perbaruiLapangan(LapanganModel lapangan) async {
+  /// `.update()` dengan HANYA field yang benar-benar bisa diubah lewat
+  /// form (bukan `.set()` menimpa seluruh dokumen) — sengaja tidak
+  /// menyentuh `hargaSlot`, `isMitra`, `pemilikId`, `sumberData`,
+  /// `ratingTotal`/`jumlahRating`/`ratingRata2` sama sekali. Sebelumnya
+  /// `perbaruiLapangan` menerima `LapanganModel` utuh dan `.set()`
+  /// seluruh dokumen dengan field-field itu disalin apa adanya dari
+  /// snapshot yang dibaca saat form DIBUKA — dua bug nyata akibatnya:
+  /// (1) form tidak punya kolom `hargaSlot` sama sekali, jadi field itu
+  /// selalu ikut tertimpa `null`; (2) kalau ada pengguna lain memberi
+  /// rating baru (AB-05) SELAMA mitra sedang mengisi form, submit form
+  /// akan menimpa balik `ratingTotal`/`jumlahRating`/`ratingRata2` ke
+  /// nilai basi (lost update). `.update()` pada subset field membuat
+  /// kedua bug itu mustahil terjadi lagi, terlepas dari field baru apa
+  /// pun yang nanti ditambahkan ke `LapanganModel`.
+  Future<void> perbaruiLapangan({
+    required String lapanganId,
+    required String nama,
+    required String alamat,
+    required double latitude,
+    required double longitude,
+    required List<String> jenisOlahraga,
+    required int harga,
+    required String jamBuka,
+    required String jamTutup,
+    required List<String> fasilitas,
+    required List<String> fotoURL,
+  }) async {
     try {
-      await _db
-          .collection('lapangan')
-          .doc(lapangan.lapanganId)
-          .set(lapangan.toFirestore());
+      await _db.collection('lapangan').doc(lapanganId).update({
+        'nama': nama,
+        'alamat': alamat,
+        'latitude': latitude,
+        'longitude': longitude,
+        'jenisOlahraga': jenisOlahraga,
+        'harga': harga,
+        'jamBuka': jamBuka,
+        'jamTutup': jamTutup,
+        'fasilitas': fasilitas,
+        'fotoURL': fotoURL,
+      });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw Exception('Tidak punya izin mengubah lapangan ini.');

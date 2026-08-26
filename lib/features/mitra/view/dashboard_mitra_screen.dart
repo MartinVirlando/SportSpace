@@ -32,7 +32,16 @@ class DashboardMitraScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pemilikId = context.read<AuthViewModel>().user!.userId;
+    // Sama seperti home_screen.dart — jaga terhadap `user` yang sudah
+    // null (mis. jendela logout) supaya tidak crash lewat `!`.
+    final user = context.read<AuthViewModel>().user;
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final pemilikId = user.userId;
 
     return ChangeNotifierProvider<DashboardMitraViewModel>(
       create: (context) => DashboardMitraViewModel(
@@ -254,8 +263,13 @@ class _BarisBookingState extends State<_BarisBooking> {
     );
   }
 
-  String get _labelStatus {
-    switch (widget.booking.status) {
+  String _labelStatus(BuildContext context) {
+    // AB-07: dihitung ulang lewat ViewModel (bukan `widget.booking.status`
+    // mentah) supaya booking yang jam selesainya sudah lewat tampil
+    // "Selesai" di sisi mitra juga, bukan cuma di Profil penyewa.
+    final status =
+        context.read<DashboardMitraViewModel>().statusTampilan(widget.booking);
+    switch (status) {
       case 'DIKONFIRMASI':
         return 'Dikonfirmasi';
       case 'DITOLAK':
@@ -272,6 +286,10 @@ class _BarisBookingState extends State<_BarisBooking> {
   @override
   Widget build(BuildContext context) {
     final b = widget.booking;
+    // AB-07: tulis balik ke Firestore begitu baris ini ditampilkan dan
+    // memenuhi syarat lewat jam selesai — pola yang sama dengan
+    // `_KartuRiwayatBooking` di profil_screen.dart.
+    context.read<DashboardMitraViewModel>().tandaiSelesaiJikaPerlu(b);
 
     return Container(
       width: double.infinity,
@@ -331,7 +349,7 @@ class _BarisBookingState extends State<_BarisBooking> {
               ],
             )
           else
-            Text(_labelStatus, style: AppTextStyles.metaLapangan),
+            Text(_labelStatus(context), style: AppTextStyles.metaLapangan),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/utils/status_booking.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/favorit_model.dart';
@@ -107,25 +108,11 @@ class ProfilViewModel extends ChangeNotifier {
     );
   }
 
-  /// Status yang DITAMPILKAN untuk satu booking — PRD AB-07, BB-28.
-  ///
-  /// Dihitung ulang dari `tanggal`+`jamSelesai` dibanding waktu sekarang,
-  /// BUKAN langsung field `status` mentah — supaya baris yang baru saja
-  /// lewat jam selesainya langsung tampil `SELESAI` walau tulis balik ke
-  /// Firestore ([tandaiSelesaiJikaPerlu]) belum tuntas.
-  String statusTampilan(BookingModel booking) {
-    if (booking.status == 'DIKONFIRMASI' && _sudahLewat(booking)) {
-      return 'SELESAI';
-    }
-    return booking.status;
-  }
-
-  bool _sudahLewat(BookingModel booking) {
-    final tgl = booking.tanggal.split('-').map(int.parse).toList();
-    final jam = booking.jamSelesai.split(':').map(int.parse).toList();
-    final waktuSelesai = DateTime(tgl[0], tgl[1], tgl[2], jam[0], jam[1]);
-    return waktuSelesai.isBefore(DateTime.now());
-  }
+  /// Status yang DITAMPILKAN untuk satu booking — PRD AB-07, BB-28. Lihat
+  /// `core/utils/status_booking.dart` — logika yang sama dipakai
+  /// DashboardMitraViewModel supaya penyewa dan mitra melihat status yang
+  /// konsisten, bukan cuma sisi penyewa yang menghitung ulang.
+  String statusTampilan(BookingModel booking) => statusTampilanBooking(booking);
 
   /// Tulis balik status `SELESAI` ke Firestore — PRD AB-07. Dipanggil
   /// View saat membangun tiap baris riwayat (bukan aksi tombol, jadi
@@ -134,7 +121,7 @@ class ProfilViewModel extends ChangeNotifier {
   /// syarat di [statusTampilan] tidak lagi terpenuhi dan berhenti
   /// menulis ulang.
   void tandaiSelesaiJikaPerlu(BookingModel booking) {
-    if (booking.status == 'DIKONFIRMASI' && _sudahLewat(booking)) {
+    if (booking.status == 'DIKONFIRMASI' && sudahLewatJamSelesai(booking)) {
       _bookingRepository.tandaiBookingSelesai(booking.bookingId);
     }
   }

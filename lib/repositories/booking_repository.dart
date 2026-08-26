@@ -136,30 +136,41 @@ class BookingRepository {
 
   /// Mitra mengonfirmasi booking — PRD L-14, T-25, BB-26.
   ///
-  /// Cukup `WriteBatch`, bukan transaction: tidak ada penghitung bersama
-  /// yang dibaca-lalu-ditulis di sini (beda dari [ajukanReservasi]) —
-  /// sama alasannya dengan `terimaPermintaan` vs `tolakPermintaan` di
-  /// `aktivitas_repository.dart`.
+  /// Transaction (bukan `WriteBatch` biasa) supaya idempoten: status
+  /// booking dibaca dulu dan hanya diproses kalau masih `MENUNGGU`. Tanpa
+  /// ini, dua tap cepat "Konfirmasi"/"Tolak" pada booking yang sama bisa
+  /// sama-sama lolos (UI menonaktifkan tombol lewat `setState`, yang
+  /// tidak langsung merender ulang pada frame yang sama) — mengirim dua
+  /// notifikasi, atau (kasus Tolak) menghapus `slotBooking` padahal
+  /// booking sudah `DIKONFIRMASI`.
   Future<void> konfirmasiBooking(BookingModel booking) async {
     try {
       final bookingRef = _db.collection('booking').doc(booking.bookingId);
       final notifRef = _db.collection('notifikasi').doc();
 
-      final batch = _db.batch();
-      batch.update(bookingRef, {'status': 'DIKONFIRMASI'});
-      batch.set(
-        notifRef,
-        NotifikasiModel(
-          notifikasiId: notifRef.id,
-          untukUserId: booking.userId,
-          tipe: 'BOOKING_DIKONFIRMASI',
-          judul: 'Reservasi dikonfirmasi',
-          pesan: 'Reservasimu di "${booking.namaLapangan}" dikonfirmasi.',
-          refId: booking.bookingId,
-          dibuatPada: DateTime.now(),
-        ).toFirestore(),
-      );
-      await batch.commit();
+      await _db.runTransaction((transaction) async {
+        final snap = await transaction.get(bookingRef);
+        if (!snap.exists) {
+          throw Exception('Booking tidak ditemukan.');
+        }
+        if (snap.data()?['status'] != 'MENUNGGU') {
+          throw Exception('Booking ini sudah diproses.');
+        }
+
+        transaction.update(bookingRef, {'status': 'DIKONFIRMASI'});
+        transaction.set(
+          notifRef,
+          NotifikasiModel(
+            notifikasiId: notifRef.id,
+            untukUserId: booking.userId,
+            tipe: 'BOOKING_DIKONFIRMASI',
+            judul: 'Reservasi dikonfirmasi',
+            pesan: 'Reservasimu di "${booking.namaLapangan}" dikonfirmasi.',
+            refId: booking.bookingId,
+            dibuatPada: DateTime.now(),
+          ).toFirestore(),
+        );
+      });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw Exception('Tidak punya izin mengonfirmasi booking.');
@@ -173,7 +184,9 @@ class BookingRepository {
   /// Menghapus seluruh dokumen `slotBooking` milik booking ini supaya
   /// slotnya terbuka lagi (PRD AB-04) — ID-nya dihitung ulang dari
   /// `jamMulai`/`jamSelesai` dengan pola deterministik yang sama seperti
-  /// [ajukanReservasi], BUKAN query, jadi aman digabung dalam satu batch.
+  /// [ajukanReservasi], BUKAN query, jadi aman dibaca-tulis dalam satu
+  /// transaction. Transaction (bukan `WriteBatch`) untuk alasan idempotensi
+  /// yang sama dengan [konfirmasiBooking] — lihat catatannya.
   Future<void> tolakBooking(BookingModel booking) async {
     try {
       final jamAwal = int.parse(booking.jamMulai.split(':')[0]);
@@ -182,28 +195,36 @@ class BookingRepository {
       final bookingRef = _db.collection('booking').doc(booking.bookingId);
       final notifRef = _db.collection('notifikasi').doc();
 
-      final batch = _db.batch();
-      batch.update(bookingRef, {'status': 'DITOLAK'});
-      for (var jam = jamAwal; jam < jamAkhir; jam++) {
-        batch.delete(
-          _db
-              .collection('slotBooking')
-              .doc('${booking.lapanganId}_${booking.tanggal}_$jam'),
+      await _db.runTransaction((transaction) async {
+        final snap = await transaction.get(bookingRef);
+        if (!snap.exists) {
+          throw Exception('Booking tidak ditemukan.');
+        }
+        if (snap.data()?['status'] != 'MENUNGGU') {
+          throw Exception('Booking ini sudah diproses.');
+        }
+
+        transaction.update(bookingRef, {'status': 'DITOLAK'});
+        for (var jam = jamAwal; jam < jamAkhir; jam++) {
+          transaction.delete(
+            _db
+                .collection('slotBooking')
+                .doc('${booking.lapanganId}_${booking.tanggal}_$jam'),
+          );
+        }
+        transaction.set(
+          notifRef,
+          NotifikasiModel(
+            notifikasiId: notifRef.id,
+            untukUserId: booking.userId,
+            tipe: 'BOOKING_DITOLAK',
+            judul: 'Reservasi ditolak',
+            pesan: 'Reservasimu di "${booking.namaLapangan}" ditolak.',
+            refId: booking.bookingId,
+            dibuatPada: DateTime.now(),
+          ).toFirestore(),
         );
-      }
-      batch.set(
-        notifRef,
-        NotifikasiModel(
-          notifikasiId: notifRef.id,
-          untukUserId: booking.userId,
-          tipe: 'BOOKING_DITOLAK',
-          judul: 'Reservasi ditolak',
-          pesan: 'Reservasimu di "${booking.namaLapangan}" ditolak.',
-          refId: booking.bookingId,
-          dibuatPada: DateTime.now(),
-        ).toFirestore(),
-      );
-      await batch.commit();
+      });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw Exception('Tidak punya izin menolak booking.');

@@ -151,11 +151,17 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
     setState(() {
       _errOlahraga =
           _jenisOlahraga.isEmpty ? AppStrings.errPilihOlahraga : null;
+      // "00:00" berarti TENGAH MALAM (tutup di hari berikutnya), bukan
+      // jam 0 di hari yang sama — lihat CLAUDE.md "gampang salah" #jamTutup
+      // dan `ajukan_reservasi_screen.dart:_jamTutupHour`. Perbandingan
+      // menit-mentah lama di sini menolak SEMUA jam tutup "00:00" karena
+      // selalu terbaca lebih kecil dari jam buka manapun — 14 dari 30
+      // lapangan seed justru tutup tengah malam. Satu-satunya kombinasi
+      // yang benar-benar tidak bermakna adalah jam buka == jam tutup.
       _errJam = (_jamBuka == null || _jamTutup == null)
           ? 'Jam buka dan tutup wajib diisi.'
-          : (_jamTutup!.hour * 60 + _jamTutup!.minute <=
-                  _jamBuka!.hour * 60 + _jamBuka!.minute)
-              ? 'Jam tutup harus setelah jam buka.'
+          : (_jamBuka! == _jamTutup!)
+              ? 'Jam tutup tidak boleh sama dengan jam buka.'
               : null;
     });
 

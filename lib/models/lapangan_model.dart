@@ -78,9 +78,15 @@ class LapanganModel {
 
       jenisOlahraga: List<String>.from(data['jenisOlahraga'] ?? const []),
       harga: (data['harga'] as num?)?.toInt() ?? 0,
+      // Sama seperti latitude/longitude di atas: value Map ini bisa
+      // tersimpan sebagai int ATAU double (mis. hasil edit manual di
+      // Firebase Console) — `Map<String,int>.from(...)` langsung akan
+      // crash kalau ada satu saja value yang kebetulan double.
       hargaSlot: data['hargaSlot'] == null
           ? null
-          : Map<String, int>.from(data['hargaSlot'] as Map),
+          : (data['hargaSlot'] as Map).map(
+              (k, v) => MapEntry(k as String, (v as num).toInt()),
+            ),
       jamBuka: data['jamBuka'] as String? ?? '00:00',
       jamTutup: data['jamTutup'] as String? ?? '23:59',
       fasilitas: List<String>.from(data['fasilitas'] ?? const []),

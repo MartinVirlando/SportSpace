@@ -43,6 +43,12 @@ class MapViewModel extends ChangeNotifier {
   bool _pakaiLokasiDefault = false;
   bool get pakaiLokasiDefault => _pakaiLokasiDefault;
 
+  /// Nomor urut permintaan [muatPeta] yang sedang berjalan — sama seperti
+  /// `HomeViewModel._permintaanTerakhir`, mencegah panggilan yang tumpang
+  /// tindih (mis. tombol "Coba Lagi" ditekan dua kali) saling menimpa
+  /// state dengan hasil yang sudah usang.
+  int _permintaanTerakhir = 0;
+
   /// Lapangan yang marker-nya baru ditekan — dipakai menampilkan kartu
   /// ringkas (BB-10). `null` berarti tidak ada kartu yang perlu tampil.
   LapanganModel? _lapanganTerpilih;
@@ -54,12 +60,15 @@ class MapViewModel extends ChangeNotifier {
   }
 
   Future<void> muatPeta({double? latDefault, double? lonDefault}) async {
+    final permintaanIni = ++_permintaanTerakhir;
+
     _kondisi = KondisiMap.memuat;
     _pesanError = null;
     notifyListeners();
 
     try {
       final hasilLokasi = await _locationService.ambilPosisi();
+      if (permintaanIni != _permintaanTerakhir) return;
 
       double? lat;
       double? lon;
@@ -79,6 +88,7 @@ class MapViewModel extends ChangeNotifier {
       }
 
       final daftar = await _repository.ambilSemuaLapangan();
+      if (permintaanIni != _permintaanTerakhir) return;
 
       // Jarak dihitung supaya kartu ringkas (BB-10) bisa menampilkannya —
       // PRD L-05 tidak mensyaratkan urutan tertentu di peta, jadi tidak
@@ -93,6 +103,7 @@ class MapViewModel extends ChangeNotifier {
       _lapangan = berjarak;
       _kondisi = KondisiMap.berhasil;
     } catch (e) {
+      if (permintaanIni != _permintaanTerakhir) return;
       _pesanError = e.toString().replaceFirst('Exception: ', '');
       _kondisi = KondisiMap.gagal;
     }

@@ -31,6 +31,17 @@ class RatingRepository {
     required int nilaiRating,
     String? ulasanTeks,
   }) async {
+    // Pengaman berlapis (PRD AB-09) — sudah dicek di UI (`beri_rating_sheet.dart`),
+    // tapi diulang di sini juga supaya pemanggil lain di masa depan tidak
+    // bisa mencemari `ratingRata2` dengan nilai di luar 1-5 kalau lupa
+    // memvalidasi di lapisan atas.
+    if (nilaiRating < 1 || nilaiRating > 5) {
+      throw Exception('Nilai rating harus 1-5.');
+    }
+    if (ulasanTeks != null && ulasanTeks.length > 500) {
+      throw Exception('Ulasan maksimal 500 karakter.');
+    }
+
     final ratingRef = _db.collection('rating').doc('${userId}_$lapanganId');
     final lapanganRef = _db.collection('lapangan').doc(lapanganId);
 

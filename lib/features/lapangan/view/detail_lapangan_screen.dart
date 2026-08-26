@@ -41,8 +41,17 @@ class DetailLapanganScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Layar ini hanya bisa dibuka dari dalam ShellNavigasi (Home, Map,
     // Profil), yang semuanya sudah di balik gerbang login — lihat
-    // splash_screen.dart. Jadi user di sini selalu ada.
-    final userId = context.read<AuthViewModel>().user!.userId;
+    // splash_screen.dart. Tapi kalau alur logout suatu saat berubah
+    // sementara layar push ini masih di back stack, `user!` bisa crash —
+    // jaga dengan spinner, bukan asumsi selalu ada.
+    final user = context.read<AuthViewModel>().user;
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final userId = user.userId;
 
     return ChangeNotifierProvider<DetailLapanganViewModel>(
       create: (context) => DetailLapanganViewModel(
@@ -73,9 +82,8 @@ class _DetailLapanganBody extends StatelessWidget {
         KondisiDetail.memuat => const _Pemuatan(),
         KondisiDetail.gagal => _Kesalahan(
             pesan: vm.pesanError ?? 'Terjadi kesalahan.',
-            onCobaLagi: () => context
-                .read<DetailLapanganViewModel>()
-                .muatDetail(vm.lapangan?.lapanganId ?? ''),
+            onCobaLagi: () =>
+                context.read<DetailLapanganViewModel>().muatUlang(),
           ),
         KondisiDetail.berhasil => _Isi(lapangan: vm.lapangan!),
       },

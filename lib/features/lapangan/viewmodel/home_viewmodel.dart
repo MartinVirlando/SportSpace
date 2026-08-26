@@ -56,6 +56,15 @@ class HomeViewModel extends ChangeNotifier {
   /// View memakai ini untuk memunculkan spanduk pemberitahuan.
   bool get pakaiLokasiDefault => _pakaiLokasiDefault;
 
+  /// Nomor urut permintaan [muatLapangan] yang sedang berjalan — dipakai
+  /// supaya panggilan yang tumpang tindih tidak saling menimpa state.
+  /// Tanpa ini: kalau pengguna menekan "Coba Lagi" atau menarik-refresh
+  /// dua kali sebelum permintaan pertama selesai (mis. GPS lambat), hasil
+  /// panggilan PERTAMA yang baru selesai belakangan bisa menimpa hasil
+  /// panggilan KEDUA yang sebenarnya lebih baru dan sudah lebih dulu
+  /// tampil ke pengguna.
+  int _permintaanTerakhir = 0;
+
   /// Daftar yang benar-benar ditampilkan: hasil penyaringan olahraga
   /// dan kata kunci. Urutan jaraknya tetap terjaga karena penyaringan
   /// tidak mengubah urutan.
@@ -84,6 +93,8 @@ class HomeViewModel extends ChangeNotifier {
   /// [latDefault] / [lonDefault] diisi dari `users.lokasiDefault` bila ada.
   /// Kalau GPS ditolak dan nilai ini tersedia, daftar tetap tampil (AB-03).
   Future<void> muatLapangan({double? latDefault, double? lonDefault}) async {
+    final permintaanIni = ++_permintaanTerakhir;
+
     _kondisi = KondisiHome.memuat;
     _pesanError = null;
     notifyListeners();
@@ -91,6 +102,10 @@ class HomeViewModel extends ChangeNotifier {
     try {
       // 1. Ambil posisi pengguna.
       final hasilLokasi = await _locationService.ambilPosisi();
+      // Ada panggilan `muatLapangan` lain yang lebih baru dimulai selagi
+      // kita menunggu di atas — biarkan panggilan itu yang menentukan
+      // state akhir, jangan menimpanya dengan hasil yang sudah usang.
+      if (permintaanIni != _permintaanTerakhir) return;
 
       double? lat;
       double? lon;
@@ -113,6 +128,7 @@ class HomeViewModel extends ChangeNotifier {
 
       // 2. Ambil seluruh lapangan dari Firestore.
       final daftar = await _repository.ambilSemuaLapangan();
+      if (permintaanIni != _permintaanTerakhir) return;
 
       // 3. Hitung Haversine untuk tiap lapangan, lalu urutkan menaik.
       //    Ini inti AB-02 — pengurutan MURNI jarak. Rating hanya
@@ -132,6 +148,7 @@ class HomeViewModel extends ChangeNotifier {
       _semuaLapangan = berjarak;
       _kondisi = berjarak.isEmpty ? KondisiHome.kosong : KondisiHome.berhasil;
     } catch (e) {
+      if (permintaanIni != _permintaanTerakhir) return;
       // Repository sudah melempar pesan berbahasa Indonesia yang siap
       // tampil. `toString()` pada Exception menghasilkan "Exception: pesan",
       // jadi awalannya dibuang.

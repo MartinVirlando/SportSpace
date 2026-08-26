@@ -46,6 +46,19 @@ Ditemukan dan diperbaiki selama implementasi Sprint 4 (T-15, T-19). Sama seperti
 
 ---
 
+### Koreksi teknis pasca-v1.1 (26 Agustus 2026)
+
+Ditemukan lewat audit kode menyeluruh saat T-28 (bukan Black Box formal — lihat `SPRINT-PLAN.md` untuk daftar lengkap ~12 temuan). Bukan perubahan ruang lingkup/fitur, murni perbaikan bug dan pengetatan keamanan. Yang paling berdampak ke dokumen ini:
+
+| # | Koreksi | Bagian yang terdampak |
+|---|---|---|
+| 9 | **Security Rules dipersempit**: `users/{userId}` semula `allow read: if login()` — siapa pun yang login bisa membaca `nomorTelepon` dan `lokasiDefault` (koordinat rumah/kantor) milik pengguna LAIN mana pun. Tidak ada satu pun kode yang butuh baca profil pengguna lain (seluruh nama ditampilkan lewat field yang sudah didenormalisasi ke `aktivitasBermain`/`booking`/`rating`), jadi kelonggaran ini murni celah privasi, bukan kebutuhan fungsional seperti kelonggaran lain di berkas yang sudah didokumentasikan §9. Diperketat jadi `allow read: if pemilikDok(userId)`, konsisten dengan aturan `favorit` di match yang sama. | §9 |
+| 10 | `LapanganRepository.perbaruiLapangan` (L-15) diganti dari `.set()` (timpa seluruh dokumen) menjadi `.update()` pada field yang memang bisa diedit form saja. Sebelumnya, tiap kali mitra mengedit lapangan (apa pun yang diubah), `hargaSlot` ikut tertimpa `null` karena form tidak punya kolom untuk field itu — memengaruhi 5 lapangan mitra hasil seeding yang justru punya `hargaSlot` terisi untuk demo AB-04. Perbaikan yang sama sekaligus mencegah `ratingTotal`/`jumlahRating`/`ratingRata2` tertimpa nilai basi kalau ada rating baru masuk (AB-05) tepat saat form edit sedang dibuka. | §6.2, §8 L-15 |
+
+Kalau butuh detail lengkap perbaikan lain (race condition login/register, transaction idempotency booking/aktivitas, toggle favorit, dsb.), lihat riwayat commit T-28 dan catatan di `SPRINT-PLAN.md` — tidak semuanya dirinci di sini karena tidak mengubah kontrak PRD (murni bug internal, bukan perubahan aturan bisnis yang tertulis di dokumen ini).
+
+---
+
 ## 1. Ringkasan Produk
 
 Sport Space adalah aplikasi Android yang menyelesaikan tiga masalah yang selama ini terpisah:
@@ -646,7 +659,7 @@ service cloud.firestore {
     function pemilikDok(uid) { return login() && request.auth.uid == uid; }
 
     match /users/{userId} {
-      allow read: if login();
+      allow read: if pemilikDok(userId);
       allow create, update: if pemilikDok(userId);
       allow delete: if false;
 

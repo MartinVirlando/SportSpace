@@ -63,43 +63,58 @@ class AuthRepository {
     required String nomorTelepon,
     required String role,
   }) async {
+    final UserCredential kredensial;
     try {
-      final kredensial = await _auth
+      kredensial = await _auth
           .createUserWithEmailAndPassword(
             email: surel.trim(),
             password: kataSandi,
           )
           .timeout(_batasWaktu);
-
-      final user = UserModel(
-        userId: kredensial.user!.uid,
-        nama: nama.trim(),
-        surel: surel.trim(),
-        nomorTelepon: nomorTelepon.trim(),
-        role: role,
-        tanggalDaftar: DateTime.now(),
-        olahragaFavorit: const [],
-        lokasiDefault: null,
-      );
-
-      // Tidak ada Cloud Functions (dilarang PRD Bagian 2.1), jadi dokumen
-      // users dibuat langsung di sini setelah akun Auth berhasil. Kalau
-      // langkah ini gagal (mis. jaringan putus di tengah), akun Auth
-      // sudah terlanjur ada tanpa dokumen users — risiko yang diterima
-      // untuk skala skripsi, dicatat sebagai keterbatasan di Bab 5.
-      await _db
-          .collection('users')
-          .doc(user.userId)
-          .set(user.toFirestore())
-          .timeout(_batasWaktu);
-
-      return user;
     } on FirebaseAuthException catch (e) {
       throw Exception(_pesanKesalahanDaftar(e.code));
     } on FirebaseException {
       throw Exception('Tidak ada koneksi internet. Coba lagi.');
     } on TimeoutException {
       throw Exception('Tidak ada koneksi internet. Coba lagi.');
+    }
+
+    final user = UserModel(
+      userId: kredensial.user!.uid,
+      nama: nama.trim(),
+      surel: surel.trim(),
+      nomorTelepon: nomorTelepon.trim(),
+      role: role,
+      tanggalDaftar: DateTime.now(),
+      olahragaFavorit: const [],
+      lokasiDefault: null,
+    );
+
+    // Tidak ada Cloud Functions (dilarang PRD Bagian 2.1), jadi dokumen
+    // users dibuat langsung di sini setelah akun Auth berhasil. Kalau
+    // langkah ini gagal (mis. jaringan putus di tengah), akun Auth sudah
+    // terlanjur ada — TANPA rollback, akun ini jadi "yatim" permanen:
+    // tidak bisa login (ambilUser selalu gagal, "Data pengguna tidak
+    // ditemukan.") dan tidak bisa daftar ulang dengan surel yang sama
+    // (email-already-in-use). Karena itu akun Auth dihapus lagi kalau
+    // langkah ini gagal, supaya percobaan berikutnya bisa mulai dari nol.
+    try {
+      await _db
+          .collection('users')
+          .doc(user.userId)
+          .set(user.toFirestore())
+          .timeout(_batasWaktu);
+      return user;
+    } catch (_) {
+      try {
+        await kredensial.user!.delete();
+      } catch (_) {
+        // Best-effort: kalau penghapusan pun gagal (mis. jaringan benar-
+        // benar putus), tidak ada tindakan lain yang bisa diambil di
+        // sini. Exception asli di bawah tetap tampil ke pengguna —
+        // pesan "Gagal mendaftar" tetap benar walau rollback gagal.
+      }
+      throw Exception('Gagal mendaftar. Coba lagi.');
     }
   }
 

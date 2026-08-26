@@ -117,6 +117,18 @@ class AktivitasRepository {
     required String namaPembuat,
     String? catatan,
   }) async {
+    // Pengaman berlapis — sudah dicek di UI (`buat_aktivitas_screen.dart`
+    // lewat `Validators.jumlahPemain`/`Validators.waktuDiMasaDepan`), tapi
+    // diulang di sini juga supaya pemanggil lain di masa depan tidak bisa
+    // membuat aktivitas dengan target pemain di luar rentang atau jadwal
+    // yang sudah lewat kalau lupa memvalidasi di lapisan atas.
+    if (jumlahPemainDibutuhkan < 2 || jumlahPemainDibutuhkan > 30) {
+      throw Exception('Jumlah pemain dibutuhkan harus 2-30.');
+    }
+    if (!waktu.isAfter(DateTime.now())) {
+      throw Exception('Waktu aktivitas harus di masa depan.');
+    }
+
     try {
       final ref = _db.collection('aktivitasBermain').doc();
       final aktivitas = AktivitasBermainModel(
@@ -270,6 +282,18 @@ class AktivitasRepository {
           throw Exception('Aktivitas tidak ditemukan.');
         }
         final aktivitas = AktivitasBermainModel.fromFirestore(aktivitasSnap);
+
+        // Jaga idempotensi: tanpa ini, dua tap "Terima" yang cepat pada
+        // permintaan YANG SAMA bisa sama-sama lolos transaction (keduanya
+        // membaca `jumlahPemainSaatIni` lama sebelum salah satu menulis),
+        // menaikkan hitungannya dua kali untuk satu orang yang sama.
+        final permintaanSnap = await transaction.get(permintaanRef);
+        if (!permintaanSnap.exists) {
+          throw Exception('Permintaan tidak ditemukan.');
+        }
+        if (permintaanSnap.data()?['status'] != 'MENUNGGU') {
+          throw Exception('Permintaan ini sudah diproses.');
+        }
 
         if (aktivitas.jumlahPemainSaatIni >= aktivitas.jumlahPemainDibutuhkan) {
           throw Exception('Slot penuh');

@@ -39,7 +39,16 @@ class ProfilScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = context.read<AuthViewModel>().user!.userId;
+    // Sama seperti home_screen.dart — jaga terhadap `user` yang sudah
+    // null (mis. jendela logout) supaya tidak crash lewat `!`.
+    final user = context.read<AuthViewModel>().user;
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final userId = user.userId;
 
     return ChangeNotifierProvider<ProfilViewModel>(
       create: (context) => ProfilViewModel(
@@ -79,7 +88,15 @@ class _ProfilBody extends StatelessWidget {
     final user = context.watch<AuthViewModel>().user;
     final vm = context.watch<ProfilViewModel>();
 
-    if (user == null) return const SizedBox.shrink();
+    // Sekejap null di jendela antara `keluar()` mengosongkan AuthViewModel
+    // dan navigasi ke LoginScreen selesai — tampilkan spinner, bukan layar
+    // putih polos, supaya tidak ada kondisi tanpa penanda apa pun.
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,

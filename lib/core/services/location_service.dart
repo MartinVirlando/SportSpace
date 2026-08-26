@@ -14,6 +14,10 @@ enum StatusLokasi {
 
   /// Layanan lokasi di perangkat sedang mati.
   layananMati,
+
+  /// Izin sudah diberikan tapi GPS gagal terbaca (timeout, sinyal lemah
+  /// di dalam ruangan, atau error platform lain dari `geolocator`).
+  gagalMembaca,
 }
 
 /// Posisi pengguna beserta status bagaimana ia diperoleh.
@@ -58,20 +62,31 @@ class LocationService {
     }
 
     // 3. Izin ada — baca posisinya.
-    final posisi = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        // Batas waktu supaya aplikasi tidak menggantung selamanya
-        // di dalam ruangan yang sinyal GPS-nya lemah.
-        timeLimit: Duration(seconds: 15),
-      ),
-    );
+    //
+    // Dibungkus try/catch: `getCurrentPosition` melempar `TimeoutException`
+    // kalau `timeLimit` di bawah terlampaui (umum di dalam ruangan/sinyal
+    // GPS lemah), dan bisa juga melempar error platform lain. Tanpa ini,
+    // exception itu menjalar ke HomeViewModel/MapViewModel dan langsung
+    // dianggap "gagal total" — MELEWATI cadangan lokasi default (AB-03),
+    // padahal harusnya diperlakukan sama seperti izin ditolak/layanan
+    // mati: tetap coba `lokasiDefault` dulu sebelum menyerah. Kelas ini
+    // sengaja tidak pernah melempar Exception (lihat docstring di atas).
+    try {
+      final posisi = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
 
-    return HasilLokasi(
-      status: StatusLokasi.berhasil,
-      latitude: posisi.latitude,
-      longitude: posisi.longitude,
-    );
+      return HasilLokasi(
+        status: StatusLokasi.berhasil,
+        latitude: posisi.latitude,
+        longitude: posisi.longitude,
+      );
+    } catch (_) {
+      return const HasilLokasi(status: StatusLokasi.gagalMembaca);
+    }
   }
 
   /// Membuka pengaturan lokasi perangkat — dipakai tombol pada

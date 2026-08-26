@@ -30,7 +30,16 @@ class NotifikasiScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = context.read<AuthViewModel>().user!.userId;
+    // Sama seperti home_screen.dart — jaga terhadap `user` yang sudah
+    // null (mis. jendela logout) supaya tidak crash lewat `!`.
+    final user = context.read<AuthViewModel>().user;
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final userId = user.userId;
 
     return ChangeNotifierProvider<NotifikasiViewModel>(
       create: (context) => NotifikasiViewModel(

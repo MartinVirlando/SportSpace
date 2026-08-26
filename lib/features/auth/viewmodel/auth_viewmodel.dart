@@ -68,13 +68,31 @@ class AuthViewModel extends ChangeNotifier {
 
   /// Mengembalikan `true` kalau berhasil. Kalau `false`, baca
   /// [pesanError] untuk pesan yang siap ditampilkan (BB-04).
+  ///
+  /// [_user] diisi LANGSUNG dari hasil `_repository.login()` di sini —
+  /// BUKAN menunggu `_saatStatusBerubah` yang dipicu `authStateChanges`.
+  /// Alasan: `login_screen.dart` langsung `pushAndRemoveUntil` ke
+  /// `ShellNavigasi` begitu method ini mengembalikan `true`, dan
+  /// `ShellNavigasi` langsung membangun SEMUA tab lewat `IndexedStack`
+  /// (termasuk Home/Profil yang membaca `user!`/`user` lewat
+  /// `context.read`, bukan `watch`). Kalau `_user` masih null saat itu
+  /// (fetch Firestore di `_saatStatusBerubah` — request TERPISAH dari
+  /// yang di dalam `_repository.login()` — belum selesai), tab Profil
+  /// akan macet permanen di spinner: `context.read` tidak memicu rebuild
+  /// susulan, dan `const HomeScreen()`/`const ProfilScreen()` di
+  /// `ShellNavigasi` membuat Flutter melewati rebuild saat pindah tab.
+  /// Mengisi `_user` di sini menghilangkan celah itu — `authStateChanges`
+  /// tetap jalan untuk kasus lain (sesi lama saat app dibuka via Splash,
+  /// dan logout), memanggil ulang `_saatStatusBerubah` sesudahnya tidak
+  /// berbahaya karena hasilnya sama.
   Future<bool> masuk(String surel, String kataSandi) async {
     _sedangProses = true;
     _pesanError = null;
     notifyListeners();
 
     try {
-      await _repository.login(surel, kataSandi);
+      _user = await _repository.login(surel, kataSandi);
+      _status = StatusAuth.sudahMasuk;
       _sedangProses = false;
       notifyListeners();
       return true;
@@ -88,6 +106,10 @@ class AuthViewModel extends ChangeNotifier {
 
   /// Mengembalikan `true` kalau berhasil. Kalau `false`, baca
   /// [pesanError] untuk pesan yang siap ditampilkan (BB-02).
+  ///
+  /// Sama seperti [masuk]: `_user` diisi langsung dari hasil
+  /// `_repository.daftar()`, tidak menunggu `authStateChanges` — lihat
+  /// komentar lengkap di [masuk].
   Future<bool> daftar({
     required String nama,
     required String surel,
@@ -100,13 +122,14 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.daftar(
+      _user = await _repository.daftar(
         nama: nama,
         surel: surel,
         kataSandi: kataSandi,
         nomorTelepon: nomorTelepon,
         role: role,
       );
+      _status = StatusAuth.sudahMasuk;
       _sedangProses = false;
       notifyListeners();
       return true;

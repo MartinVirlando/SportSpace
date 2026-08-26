@@ -44,15 +44,30 @@ class DetailAktivitasViewModel extends ChangeNotifier {
   /// Kirim permintaan gabung dari tombol "Gabung" di L-09 — PRD AB-06,
   /// BB-16. Mengembalikan `true` kalau berhasil.
   ///
-  /// Pengecekan aturan tambahan (bukan pembuat, belum jadi peserta)
-  /// dilakukan di View lewat data [aktivitas] yang sedang ditonton lewat
-  /// [streamAktivitas] — sama seperti AktivitasViewModel, cukup dari data
-  /// yang sudah ada tanpa baca subkoleksi.
+  /// Aturan tambahan AB-06 (pembuat tidak bisa gabung ke aktivitasnya
+  /// sendiri, peserta tidak bisa kirim ulang) dicek ULANG di sini dari
+  /// data [aktivitas] — sama seperti `AktivitasViewModel`, dan bukan
+  /// cuma diandalkan dari View yang menyembunyikan tombol "Gabung".
+  /// Sebelumnya cek ini tidak ada di sini sama sekali (hanya di
+  /// AktivitasViewModel milik tab Teman), jadi entry point ini jadi celah
+  /// kalau nanti ada cara lain memanggilnya di luar tombol yang sudah
+  /// disembunyikan View saat ini.
   Future<bool> kirimPermintaanGabung(
     AktivitasBermainModel aktivitas, {
     required String userId,
     required String namaUser,
   }) async {
+    if (aktivitas.pembuatId == userId) {
+      _pesanError = 'Tidak bisa gabung ke aktivitas buatan sendiri.';
+      notifyListeners();
+      return false;
+    }
+    if (aktivitas.peserta.contains(userId)) {
+      _pesanError = 'Kamu sudah jadi peserta aktivitas ini.';
+      notifyListeners();
+      return false;
+    }
+
     _sedangProses = true;
     _pesanError = null;
     notifyListeners();

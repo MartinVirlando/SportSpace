@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/utils/status_booking.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/booking_repository.dart';
@@ -62,6 +63,25 @@ class DashboardMitraViewModel extends ChangeNotifier {
       return null;
     } catch (e) {
       return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
+
+  /// Status yang DITAMPILKAN untuk satu booking — PRD AB-07, BB-28.
+  ///
+  /// Sebelumnya Dashboard Mitra hanya membaca `booking.status` mentah,
+  /// jadi booking `DIKONFIRMASI` yang jam selesainya sudah lewat tampil
+  /// "Dikonfirmasi" selamanya di sisi mitra kalau penyewa tidak pernah
+  /// membuka tab Profil-nya lagi (satu-satunya tempat yang sebelumnya
+  /// menghitung ulang status ini). Sekarang dua sisi memakai logika yang
+  /// sama dari `core/utils/status_booking.dart`.
+  String statusTampilan(BookingModel booking) => statusTampilanBooking(booking);
+
+  /// Tulis balik status `SELESAI` ke Firestore — PRD AB-07. Dipanggil
+  /// View saat membangun tiap baris booking masuk, sama seperti
+  /// `ProfilViewModel.tandaiSelesaiJikaPerlu`.
+  void tandaiSelesaiJikaPerlu(BookingModel booking) {
+    if (booking.status == 'DIKONFIRMASI' && sudahLewatJamSelesai(booking)) {
+      _bookingRepository.tandaiBookingSelesai(booking.bookingId);
     }
   }
 }
