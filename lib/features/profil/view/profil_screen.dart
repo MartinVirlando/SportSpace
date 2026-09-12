@@ -56,7 +56,7 @@ class ProfilScreen extends StatelessWidget {
         aktivitasRepository: context.read<AktivitasRepository>(),
         favoritRepository: context.read<FavoritRepository>(),
         userId: userId,
-      )..muatStatistik(),
+      ),
       child: const _ProfilBody(),
     );
   }
@@ -257,10 +257,13 @@ class _Header extends StatelessWidget {
 }
 
 /// Kotak statistik Booking · Aktivitas · Favorit — PRD L-13, T-38, AB-12.
-/// `vm` dioper dari `_ProfilBody` yang sudah `context.watch<ProfilViewModel>()`
-/// — begitu [ProfilViewModel.muatStatistik] selesai dan memanggil
-/// `notifyListeners()`, seluruh `_ProfilBody` (termasuk kotak ini) ikut
-/// dibangun ulang.
+///
+/// Tiap angka dihitung dari `snapshot.data?.length` pada stream yang SAMA
+/// dipakai daftar di bawahnya (`vm.streamRiwayatBooking` dkk.) — bukan
+/// query `count()` sekali-ambil terpisah. Konsekuensinya: angka ini ikut
+/// hidup begitu ada perubahan (mis. menambah favorit dari Home lalu
+/// kembali ke tab ini), tanpa perlu logout/login untuk melihat angka
+/// terbaru.
 class _KotakStatistik extends StatelessWidget {
   final ProfilViewModel vm;
 
@@ -268,35 +271,41 @@ class _KotakStatistik extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gagal = vm.kondisiStatistik == KondisiStatistik.gagal;
-    final memuat = vm.kondisiStatistik == KondisiStatistik.memuat;
-
     return Row(
       children: [
         Expanded(
-          child: _KotakAngka(
-            label: AppStrings.statBooking,
-            nilai: vm.jumlahBooking,
-            memuat: memuat,
-            gagal: gagal,
+          child: StreamBuilder<List<BookingModel>>(
+            stream: vm.streamRiwayatBooking,
+            builder: (context, snapshot) => _KotakAngka(
+              label: AppStrings.statBooking,
+              nilai: snapshot.data?.length ?? 0,
+              memuat: snapshot.connectionState == ConnectionState.waiting,
+              gagal: snapshot.hasError,
+            ),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _KotakAngka(
-            label: AppStrings.statAktivitas,
-            nilai: vm.jumlahAktivitas,
-            memuat: memuat,
-            gagal: gagal,
+          child: StreamBuilder<List<AktivitasBermainModel>>(
+            stream: vm.streamAktivitasSaya,
+            builder: (context, snapshot) => _KotakAngka(
+              label: AppStrings.statAktivitas,
+              nilai: snapshot.data?.length ?? 0,
+              memuat: snapshot.connectionState == ConnectionState.waiting,
+              gagal: snapshot.hasError,
+            ),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _KotakAngka(
-            label: AppStrings.statFavorit,
-            nilai: vm.jumlahFavorit,
-            memuat: memuat,
-            gagal: gagal,
+          child: StreamBuilder<List<FavoritModel>>(
+            stream: vm.streamDaftarFavorit,
+            builder: (context, snapshot) => _KotakAngka(
+              label: AppStrings.statFavorit,
+              nilai: snapshot.data?.length ?? 0,
+              memuat: snapshot.connectionState == ConnectionState.waiting,
+              gagal: snapshot.hasError,
+            ),
           ),
         ),
       ],

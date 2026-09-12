@@ -56,16 +56,6 @@ class FavoritRepository {
     });
   }
 
-  /// Hitung jumlah favorit — PRD L-13, T-38, AB-12.
-  Future<int> hitungFavorit(String userId) async {
-    try {
-      final hasil = await _koleksiFavorit(userId).count().get();
-      return hasil.count ?? 0;
-    } on FirebaseException {
-      throw Exception('Gagal menghitung favorit.');
-    }
-  }
-
   /// Menekan ikon ♡/♥ — PRD AB-10. Dokumen dihapus kalau sudah ada
   /// (batal favorit), dibuat kalau belum ada (favoritkan).
   ///

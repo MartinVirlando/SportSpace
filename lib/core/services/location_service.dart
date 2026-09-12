@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:geolocator/geolocator.dart';
 
 /// Hasil permintaan lokasi. Dipakai ViewModel untuk memutuskan
@@ -49,9 +51,24 @@ class LocationService {
     }
 
     // 2. Cek izin, minta kalau belum diberikan.
+    //
+    // `requestPermission()` dibungkus timeout: plugin `geolocator_android`
+    // kadang tidak pernah menyelesaikan Future ini sama sekali kalau
+    // Android mengembalikan `grantResults` kosong ke callback izin (bug di
+    // level plugin, terlihat di logcat sebagai "The grantResults array is
+    // empty" — bukan sesuatu yang bisa dikendalikan dari sisi aplikasi).
+    // Tanpa timeout ini, Home/Map macet selamanya di kondisi "memuat" tiap
+    // kali dialog izin sistem muncul, walau penggunanya sudah menekan
+    // "Tolak". Diperlakukan sama seperti izin ditolak biasa — cadangan
+    // lokasi default (AB-03) tetap jalan.
     var izin = await Geolocator.checkPermission();
     if (izin == LocationPermission.denied) {
-      izin = await Geolocator.requestPermission();
+      try {
+        izin = await Geolocator.requestPermission()
+            .timeout(const Duration(seconds: 10));
+      } on TimeoutException {
+        izin = LocationPermission.denied;
+      }
     }
 
     if (izin == LocationPermission.deniedForever) {

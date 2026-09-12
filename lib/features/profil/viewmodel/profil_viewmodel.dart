@@ -8,37 +8,37 @@ import '../../../repositories/aktivitas_repository.dart';
 import '../../../repositories/booking_repository.dart';
 import '../../../repositories/favorit_repository.dart';
 
-/// Kondisi kotak statistik (Booking · Aktivitas · Favorit) — PRD AB-12,
-/// T-38. Terpisah dari [KondisiHome]/[KondisiDetail] karena ini cuma
-/// mengontrol satu bagian kecil layar Profil, bukan seluruh layar.
-enum KondisiStatistik { memuat, berhasil, gagal }
-
 /// ViewModel untuk tab Profil (L-13).
 ///
 /// ATURAN LAPISAN: TIDAK `import cloud_firestore`. Tiga repository
-/// dipakai: [BookingRepository] untuk riwayat pemesanan (+ AB-07) dan
-/// jumlah booking (AB-12), [AktivitasRepository] untuk daftar aktivitas
-/// yang dibuat/diikuti dan jumlahnya, [FavoritRepository] untuk daftar
-/// Lapangan Favorit (T-35, AB-10) dan jumlahnya.
+/// dipakai: [BookingRepository] untuk riwayat pemesanan (+ AB-07),
+/// [AktivitasRepository] untuk daftar aktivitas yang dibuat/diikuti,
+/// [FavoritRepository] untuk daftar Lapangan Favorit (T-35, AB-10).
 ///
 /// Riwayat booking, aktivitas, dan favorit dipaparkan sebagai `Stream`
-/// lewat getter, dibaca View lewat `StreamBuilder` (CLAUDE.md aturan 6) —
-/// perlu langsung hidup begitu statusnya berubah (dikonfirmasi mitra,
-/// atau SELESAI lewat [tandaiSelesaiJikaPerlu]), begitu ada permintaan
-/// yang diterima, atau begitu ikon ♡ ditekan di L-04/L-06.
+/// lewat field `final` yang dibuat sekali di konstruktor (bukan getter
+/// biasa — supaya satu query Firestore dipakai bersama oleh kotak
+/// statistik AB-12 DAN daftar di bawahnya, bukan dua listener terpisah
+/// untuk data yang sama), dibaca View lewat `StreamBuilder` (CLAUDE.md
+/// aturan 6) — perlu langsung hidup begitu statusnya berubah
+/// (dikonfirmasi mitra, atau SELESAI lewat
+/// [tandaiSelesaiJikaPerlu]), begitu ada permintaan yang diterima, atau
+/// begitu ikon ♡ ditekan di L-04/L-06.
 ///
-/// Statistik (AB-12) BEDA pola: `count()` adalah query sekali ambil,
-/// bukan listener — jadi dipaparkan lewat [muatStatistik] + state
-/// eksplisit ([kondisiStatistik]/[jumlahBooking]/dst), pola yang sama
-/// dengan HomeViewModel (CLAUDE.md aturan 6).
+/// Angka statistik (AB-12) sengaja TIDAK dihitung lewat query `count()`
+/// terpisah — versi sebelumnya begitu, dan hasilnya basi (BB-36): angka
+/// itu diambil sekali saat ProfilViewModel dibuat, lalu tidak pernah
+/// dihitung ulang selama tab ini tetap hidup di `IndexedStack`
+/// `ShellNavigasi` (mis. setelah menambah favorit dari Home dan kembali
+/// ke Profil). Panjang list dari stream yang sama persis dipakai
+/// `_SeksiRiwayatBooking`/`_SeksiAktivitasSaya`/`_SeksiLapanganFavorit` —
+/// jadi menghitungnya di View lewat `snapshot.data?.length` otomatis ikut
+/// hidup, tanpa baca Firestore tambahan.
 ///
 /// Dibuat lokal tiap kali tab ini aktif (lewat ChangeNotifierProvider di
 /// `profil_screen.dart`, disuntik oleh `ShellNavigasi` sama seperti
 /// MapViewModel/AktivitasViewModel) — BUKAN Provider global.
 class ProfilViewModel extends ChangeNotifier {
-  final BookingRepository _bookingRepository;
-  final AktivitasRepository _aktivitasRepository;
-  final FavoritRepository _favoritRepository;
   final String userId;
 
   ProfilViewModel({
@@ -46,56 +46,20 @@ class ProfilViewModel extends ChangeNotifier {
     required AktivitasRepository aktivitasRepository,
     required FavoritRepository favoritRepository,
     required this.userId,
-  })  : _bookingRepository = bookingRepository,
-        _aktivitasRepository = aktivitasRepository,
+  })  : streamRiwayatBooking = bookingRepository.streamRiwayatBooking(userId),
+        streamAktivitasSaya =
+            aktivitasRepository.streamAktivitasSaya(userId),
+        streamDaftarFavorit =
+            favoritRepository.streamDaftarFavorit(userId),
+        _bookingRepository = bookingRepository,
         _favoritRepository = favoritRepository;
 
-  Stream<List<BookingModel>> get streamRiwayatBooking =>
-      _bookingRepository.streamRiwayatBooking(userId);
+  final BookingRepository _bookingRepository;
+  final FavoritRepository _favoritRepository;
 
-  Stream<List<AktivitasBermainModel>> get streamAktivitasSaya =>
-      _aktivitasRepository.streamAktivitasSaya(userId);
-
-  Stream<List<FavoritModel>> get streamDaftarFavorit =>
-      _favoritRepository.streamDaftarFavorit(userId);
-
-  // ---------- Statistik (AB-12, T-38) ----------
-
-  KondisiStatistik _kondisiStatistik = KondisiStatistik.memuat;
-  KondisiStatistik get kondisiStatistik => _kondisiStatistik;
-
-  int _jumlahBooking = 0;
-  int get jumlahBooking => _jumlahBooking;
-
-  int _jumlahAktivitas = 0;
-  int get jumlahAktivitas => _jumlahAktivitas;
-
-  int _jumlahFavorit = 0;
-  int get jumlahFavorit => _jumlahFavorit;
-
-  /// Memuat ketiga angka statistik sekaligus — PRD AB-12. Dipanggil sekali
-  /// saat ProfilViewModel dibuat (lihat `profil_screen.dart`), mengikuti
-  /// pola `..muatDetail()` di DetailLapanganViewModel.
-  Future<void> muatStatistik() async {
-    _kondisiStatistik = KondisiStatistik.memuat;
-    notifyListeners();
-
-    try {
-      final hasil = await Future.wait([
-        _bookingRepository.hitungBooking(userId),
-        _aktivitasRepository.hitungAktivitasSaya(userId),
-        _favoritRepository.hitungFavorit(userId),
-      ]);
-      _jumlahBooking = hasil[0];
-      _jumlahAktivitas = hasil[1];
-      _jumlahFavorit = hasil[2];
-      _kondisiStatistik = KondisiStatistik.berhasil;
-    } catch (_) {
-      _kondisiStatistik = KondisiStatistik.gagal;
-    }
-
-    notifyListeners();
-  }
+  final Stream<List<BookingModel>> streamRiwayatBooking;
+  final Stream<List<AktivitasBermainModel>> streamAktivitasSaya;
+  final Stream<List<FavoritModel>> streamDaftarFavorit;
 
   /// Menekan ♥ pada daftar favorit di Profil — selalu berarti batal
   /// favorit, karena item ini hanya muncul kalau sudah difavoritkan

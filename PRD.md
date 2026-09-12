@@ -59,6 +59,19 @@ Kalau butuh detail lengkap perbaikan lain (race condition login/register, transa
 
 ---
 
+### Koreksi teknis pasca-v1.1 (12 September 2026)
+
+Ditemukan lewat T-30 (seluruh 37 kasus Black Box §11 dijalankan di emulator via adb/uiautomator — lihat `SPRINT-PLAN.md` "Testing manual keempat" untuk detail lengkap). Dua bug nyata ditemukan dan langsung diperbaiki di sesi yang sama; tidak ada perubahan ruang lingkup/fitur.
+
+| # | Koreksi | Bagian yang terdampak |
+|---|---|---|
+| 11 | **BB-06 (izin lokasi ditolak) gagal**: `Geolocator.requestPermission()` di `LocationService.ambilPosisi()` tidak pernah selesai (bug plugin `geolocator_android` — Android kadang mengembalikan `grantResults` kosong ke callback izin), sehingga Home/Map macet selamanya di kondisi "memuat" alih-alih menampilkan cadangan lokasi default (AB-03). Diperbaiki dengan membungkus pemanggilan itu dengan `.timeout(Duration(seconds: 10))`, pola yang sama dengan `timeLimit` yang sudah ada di `getCurrentPosition()` — kalau plugin macet, dianggap izin ditolak biasa. Diverifikasi ulang dengan mereproduksi pemicu bug yang sama persis (dialog izin sistem + "Tolak") — sebelumnya macet, sekarang langsung tampil layar cadangan yang benar. | §7 AB-03 |
+| 12 | **BB-36 (statistik Profil) gagal**: kotak statistik Booking/Aktivitas/Favorit (AB-12) diambil sekali lewat query `count()` saat `ProfilViewModel` dibuat, tapi karena tab Profil tetap hidup di `IndexedStack` `ShellNavigasi`, angkanya tidak pernah dihitung ulang — basi sampai logout/login. Diperbaiki dengan menghapus query `count()` terpisah sama sekali (`hitungBooking`/`hitungAktivitasSaya`/`hitungFavorit` dihapus dari repository, tidak dipakai di tempat lain) dan menghitung `snapshot.data?.length` dari `Stream` yang sama sudah dipakai daftar di bawahnya — angka jadi otomatis ikut hidup, dan baca Firestore yang tadinya dobel (sekali via `count()`, sekali via stream daftar) berkurang jadi sekali. **Perubahan #6 di "Perubahan v1.1" di atas** ("Statistik profil pakai agregasi `count()`") sudah tidak berlaku lagi — sekarang diturunkan dari stream yang sama, bukan agregasi terpisah. | §7 AB-12, §8 L-13 |
+
+Keduanya diverifikasi `flutter analyze` bersih, `flutter test` (7 kasus Haversine) hijau, dan aturan lapisan MVVM bersih. **Masih perlu verifikasi ulang di perangkat Android nyata** sesuai Definisi Selesai §12 poin 1 — kedua perbaikan ini baru diuji di emulator.
+
+---
+
 ## 1. Ringkasan Produk
 
 Sport Space adalah aplikasi Android yang menyelesaikan tiga masalah yang selama ini terpisah:
