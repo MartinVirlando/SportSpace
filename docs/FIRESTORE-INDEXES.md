@@ -37,15 +37,17 @@ Firestore memang menampilkan pesan error yang berisi **tautan langsung untuk mem
 | 2 | `aktivitasBermain` | `status` ↑, `waktu` ↑ | L-07 filter "Semua" |
 | 3 | `aktivitasBermain` | `status` ↑, `jenisOlahraga` ↑, `waktu` ↑ | L-07 filter per olahraga |
 | 4 | `aktivitasBermain` | `pembuatId` ↑, `waktu` ↓ | L-13 aktivitas yang saya buat |
-| 5 | `aktivitasBermain` | `peserta` (array), `waktu` ↓ | L-13 aktivitas yang saya ikuti |
+| 5 | `aktivitasBermain` | `peserta` (array), `waktu` ↓ | L-13 aktivitas yang saya ikuti + kotak statistik "Aktivitas" (AB-12, lihat catatan di bawah tabel) |
 | 6 | `rating` | `lapanganId` ↑, `tanggal` ↓ | L-06 daftar ulasan |
-| 7 | `booking` | `userId` ↑, `dibuatPada` ↓ | L-13 riwayat pemesanan |
+| 7 | `booking` | `userId` ↑, `dibuatPada` ↓ | L-13 riwayat pemesanan + kotak statistik "Booking" (AB-12, lihat catatan di bawah tabel) |
 | 8 | `booking` | `pemilikId` ↑, `dibuatPada` ↓ | L-14 booking masuk |
 | 9 | `booking` | `pemilikId` ↑, `status` ↑, `dibuatPada` ↓ | L-14 booking masuk + filter status |
 | 10 | `slotBooking` | `lapanganId` ↑, `tanggal` ↑, `jam` ↑ | L-10 slot yang sudah terisi |
 | 11 | `notifikasi` | `untukUserId` ↑, `dibuatPada` ↓ | L-12 daftar notifikasi |
 
 Batas kuota Firestore adalah 200 composite index per database, jadi 11 masih sangat longgar. Biaya index yang tidak terpakai praktis nol untuk skala skripsi — **kalau ragu, bikin saja**, jauh lebih murah daripada kena error pas demo.
+
+> **Catatan 12 September 2026 (BB-36):** kotak statistik Booking/Aktivitas di Profil (AB-12) semula punya query `count()` terpisah (tanpa `orderBy`, jadi tidak butuh index komposit), tapi ternyata basi selama tab Profil tetap hidup — diperbaiki dengan menghitung `snapshot.data?.length` dari `Stream` yang sama dipakai daftar L-13 di bawahnya. Konsekuensinya: index #5 dan #7 di atas sekarang dipakai **dua kali** (daftar + kotak statistik), bukan index baru — total tetap 11. Kotak statistik "Favorit" tetap tidak butuh index (lihat baris tabel "Yang TIDAK butuh index" di bawah).
 
 ---
 
@@ -233,7 +235,7 @@ Lebih murah, lebih sederhana, dan badge-nya dijamin sinkron dengan daftarnya.
 | Semua `transaction.get()` di AB-04/05/06 | `DocumentReference`, bukan query |
 | Subkoleksi `permintaan` di L-09 | Ambil seluruh subkoleksi, tanpa filter |
 | Profil pengguna `users/{uid}` | Baca dokumen langsung |
-| Statistik profil (`count()`, AB-12/T-38): `booking` `where userId`, `aktivitasBermain` `where peserta arrayContains`, subkoleksi `favorit` tanpa filter | Tanpa `orderBy` — equality/arrayContains sendirian otomatis terindeks, dan `count()` memakai index yang sama dengan query biasa |
+| Kotak statistik "Favorit" di Profil (AB-12): subkoleksi `favorit`, `orderBy dibuatPada` tanpa `where` | Satu field `orderBy` tanpa filter pertidaksamaan — otomatis terindeks Firestore, tidak perlu index komposit |
 
 ---
 

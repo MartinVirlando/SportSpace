@@ -4,6 +4,8 @@
 **Jumlah:** 30 lapangan · **Dibuat:** 17 Agustus 2026 · **Koordinat diperbarui:** 18 Agustus 2026 (7/30 terverifikasi)
 **Dipakai oleh:** T-10 (`AdminSeedScreen`) · **Skema:** PRD Bagian 6.2 · **Format seed:** PRD Bagian 10
 
+> **Catatan 13 September 2026 (T-29):** tile "Seed Data Awal" di menu Profil sudah di-comment (bukan dihapus) di `profil_screen.dart` supaya tidak ikut ke APK release/SUS. Kalau perlu menjalankan seed lagi (mis. setelah T-00e selesai dan 8 lapangan `observasi` di bawah ini diperbarui dengan data survei asli), buka dulu `_TileMenu` yang di-comment di dekat tombol Keluar, jalankan seed, lalu comment lagi sebelum build berikutnya.
+
 ---
 
 ## ⚠️ Baca ini dulu — status kelayakan data

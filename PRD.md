@@ -548,22 +548,25 @@ Kalau keduanya terpenuhi, tampilkan dua-duanya. Kalau tidak ada yang terpenuhi (
 >
 > Label memakai "Terverifikasi", bukan "Verified", karena §2.3 mewajibkan seluruh teks antarmuka berbahasa Indonesia.
 
-### AB-12 · Statistik profil — **v1.1**
+### AB-12 · Statistik profil — **v1.1, diperbarui 12 September 2026**
 
-Tiga angka di L-13 dihitung dengan **agregasi `count()`**, bukan dengan mengambil seluruh dokumen:
+Tiga angka di L-13 dihitung dari **panjang `Stream`** yang sama sudah dipakai daftar Riwayat Pemesanan/Aktivitas Saya/Lapangan Favorit di bawahnya — **bukan** agregasi `count()` terpisah:
 
 ```dart
-// count() hanya menagih 1 baca per 1000 dokumen — jauh lebih murah
-// daripada .get() lalu .length, dan tidak butuh index tambahan.
-final jumlahBooking = (await _db.collection('booking')
-    .where('userId', isEqualTo: uid).count().get()).count;
-
-final jumlahAktivitas = (await _db.collection('aktivitasBermain')
-    .where('peserta', arrayContains: uid).count().get()).count;
-
-final jumlahFavorit = (await _db.collection('users').doc(uid)
-    .collection('favorit').count().get()).count;
+// snapshot.data?.length dari Stream YANG SAMA dipakai daftar di bawah
+// kotak statistik ini — bukan query count() terpisah. Konsekuensinya:
+// angka ikut hidup otomatis begitu ada perubahan (booking baru, gabung
+// aktivitas, toggle favorit), tanpa perlu logout/login untuk melihat
+// angka terbaru, dan tidak ada baca Firestore tambahan (datanya sudah
+// dibaca untuk daftar di bawahnya).
+StreamBuilder<List<BookingModel>>(
+  stream: vm.streamRiwayatBooking, // sama dengan _SeksiRiwayatBooking
+  builder: (context, snapshot) =>
+      Text('${snapshot.data?.length ?? 0}'),
+)
 ```
+
+**Riwayat:** versi v1.1 awal memakai agregasi `count()` terpisah (alasannya saat itu: 1 baca per 1000 dokumen, lebih murah daripada `.get()` lalu `.length`). Pendekatan itu ternyata membuat angkanya basi selama tab Profil tetap hidup di `IndexedStack` `ShellNavigasi` — baru dihitung ulang setelah logout/login (BB-36, ditemukan 12 September 2026 lewat T-30). Diperbaiki dengan menurunkan angka dari `Stream` yang sama dipakai daftar di bawahnya: sama murahnya (data yang sama sudah dibaca untuk daftar itu, bukan baca tambahan) tapi tanpa bug basi. Lihat "Koreksi teknis pasca-v1.1 (12 September 2026)" #12 untuk detail lengkap.
 
 Kotak statistik ketiga di Figma berlabel "4.9★ Rating" — itu **diganti** menjadi **jumlah favorit**. Alasannya di §12c.
 
