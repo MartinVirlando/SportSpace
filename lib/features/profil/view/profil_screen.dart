@@ -15,7 +15,7 @@ import '../../../repositories/favorit_repository.dart';
 import '../../aktivitas/view/detail_aktivitas_screen.dart';
 import '../../auth/view/login_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
-import '../../../routes/admin_seed_screen.dart';
+// import '../../../routes/admin_seed_screen.dart'; // lihat catatan tile "Seed Data Awal" di bawah
 import '../../lapangan/view/detail_lapangan_screen.dart';
 import '../../mitra/view/dashboard_mitra_screen.dart';
 import '../viewmodel/profil_viewmodel.dart';
@@ -174,18 +174,24 @@ class _ProfilBody extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const DashboardMitraScreen()),
                 ),
               ),
-            // T-10: halaman tersembunyi untuk seed 30 lapangan awal — lihat
-            // catatan di admin_seed_screen.dart. HAPUS tile ini setelah
-            // dijalankan sekali di project Firestore produksi, dan jangan
-            // pernah ikut ke APK yang dibagikan ke responden SUS.
-            _TileMenu(
-              ikon: Icons.dataset_outlined,
-              label: AppStrings.adminSeedJudul,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AdminSeedScreen()),
-              ),
-            ),
-            const SizedBox(height: 8),
+            // T-10: tile "Seed Data Awal" sengaja disembunyikan sejak T-29
+            // (build APK release) — 30 lapangan sudah tertulis di project
+            // Firestore produksi sejak 21 Agustus 2026, dan tile ini tidak
+            // boleh ikut ke APK yang dibagikan ke responden SUS (T-31).
+            // `AdminSeedScreen`/`LapanganRepository.seedSemuaLapangan()`
+            // SENGAJA tidak dihapus — kalau T-00e selesai dan 8 lapangan
+            // `sumberData: observasi` perlu ditulis ulang dengan data survei
+            // asli, tile ini tinggal dimunculkan lagi (uncomment blok di
+            // bawah), tanpa perlu menulis ulang fiturnya dari nol.
+            //
+            // _TileMenu(
+            //   ikon: Icons.dataset_outlined,
+            //   label: AppStrings.adminSeedJudul,
+            //   onTap: () => Navigator.of(context).push(
+            //     MaterialPageRoute(builder: (_) => const AdminSeedScreen()),
+            //   ),
+            // ),
+            // const SizedBox(height: 8),
             _TileMenu(
               ikon: Icons.logout,
               label: AppStrings.keluar,
