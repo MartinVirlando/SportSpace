@@ -58,7 +58,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // (termasuk LoginScreen dan RegisterScreen ini) supaya tombol back
       // tidak membawa pengguna balik ke form setelah berhasil daftar.
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const ShellNavigasi()),
+        MaterialPageRoute(
+          builder: (_) => ShellNavigasi(key: AppRoutes.kunciShell),
+        ),
         (route) => false,
       );
     } else {

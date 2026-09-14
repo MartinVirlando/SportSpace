@@ -11,6 +11,7 @@ import '../../../models/rating_model.dart';
 import '../../../repositories/favorit_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
 import '../../../repositories/rating_repository.dart';
+import '../../../routes/app_routes.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../booking/view/ajukan_reservasi_screen.dart';
 import '../../favorit/viewmodel/favorit_viewmodel.dart';
@@ -640,9 +641,17 @@ class _BarisAlamat extends StatelessWidget {
         Expanded(
           child: Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
         ),
-        // TODO(T-14): buka tab Map terpusat di lapangan ini.
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            // Detail Lapangan selalu di-push DI ATAS ShellNavigasi (lihat
+            // komentar di atas build()), yang selalu jadi rute root
+            // tunggal (dibuat lewat pushReplacement/pushAndRemoveUntil) —
+            // jadi popUntil(isFirst) sudah pasti kembali ke ShellNavigasi,
+            // seberapa pun dalam layar ini dibuka (Home/Map/Favorit).
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            AppRoutes.kunciShell.currentState
+                ?.pindahKeMapDenganFokus(lapangan.latitude, lapangan.longitude);
+          },
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
             minimumSize: const Size(0, 0),

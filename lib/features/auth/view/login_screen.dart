@@ -44,7 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
       // (termasuk LoginScreen ini) supaya tombol back tidak bisa
       // membawa pengguna balik ke Login setelah berhasil masuk.
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const ShellNavigasi()),
+        MaterialPageRoute(
+          builder: (_) => ShellNavigasi(key: AppRoutes.kunciShell),
+        ),
         (route) => false,
       );
     } else {

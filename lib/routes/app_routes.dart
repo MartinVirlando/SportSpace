@@ -36,6 +36,13 @@ class AppRoutes {
   /// NONAKTIFKAN setelah dijalankan sekali.
   static const adminSeed = '/admin/seed'; // T-10
 
+  /// Kunci ke satu-satunya `ShellNavigasi` yang sedang hidup — dipasang
+  /// sebagai `key:` di 3 tempat widget itu dibuat (`splash_screen.dart`,
+  /// `login_screen.dart`, `register_screen.dart`), dipakai layar yang
+  /// di-`push` di atasnya untuk memerintah pindah tab dari luar. Lihat
+  /// dokumentasi [ShellNavigasi].
+  static final kunciShell = GlobalKey<ShellNavigasiState>();
+
   // Catatan T-08: navigasi antar layar di app ini dilakukan langsung lewat
   // Navigator.push(MaterialPageRoute(...)) di tiap View, BUKAN lewat
   // named routes/`rute` di bawah. Konstanta rute di atas tetap dijaga
@@ -47,32 +54,55 @@ class AppRoutes {
 }
 
 /// Kerangka navigasi 4 tab — PRD v1.1 Bagian 8.
+///
+/// Dipasangi [key] di ketiga tempat widget ini dibuat (`splash_screen.dart`,
+/// `login_screen.dart`, `register_screen.dart` — lihat [kunciShell]) supaya
+/// layar yang di-`push` DI ATASNYA (mis. Detail Lapangan) bisa memerintahnya
+/// pindah tab dari luar lewat [ShellNavigasiState.pindahKeMapDenganFokus].
+/// Aman dipakai berulang: `ShellNavigasi` hanya pernah satu instance hidup
+/// dalam satu waktu (selalu dibuat lewat `pushReplacement`/
+/// `pushAndRemoveUntil` yang membuang instance lama lebih dulu).
 class ShellNavigasi extends StatefulWidget {
   const ShellNavigasi({super.key});
 
   @override
-  State<ShellNavigasi> createState() => _ShellNavigasiState();
+  State<ShellNavigasi> createState() => ShellNavigasiState();
 }
 
-class _ShellNavigasiState extends State<ShellNavigasi> {
+class ShellNavigasiState extends State<ShellNavigasi> {
   int _indeks = 0;
+
+  // MapViewModel dibuat SEKALI di sini (bukan lewat `create:` di build()),
+  // supaya kelas ini punya pegangan langsung ke instance-nya dan bisa
+  // memanggil `fokusKeLapangan()` dari luar tree Map — lihat
+  // `pindahKeMapDenganFokus`. Tetap bukan Provider lintas-layar di
+  // `main.dart` (CLAUDE.md aturan 6 cuma untuk Auth & GPS): scope-nya
+  // masih satu layar ini, cuma cara pembuatannya yang pindah.
+  late final MapViewModel _mapViewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapViewModel = MapViewModel(
+      repository: context.read<LapanganRepository>(),
+      locationService: context.read<LocationService>(),
+    );
+  }
+
+  /// Dipanggil dari layar lain (lewat [kunciShell]) untuk pindah ke tab
+  /// Map sekaligus memusatkan peta ke satu lapangan — PRD L-06 "Lihat di
+  /// peta". Pemanggil bertanggung jawab pop dulu sampai ke rute ini.
+  void pindahKeMapDenganFokus(double lat, double lon) {
+    setState(() => _indeks = 1);
+    _mapViewModel.fokusKeLapangan(lat, lon);
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Dibangun ulang tiap build(), TAPI aman: Provider hanya menjalankan
-    // `create` sekali per elemen di tree (posisi/tipe widget-nya stabil
-    // di dalam IndexedStack), jadi MapViewModel tidak dibuat berkali-kali
-    // tiap kali tab dipindah. Beda dengan HomeViewModel/AuthViewModel
-    // yang memang lintas layar (CLAUDE.md aturan 6), MapViewModel cuma
-    // dipakai satu layar ini — jadi disuntik lokal di sini, bukan di
-    // `main.dart`.
     final halaman = <Widget>[
       const HomeScreen(), // L-04 · T-12
-      ChangeNotifierProvider<MapViewModel>(
-        create: (context) => MapViewModel(
-          repository: context.read<LapanganRepository>(),
-          locationService: context.read<LocationService>(),
-        ),
+      ChangeNotifierProvider<MapViewModel>.value(
+        value: _mapViewModel,
         child: const MapScreen(), // L-05 · T-14
       ),
       ChangeNotifierProvider<AktivitasViewModel>(

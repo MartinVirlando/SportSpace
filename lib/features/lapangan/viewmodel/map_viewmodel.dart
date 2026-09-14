@@ -59,6 +59,30 @@ class MapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Koordinat yang diminta untuk difokuskan dari luar (mis. tombol
+  /// "Lihat di peta" di Detail Lapangan, PRD L-06). Sengaja `double`
+  /// biasa, BUKAN `LatLng` — tipe itu cuma boleh dipakai flutter_map di
+  /// View (CLAUDE.md), ViewModel tidak boleh tahu soal itu.
+  double? _fokusLat;
+  double? get fokusLat => _fokusLat;
+
+  double? _fokusLon;
+  double? get fokusLon => _fokusLon;
+
+  void fokusKeLapangan(double lat, double lon) {
+    _fokusLat = lat;
+    _fokusLon = lon;
+    notifyListeners();
+  }
+
+  /// Dipanggil View setelah kamera peta selesai berpindah, supaya
+  /// permintaan fokus yang sama tidak diterapkan berulang kali tiap
+  /// rebuild.
+  void fokusSudahDitangani() {
+    _fokusLat = null;
+    _fokusLon = null;
+  }
+
   Future<void> muatPeta({double? latDefault, double? lonDefault}) async {
     final permintaanIni = ++_permintaanTerakhir;
 

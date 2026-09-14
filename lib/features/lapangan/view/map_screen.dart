@@ -116,6 +116,36 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
   final _mapController = MapController();
 
   @override
+  void initState() {
+    super.initState();
+    // Menutupi kasus permintaan fokus (dari "Lihat di peta" L-06) yang
+    // sudah masuk ke MapViewModel SEBELUM peta ini pernah selesai
+    // dibangun (mis. tab Map belum pernah dibuka) — postFrameCallback
+    // supaya `_mapController` sudah terpasang ke FlutterMap sebelum
+    // `.move()` dipanggil.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _terapkanFokusJikaAda());
+  }
+
+  @override
+  void didUpdateWidget(covariant _PetaBerhasil oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Kasus lain: tab Map sudah terbuka duluan, lalu permintaan fokus
+    // datang belakangan — `vm.fokusKeLapangan()` memicu `notifyListeners`,
+    // MapScreen rebuild, widget ini dapat instance baru lewat sini.
+    _terapkanFokusJikaAda();
+  }
+
+  void _terapkanFokusJikaAda() {
+    final vm = widget.vm;
+    final lat = vm.fokusLat;
+    final lon = vm.fokusLon;
+    if (lat == null || lon == null) return;
+
+    _mapController.move(LatLng(lat, lon), 16);
+    vm.fokusSudahDitangani();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final vm = widget.vm;
     final posisiPengguna = LatLng(vm.latPengguna!, vm.lonPengguna!);

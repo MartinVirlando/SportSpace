@@ -47,8 +47,9 @@ class _SplashScreenState extends State<SplashScreen> {
     final sudahMasuk = authVm.status == StatusAuth.sudahMasuk;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) =>
-            sudahMasuk ? const ShellNavigasi() : const LoginScreen(),
+        builder: (_) => sudahMasuk
+            ? ShellNavigasi(key: AppRoutes.kunciShell)
+            : const LoginScreen(),
       ),
     );
   }
