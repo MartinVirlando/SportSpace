@@ -72,6 +72,20 @@ Keduanya diverifikasi `flutter analyze` bersih, `flutter test` (7 kasus Haversin
 
 ---
 
+### Koreksi teknis pasca-v1.1 (14 September 2026)
+
+Ditemukan lewat audit kode menyeluruh (dibantu Claude, bukan Black Box formal) setelah T-29/T-30 — bukan perubahan ruang lingkup/fitur, murni menyambungkan elemen antarmuka yang sudah digambar tapi belum berfungsi.
+
+| # | Koreksi | Bagian yang terdampak |
+|---|---|---|
+| 13 | **Tombol "Edit Profil" (L-13) tidak berfungsi**: `onPressed` kosong sejak dibuat. Disambungkan ke bottom sheet baru (`ubah_profil_sheet.dart`) mengikuti pola Ubah Olahraga Favorit/Lokasi Default (T-37) — hanya `nama` dan `nomorTelepon` yang bisa diubah (surel = email Firebase Auth, butuh re-autentikasi, di luar cakupan PRD). | §8 L-13 |
+| 14 | **Tombol "Lihat di peta" (L-06) tidak berfungsi**: `onPressed` kosong (`TODO(T-14)`). Disambungkan: pop ke `ShellNavigasi` (selalu jadi rute root tunggal), pindah ke tab Map, dan memusatkan peta ke koordinat lapangan lewat `MapViewModel.fokusKeLapangan()` (`double` biasa, bukan `LatLng` — tipe itu tetap cuma boleh dipakai `flutter_map` di View). Butuh `GlobalKey<ShellNavigasiState>` (`AppRoutes.kunciShell`) supaya layar yang di-`push` di atas `ShellNavigasi` bisa memerintah pindah tab dari luar. | §8 L-06 |
+| 15 | **Koreksi #6 (20 Agustus 2026) akhirnya ditutup**: notifikasi `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` sekarang berpindah ke tab Profil (L-13) saat ditekan, memakai mekanisme `AppRoutes.kunciShell` yang sama dengan koreksi #14 di atas. Sebelumnya item ini cuma ditandai `sudahDibaca` tanpa berpindah layar karena Profil ada di dalam `IndexedStack`, bukan rute yang bisa di-`push` — sekarang mekanisme itu sudah ada. | §8 L-12, L-13 |
+
+Ketiganya diverifikasi `flutter analyze` bersih, `flutter test` hijau, aturan lapisan MVVM bersih. #13 dan #14 sudah dites langsung di emulator (edit profil dicek dua arah lewat Firestore REST API; lihat-di-peta dicoba dengan 2 lapangan berbeda). **Masih perlu verifikasi ulang di perangkat Android nyata** sesuai Definisi Selesai §12 poin 1.
+
+---
+
 ## 1. Ringkasan Produk
 
 Sport Space adalah aplikasi Android yang menyelesaikan tiga masalah yang selama ini terpisah:

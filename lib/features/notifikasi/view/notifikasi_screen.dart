@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/notifikasi_model.dart';
 import '../../../repositories/notifikasi_repository.dart';
+import '../../../routes/app_routes.dart';
 import '../../aktivitas/view/detail_aktivitas_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../mitra/view/dashboard_mitra_screen.dart';
@@ -21,10 +22,14 @@ import '../viewmodel/notifikasi_viewmodel.dart';
 /// - `BOOKING_BARU` (AB-04, penerimanya mitra) → Dashboard Mitra (L-14),
 ///   sejak T-25 — layar itu membaca ulang booking milik mitra lewat
 ///   `Stream`, jadi cukup dibuka tanpa membawa `refId`.
-/// - `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` (penerimanya pemesan)
-///   BELUM punya layar tujuan — tujuannya "Riwayat Pemesanan" di Profil
-///   (L-13), baru dikerjakan T-27. Untuk sekarang item itu cuma ditandai
-///   dibaca tanpa berpindah layar.
+/// - `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` (penerimanya pemesan) →
+///   tab Profil (L-13), tujuan "Riwayat Pemesanan". Sebelumnya tidak
+///   bisa dicapai karena Profil ada di dalam `IndexedStack` milik
+///   `ShellNavigasi`, bukan rute yang bisa di-`push` (Koreksi teknis
+///   pasca-v1.1 20 Agustus 2026 #6) — sekarang dipakaikan mekanisme
+///   yang sama dengan tombol "Lihat di peta" (L-06): pop sampai ke
+///   `ShellNavigasi` (selalu jadi rute root tunggal), lalu perintahkan
+///   pindah tab lewat `AppRoutes.kunciShell`.
 class NotifikasiScreen extends StatelessWidget {
   const NotifikasiScreen({super.key});
 
@@ -71,6 +76,13 @@ class _NotifikasiBody extends StatelessWidget {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const DashboardMitraScreen()),
       );
+    } else if (item.tipe == 'BOOKING_DIKONFIRMASI' ||
+        item.tipe == 'BOOKING_DITOLAK') {
+      // NotifikasiScreen selalu di-push di atas ShellNavigasi (dari bell
+      // icon di Home) — popUntil(isFirst) kembali ke rute root tunggal
+      // itu, lalu pindah ke tab Profil (indeks 3).
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      AppRoutes.kunciShell.currentState?.pindahKeTab(3);
     }
   }
 

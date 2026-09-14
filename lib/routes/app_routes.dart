@@ -97,6 +97,14 @@ class ShellNavigasiState extends State<ShellNavigasi> {
     _mapViewModel.fokusKeLapangan(lat, lon);
   }
 
+  /// Pindah tab tanpa perlu memusatkan apa pun — dipakai notifikasi
+  /// `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` (PRD L-12) untuk membuka
+  /// tab Profil (indeks 3), tujuan "Riwayat Pemesanan" yang sebelumnya
+  /// tidak bisa dicapai lewat notifikasi (Koreksi teknis pasca-v1.1 20
+  /// Agustus 2026 #6) karena Profil ada di dalam `IndexedStack`, bukan
+  /// rute yang bisa di-`push`.
+  void pindahKeTab(int indeks) => setState(() => _indeks = indeks);
+
   @override
   Widget build(BuildContext context) {
     final halaman = <Widget>[
