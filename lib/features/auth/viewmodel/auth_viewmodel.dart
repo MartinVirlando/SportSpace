@@ -164,6 +164,31 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  /// Ubah Profil (nama, nomor telepon) — PRD L-13. Mengembalikan `true`
+  /// kalau berhasil; kalau `false`, baca [pesanError].
+  Future<bool> ubahProfil({
+    required String nama,
+    required String nomorTelepon,
+  }) async {
+    final userSaatIni = _user;
+    if (userSaatIni == null) return false;
+
+    try {
+      await _repository.perbaruiProfil(
+        userSaatIni.userId,
+        nama: nama,
+        nomorTelepon: nomorTelepon,
+      );
+      _user = userSaatIni.salinDengan(nama: nama, nomorTelepon: nomorTelepon);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _pesanError = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Ubah Lokasi Default — PRD L-13, T-37 (cadangan AB-03 saat GPS
   /// ditolak). Mengembalikan `true` kalau berhasil; kalau `false`, baca
   /// [pesanError].

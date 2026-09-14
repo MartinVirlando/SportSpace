@@ -22,6 +22,7 @@ import '../viewmodel/profil_viewmodel.dart';
 import 'halaman_statis_screen.dart';
 import 'ubah_lokasi_default_sheet.dart';
 import 'ubah_olahraga_favorit_sheet.dart';
+import 'ubah_profil_sheet.dart';
 
 /// Tab Profil — PRD L-13, T-27. BB-28 (booking lewat jam selesai tampil
 /// SELESAI), BB-30 (logout).
@@ -247,10 +248,17 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        // TODO: PRD tidak merinci layar Edit Profil terpisah (§2.4) —
-        // tombolnya digambar sesuai Figma tapi belum berfungsi.
+        // PRD tidak merinci layar Edit Profil terpisah (§2.4), jadi
+        // dibuat sebagai bottom sheet ringkas (pola sama dengan Ubah
+        // Olahraga Favorit/Lokasi Default, T-37) — hanya nama dan nomor
+        // telepon, karena surel adalah email Firebase Auth (butuh
+        // re-autentikasi untuk diubah, di luar cakupan PRD).
         TextButton(
-          onPressed: () {},
+          onPressed: () => showUbahProfilSheet(
+            context,
+            namaSaatIni: user.nama,
+            nomorTeleponSaatIni: user.nomorTelepon,
+          ),
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
             minimumSize: const Size(0, 0),

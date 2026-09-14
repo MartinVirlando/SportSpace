@@ -80,14 +80,16 @@ class UserModel {
   /// ikut terbarui tanpa perlu `ambilUser()` ulang. Objeknya immutable
   /// (semua field `final`), sama seperti `LapanganModel.salinDenganJarak`.
   UserModel salinDengan({
+    String? nama,
+    String? nomorTelepon,
     List<String>? olahragaFavorit,
     Map<String, dynamic>? lokasiDefault,
   }) =>
       UserModel(
         userId: userId,
-        nama: nama,
+        nama: nama ?? this.nama,
         surel: surel,
-        nomorTelepon: nomorTelepon,
+        nomorTelepon: nomorTelepon ?? this.nomorTelepon,
         fotoProfilURL: fotoProfilURL,
         role: role,
         tanggalDaftar: tanggalDaftar,

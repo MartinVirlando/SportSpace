@@ -152,6 +152,26 @@ class AuthRepository {
     }
   }
 
+  /// Ubah Profil (nama, nomor telepon) di Profil — PRD L-13. `surel`
+  /// sengaja tidak ikut bisa diubah lewat metode ini: itu email Firebase
+  /// Auth, mengubahnya butuh re-autentikasi dan tidak disebut di PRD.
+  Future<void> perbaruiProfil(
+    String uid, {
+    required String nama,
+    required String nomorTelepon,
+  }) async {
+    try {
+      await _db.collection('users').doc(uid).update({
+        'nama': nama,
+        'nomorTelepon': nomorTelepon,
+      }).timeout(_batasWaktu);
+    } on FirebaseException {
+      throw Exception('Gagal menyimpan profil. Coba lagi.');
+    } on TimeoutException {
+      throw Exception('Tidak ada koneksi internet. Coba lagi.');
+    }
+  }
+
   /// Ubah Lokasi Default di Profil — PRD L-13, T-37, dipakai sebagai
   /// cadangan AB-03 saat GPS ditolak.
   Future<void> perbaruiLokasiDefault(
