@@ -38,7 +38,7 @@ Jangan pernah memakai, menyarankan, atau menambahkan:
 
 - **Firebase Cloud Functions** — butuh paket berbayar. Semua logika dipindah ke Firestore Transaction di klien.
 - **Firebase Cloud Messaging** — notifikasi dibuat in-app lewat koleksi `notifikasi` + Firestore listener.
-- **Firebase Storage** — tidak ada upload foto. Foto lapangan pakai URL eksternal, foto profil pakai avatar inisial. (Keputusan PRD §12b masih terbuka — sampai diputuskan, larangan ini berlaku.)
+- **Firebase Storage** — tidak pernah dipakai, tidak boleh ditambahkan tanpa izin eksplisit. Foto lapangan tetap URL eksternal (`lapangan.fotoURL`, mitra tempel link, bukan upload). Foto profil (v1.2 tahap 2, lihat PRD §12b) BOLEH diambil dari galeri lewat `image_picker` — paket ini **sudah** diizinkan dan dipakai — tapi hasilnya disimpan sebagai **Base64 langsung di dokumen Firestore** `users/{uid}.fotoProfilBase64`, BUKAN diunggah ke Storage. Jangan pernah pakai `image_picker` untuk alur yang berakhir di Firebase Storage tanpa izin baru, dan jangan pakai pola Base64-di-Firestore ini untuk foto lapangan (bisa lebih besar/banyak per lapangan, berisiko melebihi batas 1 MB per dokumen).
 - **Riverpod, BLoC, GetX** — state management sudah dikunci: **Provider**.
 - **Google Maps SDK** — peta sudah dikunci: **flutter_map + OpenStreetMap**.
 - **`Distance()` dari `latlong2`** untuk menghitung jarak — pakai `hitungJarakHaversine()` buatan sendiri. `latlong2` hanya boleh dipakai untuk tipe `LatLng`.

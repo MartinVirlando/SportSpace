@@ -314,6 +314,84 @@ class AktivitasRepository {
     }
   }
 
+  /// Batalkan keikutsertaan — PRD AB-06 lanjutan, T-45. Kebalikan dari
+  /// [terimaPermintaan]: transaction yang sama (baca-lalu-tulis
+  /// `jumlahPemainSaatIni`) supaya tidak race dengan permintaan lain yang
+  /// mungkin sedang diterima bersamaan.
+  ///
+  /// Dokumen `permintaan/{userId}` DIHAPUS (bukan cuma diubah statusnya)
+  /// supaya pola ID deterministik yang sama tetap berlaku: pengguna ini
+  /// bisa [kirimPermintaanGabung] lagi nanti kalau berubah pikiran, tanpa
+  /// menabrak dokumen lama.
+  ///
+  /// Hanya untuk peserta BIASA — pembuat aktivitas tidak bisa keluar dari
+  /// aktivitasnya sendiri lewat jalur ini (di luar cakupan T-45; sudah
+  /// ada rule `delete` terpisah untuk pembuat kalau nanti dibutuhkan
+  /// "Batalkan Aktivitas").
+  Future<void> batalkanKeikutsertaan({
+    required String aktivitasId,
+    required String userId,
+    required String namaUser,
+  }) async {
+    final aktivitasRef = _db.collection('aktivitasBermain').doc(aktivitasId);
+    final permintaanRef = aktivitasRef.collection('permintaan').doc(userId);
+    final notifRef = _db.collection('notifikasi').doc();
+
+    try {
+      await _db.runTransaction((transaction) async {
+        final aktivitasSnap = await transaction.get(aktivitasRef);
+        if (!aktivitasSnap.exists) {
+          throw Exception('Aktivitas tidak ditemukan.');
+        }
+        final aktivitas = AktivitasBermainModel.fromFirestore(aktivitasSnap);
+
+        if (aktivitas.pembuatId == userId) {
+          throw Exception('Pembuat aktivitas tidak bisa membatalkan '
+              'keikutsertaan sendiri.');
+        }
+        if (!aktivitas.peserta.contains(userId)) {
+          throw Exception('Kamu bukan peserta aktivitas ini.');
+        }
+        if (aktivitas.status == 'SELESAI' || aktivitas.status == 'DIBATALKAN') {
+          throw Exception('Aktivitas ini sudah selesai atau dibatalkan.');
+        }
+
+        final jumlahBaru = aktivitas.jumlahPemainSaatIni - 1;
+        // Status PENUH kembali TERBUKA begitu ada slot kosong lagi.
+        // Status TERBUKA yang sudah TERBUKA tetap TERBUKA — tidak ada
+        // transisi lain yang mungkin di titik ini.
+        final statusBaru = aktivitas.status == 'PENUH' &&
+                jumlahBaru < aktivitas.jumlahPemainDibutuhkan
+            ? 'TERBUKA'
+            : aktivitas.status;
+
+        transaction.update(aktivitasRef, {
+          'jumlahPemainSaatIni': jumlahBaru,
+          'status': statusBaru,
+          'peserta': FieldValue.arrayRemove([userId]),
+        });
+        transaction.delete(permintaanRef);
+        transaction.set(
+          notifRef,
+          NotifikasiModel(
+            notifikasiId: notifRef.id,
+            untukUserId: aktivitas.pembuatId,
+            tipe: 'PESERTA_KELUAR',
+            judul: 'Peserta membatalkan keikutsertaan',
+            pesan: '$namaUser keluar dari aktivitas "${aktivitas.namaLapangan}".',
+            refId: aktivitasId,
+            dibuatPada: DateTime.now(),
+          ).toFirestore(),
+        );
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membatalkan keikutsertaan.');
+      }
+      throw Exception('Gagal membatalkan keikutsertaan. Coba lagi.');
+    }
+  }
+
   /// Tolak permintaan gabung — PRD AB-06, T-20, BB-19.
   ///
   /// Cukup `WriteBatch`, bukan transaction: tidak ada penghitung bersama

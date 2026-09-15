@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +19,6 @@ import '../../aktivitas/view/detail_aktivitas_screen.dart';
 import '../../auth/view/login_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 // import '../../../routes/admin_seed_screen.dart'; // lihat catatan tile "Seed Data Awal" di bawah
-import '../../lapangan/view/detail_lapangan_screen.dart';
 import '../../mitra/view/dashboard_mitra_screen.dart';
 import '../viewmodel/profil_viewmodel.dart';
 import 'halaman_statis_screen.dart';
@@ -29,9 +31,11 @@ import 'ubah_profil_sheet.dart';
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 ///
-/// Kotak statistik (T-38, AB-12), Lapangan Favorit (T-35, AB-10), dan
-/// Olahraga Favorit / Lokasi Default (T-37) — masing-masing tugas
-/// terpisah dari T-27 — sudah hidup penuh di layar ini.
+/// Kotak statistik (T-38, AB-12) dan Olahraga Favorit / Lokasi Default
+/// (T-37) — masing-masing tugas terpisah dari T-27 — sudah hidup penuh di
+/// layar ini. Daftar Lapangan Favorit (AB-10) dipindah ke Home (L-04)
+/// lewat tombol toggle ♥ — lihat T-41; hanya kotak angka "Favorit" yang
+/// tetap tinggal di sini.
 ///
 /// Riwayat Pemesanan dan Aktivitas Saya SUDAH hidup penuh lewat `Stream`
 /// (CLAUDE.md aturan 6), termasuk AB-07 (status SELESAI dihitung klien).
@@ -120,13 +124,6 @@ class _ProfilBody extends StatelessWidget {
             _SeksiLokasiDefault(lokasiDefault: user.lokasiDefault),
             const Divider(height: 36),
             const Text(
-              AppStrings.lapanganFavorit,
-              style: AppTextStyles.judulSeksi,
-            ),
-            const SizedBox(height: 10),
-            _SeksiLapanganFavorit(vm: vm),
-            const Divider(height: 36),
-            const Text(
               AppStrings.riwayatPemesanan,
               style: AppTextStyles.judulSeksi,
             ),
@@ -211,30 +208,11 @@ class _Header extends StatelessWidget {
 
   const _Header({required this.user});
 
-  String get _inisial {
-    final kata = user.nama.trim().split(RegExp(r'\s+'));
-    if (kata.isEmpty || kata.first.isEmpty) return '?';
-    final pertama = kata.first[0];
-    final kedua = kata.length > 1 && kata.last.isNotEmpty ? kata.last[0] : '';
-    return (pertama + kedua).toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 28,
-          backgroundColor: AppColors.primary,
-          child: Text(
-            _inisial,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
+        _AvatarProfil(nama: user.nama, fotoProfilBase64: user.fotoProfilBase64),
         const SizedBox(width: 14),
         Expanded(
           child: Column(
@@ -250,14 +228,16 @@ class _Header extends StatelessWidget {
         ),
         // PRD tidak merinci layar Edit Profil terpisah (§2.4), jadi
         // dibuat sebagai bottom sheet ringkas (pola sama dengan Ubah
-        // Olahraga Favorit/Lokasi Default, T-37) — hanya nama dan nomor
-        // telepon, karena surel adalah email Firebase Auth (butuh
-        // re-autentikasi untuk diubah, di luar cakupan PRD).
+        // Olahraga Favorit/Lokasi Default, T-37) — nama, nomor telepon,
+        // dan URL foto profil opsional (T-43). Surel sengaja tidak ikut:
+        // itu email Firebase Auth (butuh re-autentikasi untuk diubah, di
+        // luar cakupan PRD).
         TextButton(
           onPressed: () => showUbahProfilSheet(
             context,
             namaSaatIni: user.nama,
             nomorTeleponSaatIni: user.nomorTelepon,
+            fotoProfilBase64SaatIni: user.fotoProfilBase64,
           ),
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
@@ -266,6 +246,70 @@ class _Header extends StatelessWidget {
           child: const Text(AppStrings.editProfil),
         ),
       ],
+    );
+  }
+}
+
+/// Avatar profil — T-43. Menampilkan foto dari `fotoProfilBase64` (pilih
+/// dari galeri via `image_picker`, disimpan Base64 di Firestore — BUKAN
+/// Firebase Storage) kalau terisi, jatuh balik ke avatar inisial (pola
+/// lama, satu-satunya opsi sebelum T-43) kalau kosong ATAU data gagal
+/// didekode.
+class _AvatarProfil extends StatefulWidget {
+  final String nama;
+  final String? fotoProfilBase64;
+
+  const _AvatarProfil({required this.nama, required this.fotoProfilBase64});
+
+  @override
+  State<_AvatarProfil> createState() => _AvatarProfilState();
+}
+
+class _AvatarProfilState extends State<_AvatarProfil> {
+  bool _gagalMuat = false;
+
+  String get _inisial {
+    final kata = widget.nama.trim().split(RegExp(r'\s+'));
+    if (kata.isEmpty || kata.first.isEmpty) return '?';
+    final pertama = kata.first[0];
+    final kedua = kata.length > 1 && kata.last.isNotEmpty ? kata.last[0] : '';
+    return (pertama + kedua).toUpperCase();
+  }
+
+  /// Base64 → bytes, dibungkus try/catch — data yang tersimpan seharusnya
+  /// selalu valid lewat alur `ubah_profil_sheet.dart`, tapi tetap dijaga
+  /// supaya data rusak jatuh balik ke inisial, bukan crash.
+  Uint8List? get _fotoBytes {
+    final b64 = widget.fotoProfilBase64;
+    if (b64 == null || b64.isEmpty) return null;
+    try {
+      return base64Decode(b64);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = _gagalMuat ? null : _fotoBytes;
+
+    return CircleAvatar(
+      radius: 28,
+      backgroundColor: AppColors.primary,
+      backgroundImage: bytes != null ? MemoryImage(bytes) : null,
+      onBackgroundImageError: bytes != null
+          ? (_, __) => setState(() => _gagalMuat = true)
+          : null,
+      child: bytes != null
+          ? null
+          : Text(
+              _inisial,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
     );
   }
 }
@@ -462,106 +506,6 @@ class _SeksiLokasiDefault extends StatelessWidget {
           style: AppTextStyles.metaLapangan,
         ),
       ],
-    );
-  }
-}
-
-/// Daftar Lapangan Favorit (L-13, T-35) — `StreamBuilder` supaya baris
-/// langsung hilang begitu dibatalkan lewat ikon ♥ di L-04/L-06, tanpa
-/// menyegarkan layar (CLAUDE.md aturan 6).
-class _SeksiLapanganFavorit extends StatelessWidget {
-  final ProfilViewModel vm;
-
-  const _SeksiLapanganFavorit({required this.vm});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<List<FavoritModel>>(
-      stream: vm.streamDaftarFavorit,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Text(
-            snapshot.error.toString().replaceFirst('Exception: ', ''),
-            style: AppTextStyles.metaLapangan,
-          );
-        }
-        final daftar = snapshot.data ?? const [];
-        if (daftar.isEmpty) {
-          return const Text(
-            AppStrings.kosongLapanganFavorit,
-            style: AppTextStyles.metaLapangan,
-          );
-        }
-        return Column(
-          children: [
-            for (final f in daftar) ...[
-              _KartuFavorit(favorit: f, vm: vm),
-              const SizedBox(height: 10),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _KartuFavorit extends StatelessWidget {
-  final FavoritModel favorit;
-  final ProfilViewModel vm;
-
-  const _KartuFavorit({required this.favorit, required this.vm});
-
-  Future<void> _batalFavorit(BuildContext context) async {
-    try {
-      await vm.hapusFavorit(favorit.lapanganId, favorit.namaLapangan);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DetailLapanganScreen(lapanganId: favorit.lapanganId),
-        ),
-      ),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                favorit.namaLapangan,
-                style: AppTextStyles.namaLapangan,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => _batalFavorit(context),
-              behavior: HitTestBehavior.opaque,
-              child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: Icon(Icons.favorite, size: 18, color: AppColors.primary),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

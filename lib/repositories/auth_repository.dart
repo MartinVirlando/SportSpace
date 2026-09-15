@@ -152,18 +152,21 @@ class AuthRepository {
     }
   }
 
-  /// Ubah Profil (nama, nomor telepon) di Profil — PRD L-13. `surel`
-  /// sengaja tidak ikut bisa diubah lewat metode ini: itu email Firebase
-  /// Auth, mengubahnya butuh re-autentikasi dan tidak disebut di PRD.
+  /// Ubah Profil (nama, nomor telepon, foto profil Base64) di Profil —
+  /// PRD L-13, T-43. `surel` sengaja tidak ikut bisa diubah lewat metode
+  /// ini: itu email Firebase Auth, mengubahnya butuh re-autentikasi dan
+  /// tidak disebut di PRD.
   Future<void> perbaruiProfil(
     String uid, {
     required String nama,
     required String nomorTelepon,
+    required String fotoProfilBase64,
   }) async {
     try {
       await _db.collection('users').doc(uid).update({
         'nama': nama,
         'nomorTelepon': nomorTelepon,
+        'fotoProfilBase64': fotoProfilBase64.isEmpty ? null : fotoProfilBase64,
       }).timeout(_batasWaktu);
     } on FirebaseException {
       throw Exception('Gagal menyimpan profil. Coba lagi.');

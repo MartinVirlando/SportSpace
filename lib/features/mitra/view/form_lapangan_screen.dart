@@ -63,6 +63,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
   final _lonCtrl = TextEditingController();
   final _hargaCtrl = TextEditingController();
   final _fotoCtrl = TextEditingController();
+  final _kontakCtrl = TextEditingController();
 
   final Set<String> _jenisOlahraga = {};
   final Set<String> _fasilitas = {};
@@ -85,6 +86,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
       _lonCtrl.text = l.longitude.toString();
       _hargaCtrl.text = l.harga.toString();
       _fotoCtrl.text = l.fotoURL.isEmpty ? '' : l.fotoURL.first;
+      _kontakCtrl.text = l.nomorTelepon;
       _jenisOlahraga.addAll(l.jenisOlahraga);
       _fasilitas.addAll(l.fasilitas);
       _jamBuka = _parseJam(l.jamBuka);
@@ -108,6 +110,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
     _lonCtrl.dispose();
     _hargaCtrl.dispose();
     _fotoCtrl.dispose();
+    _kontakCtrl.dispose();
     super.dispose();
   }
 
@@ -187,6 +190,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             jamTutup: _formatJam(_jamTutup!),
             fasilitas: _fasilitas.toList(),
             fotoURL: fotoURL,
+            nomorTelepon: _kontakCtrl.text.trim(),
           )
         : await vm.tambahLapangan(
             nama: _namaCtrl.text.trim(),
@@ -199,6 +203,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             jamTutup: _formatJam(_jamTutup!),
             fasilitas: _fasilitas.toList(),
             fotoURL: fotoURL,
+            nomorTelepon: _kontakCtrl.text.trim(),
             pemilikId: user.userId,
           );
 
@@ -251,6 +256,15 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                   decoration:
                       const InputDecoration(labelText: AppStrings.alamat),
                   validator: (v) => Validators.wajib(v, AppStrings.alamat),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _kontakCtrl,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: AppStrings.nomorTeleponLapanganOpsional,
+                  ),
+                  validator: Validators.nomorTelepon,
                 ),
                 const SizedBox(height: 16),
                 Row(

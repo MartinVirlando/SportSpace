@@ -15,9 +15,14 @@ class UserModel {
   final String surel;
   final String nomorTelepon;
 
-  /// Selalu `null` — foto profil pakai avatar inisial, bukan upload
-  /// (PRD Bagian 2.1, Firebase Storage dilarang).
-  final String? fotoProfilURL;
+  /// Opsional — foto profil, diisi pengguna dari galeri (JPG) lewat
+  /// `image_picker`, disimpan sebagai **Base64** langsung di dokumen ini
+  /// (T-43 lanjutan). BUKAN Firebase Storage/URL — lihat PRD §12b: batas
+  /// 1 MB per dokumen Firestore cukup untuk foto profil yang sudah
+  /// dikompres kecil (`maxWidth`/`maxHeight`/`imageQuality` di
+  /// `ubah_profil_sheet.dart`). `null`/kosong berarti avatar ditampilkan
+  /// dari inisial nama.
+  final String? fotoProfilBase64;
 
   final String role; // "pengguna" | "mitra"
   final DateTime tanggalDaftar;
@@ -34,7 +39,7 @@ class UserModel {
     required this.nama,
     required this.surel,
     this.nomorTelepon = '',
-    this.fotoProfilURL,
+    this.fotoProfilBase64,
     required this.role,
     required this.tanggalDaftar,
     this.olahragaFavorit = const [],
@@ -49,7 +54,7 @@ class UserModel {
       nama: data['nama'] as String? ?? '',
       surel: data['surel'] as String? ?? '',
       nomorTelepon: data['nomorTelepon'] as String? ?? '',
-      fotoProfilURL: data['fotoProfilURL'] as String?,
+      fotoProfilBase64: data['fotoProfilBase64'] as String?,
       role: data['role'] as String? ?? 'pengguna',
       // Firestore Timestamp -> DateTime supaya lapisan atas tidak perlu
       // tahu tipe Firestore sama sekali.
@@ -67,7 +72,7 @@ class UserModel {
         'nama': nama,
         'surel': surel,
         'nomorTelepon': nomorTelepon,
-        'fotoProfilURL': fotoProfilURL,
+        'fotoProfilBase64': fotoProfilBase64,
         'role': role,
         'tanggalDaftar': Timestamp.fromDate(tanggalDaftar),
         'olahragaFavorit': olahragaFavorit,
@@ -82,6 +87,7 @@ class UserModel {
   UserModel salinDengan({
     String? nama,
     String? nomorTelepon,
+    String? fotoProfilBase64,
     List<String>? olahragaFavorit,
     Map<String, dynamic>? lokasiDefault,
   }) =>
@@ -90,7 +96,7 @@ class UserModel {
         nama: nama ?? this.nama,
         surel: surel,
         nomorTelepon: nomorTelepon ?? this.nomorTelepon,
-        fotoProfilURL: fotoProfilURL,
+        fotoProfilBase64: fotoProfilBase64 ?? this.fotoProfilBase64,
         role: role,
         tanggalDaftar: tanggalDaftar,
         olahragaFavorit: olahragaFavorit ?? this.olahragaFavorit,

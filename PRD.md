@@ -2,7 +2,7 @@
 
 **Aplikasi Android pencarian lapangan olahraga dan rekan bermain berbasis lokasi**
 
-Versi 1.1 · 17 Agustus 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
+Versi 1.2 · 15 September 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
 
 > Dokumen ini adalah **sumber kebenaran tunggal** untuk implementasi. Jika ada pertentangan antara dokumen ini dan ingatan/asumsi, dokumen ini yang menang. Jika ada kebutuhan yang tidak tercantum di sini, **jangan dibangun** — tanyakan dulu.
 
@@ -21,6 +21,18 @@ Diselaraskan dengan prototipe Figma "App Skripsi - Sport Field Finder". Ringkasn
 | 7 | Rating antar-pengguna **ditunda** — lihat §12c | §12c |
 
 > ⚠️ **Perubahan #1 punya konsekuensi di luar kode.** Bab 3.3.2 poin 5 menuliskan navigasi 3 tab. Itu harus direvisi bersama Pak Gintoro sebelum Bab 4 ditulis, supaya tangkapan layar di Bab 4 tidak bertentangan dengan rancangan di Bab 3.
+
+### Perubahan v1.2 (15 September 2026)
+
+Lima penambahan setelah pemakaian internal tim. Empat di antaranya perluasan dari fitur yang sudah ada (atribut/UI/logika baru pada entitas yang sudah ada di ERD); satu murni UI tambahan. **Tidak ada yang menyentuh rumusan masalah Bab 1** — beda dengan usulan "list teman" (sistem pertemanan) yang sempat dipertimbangkan lalu **dibatalkan** karena tidak menjawab satu pun dari 3 rumusan masalah dan butuh entitas ERD baru sama sekali (lihat riwayat diskusi tim).
+
+| # | Perubahan | Bagian yang terdampak |
+|---|---|---|
+| 1 | **Favorit dipindah dari L-13 Profil ke L-04 Home**, jadi tombol toggle ♥ di search bar (bukan daftar terpisah). Aktif → tampilkan hanya lapangan favorit; tidak aktif → daftar normal. Kotak angka "Favorit" di L-13 tetap ada. **Tidak mengubah AB-02** (menyaring, bukan mengurutkan ulang). | §6.9, §7 AB-10, §8 L-04, L-13 |
+| 2 | **Search bar ditambahkan di L-05 Map** — tidak ada di PRD/Figma awal. Menyaring marker berdasarkan nama/alamat di sisi klien, pola sama dengan L-04. Selagi field fokus dan ada kata kunci, muncul daftar saran (ala Google Maps) di bawahnya — menekan satu saran auto-pan peta ke lokasinya (pola sama dengan "Lihat di peta" L-06) sekaligus memunculkan kartu ringkas menuju Detail Lapangan. | §8 L-05 |
+| 3 | **Foto profil bisa diisi langsung dari galeri (opsional)** — pakai `image_picker`, disimpan sebagai Base64 di dokumen Firestore (bukan URL, bukan Firebase Storage — pendekatan ketiga di luar Opsi A/B §12b, lihat penjelasan lengkap di §12b). `null`/kosong tetap jatuh balik ke avatar inisial. | §4, §6.1, §8 L-13, §12b |
+| 4 | **Atribut baru `nomorTelepon` pada entitas `lapangan`** — kontak lapangan, opsional, ditampilkan di L-06 kalau terisi, diedit lewat form mitra L-15. Data untuk 30 lapangan seed diisi manual belakangan (bukan bagian dari perubahan ini). | §6.2, §8 L-06, L-15 |
+| 5 | **Peserta aktivitas bisa membatalkan keikutsertaan** (AB-06 lanjutan) — sebelumnya sekali bergabung tidak ada jalan keluar sama sekali. Slot dan status ikut disesuaikan (transaction), permintaan lama dihapus supaya bisa gabung ulang, pembuat dapat notifikasi. Pembuat aktivitas TIDAK bisa membatalkan keikutsertaannya sendiri lewat jalur ini. | §6.3, §6.4, §7 AB-06, §8 L-09 |
 
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
@@ -175,6 +187,7 @@ dependencies:
   provider: ^6.x             # state management
   intl: ^0.19.x              # format tanggal dan rupiah
   cached_network_image: ^3.x # foto lapangan
+  image_picker: ^1.x         # v1.2 — pilih foto profil dari galeri (disimpan Base64, BUKAN Storage)
 ```
 
 > `latlong2` hanya dipakai untuk kelas `LatLng` yang dibutuhkan `flutter_map`. **Jangan** pakai `Distance()` bawaannya untuk menghitung jarak.
@@ -265,7 +278,7 @@ Nama atribut mengikuti ERD Bab 3 **persis**. Jangan diterjemahkan ke bahasa Ingg
 | `nama` | String | ✓ | |
 | `surel` | String | ✓ | |
 | `nomorTelepon` | String | | |
-| `fotoProfilURL` | String? | | selalu `null` — avatar dibuat dari inisial nama |
+| `fotoProfilBase64` | String? | | **v1.2** — opsional, foto profil dari galeri (`image_picker`), disimpan sebagai Base64 langsung di dokumen ini (BUKAN URL, BUKAN Firebase Storage — lihat §12b). `null`/kosong → avatar dari inisial nama |
 | `role` | String | ✓ | `"pengguna"` \| `"mitra"` |
 | `tanggalDaftar` | Timestamp | ✓ | |
 | `olahragaFavorit` | List\<String\> | ✓ | **v1.1** — subset dari 4 olahraga, boleh larik kosong |
@@ -287,6 +300,7 @@ Nama atribut mengikuti ERD Bab 3 **persis**. Jangan diterjemahkan ke bahasa Ingg
 | `jamTutup` | String | ✓ | format `"HH:mm"`. `"00:00"` berarti **tengah malam**, bukan jam 0 — lihat "Koreksi teknis pasca-v1.1 (20 Agustus 2026)" #8 di atas kalau menulis logika baru yang mem-parsing field ini |
 | `fasilitas` | List\<String\> | ✓ | mis. `["parkir","toilet","kantin","ruang ganti"]` |
 | `fotoURL` | List\<String\> | ✓ | boleh larik kosong |
+| `nomorTelepon` | String | | **v1.2** — kontak lapangan, opsional, boleh kosong sampai diisi manual/mitra |
 | `isMitra` | bool | ✓ | menentukan apakah tombol reservasi muncul |
 | `pemilikId` | String? | | hanya terisi jika `isMitra == true` |
 | `sumberData` | String | ✓ | `"places_api"` \| `"observasi"` \| `"mitra"` |
@@ -508,9 +522,19 @@ Pembuat menekan "Terima" (dalam satu transaction):
 Pembuat menekan "Tolak":
   permintaan.status = DITOLAK
   buat notifikasi untuk pemohon (tipe PERMINTAAN_DITOLAK)
+
+Peserta menekan "Batalkan Keikutsertaan" — v1.2 (dalam satu transaction):
+  jika userId == pembuatId → tolak, pembuat tidak bisa membatalkan diri sendiri
+  jika userId bukan peserta → tolak
+  jika status SELESAI/DIBATALKAN → tolak
+  peserta.remove(userId)
+  jumlahPemainSaatIni -= 1
+  jika status == PENUH dan jumlahPemainSaatIni < jumlahPemainDibutuhkan → status = TERBUKA
+  hapus dokumen permintaan/{userId} (supaya bisa kirim permintaan baru lagi nanti)
+  buat notifikasi untuk pembuatId (tipe PESERTA_KELUAR)
 ```
 
-Aturan tambahan: pembuat aktivitas **tidak bisa** mengirim permintaan gabung ke aktivitasnya sendiri; pengguna yang sudah jadi peserta tidak bisa mengirim permintaan lagi.
+Aturan tambahan: pembuat aktivitas **tidak bisa** mengirim permintaan gabung ke aktivitasnya sendiri, atau membatalkan keikutsertaannya sendiri (v1.2) — satu-satunya cara pembuat "keluar" adalah menghapus aktivitasnya lewat Security Rules `delete` yang sudah ada, belum ada UI-nya. Pengguna yang sudah jadi peserta tidak bisa mengirim permintaan lagi (tapi bisa membatalkan lalu mengirim ulang).
 
 ### AB-07 · Status booking SELESAI
 
@@ -544,8 +568,8 @@ Aturan:
 - Hanya bisa memfavoritkan kalau sudah login. Kalau belum, tampilkan pesan "Masuk dulu untuk menyimpan favorit."
 - Tidak ada transaction — operasinya satu dokumen, jadi `set`/`delete` biasa sudah atomik.
 - Tidak ada notifikasi untuk favorit.
-- Daftar favorit muncul di L-13 Profil.
-- **Tidak memengaruhi pengurutan di L-04.** AB-02 tetap murni jarak.
+- **v1.2 — daftar favorit dipindah ke L-04 Home**, lewat tombol toggle ♥ di search bar: aktif → tampilkan HANYA lapangan favorit; tidak aktif → daftar normal. (Sebelumnya daftar ini muncul di L-13 Profil — dihapus dari sana, kotak angka "Favorit" di L-13 tetap ada.)
+- **Tidak memengaruhi pengurutan di L-04.** AB-02 tetap murni jarak — toggle ini MENYARING, bukan mengurutkan ulang. Urutan jarak tetap terjaga di kedua mode.
 
 ### AB-11 · Badge status lapangan — **v1.1**
 
@@ -612,6 +636,7 @@ Input nama, surel, nomor telepon, kata sandi, konfirmasi kata sandi, dan pilihan
 | Header sambutan | "Halo, {nama}" + lokasi terkini (atau nama `lokasiDefault` bila GPS ditolak) |
 | Ikon lonceng | Membuka L-12, dengan badge jumlah notifikasi belum dibaca |
 | Search bar | Filter daftar berdasarkan nama atau alamat lapangan (di sisi klien) |
+| Tombol toggle ♥ Favorit | **v1.2** — di ujung search bar. Aktif: tampilkan HANYA lapangan favorit (urutan jarak tetap). Tidak aktif: daftar normal |
 | Filter chip olahraga | Semua / Futsal / Mini Soccer / Badminton / Padel — **lima chip, termasuk "Semua"** |
 | Daftar kartu lapangan | **Daftar vertikal**, satu kartu per baris. Isi: foto, nama, alamat, **jarak (km, 1 desimal)**, harga per jam, rating rata-rata + jumlah ulasan, ikon ♡ favorit |
 | Bottom navigation | Home · Map · Teman · Profil |
@@ -627,7 +652,7 @@ Tile URL: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
 `userAgentPackageName` wajib diisi sesuai package aplikasi.
 
 ### L-06 · Detail Lapangan — **diperbarui v1.1**
-Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta, jam operasional, daftar fasilitas (ikon + label), harga sewa, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`.
+Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`.
 
 > Figma menampilkan pemilihan slot jam langsung di layar ini. Pemilihan slot tetap di **L-10** sesuai PRD, karena butuh pemilihan tanggal dan perhitungan estimasi harga yang tidak muat di layar detail. Tombol "Booking Sekarang" di Figma = tombol "Ajukan Reservasi" yang membuka L-10.
 >
@@ -640,7 +665,7 @@ Dibuka dari tab **Teman**. Tab filter olahraga — **lima chip termasuk "Semua",
 Pilih olahraga, pilih lapangan (dari daftar lapangan), tanggal & jam, jumlah pemain dibutuhkan, catatan opsional. Validasi: semua wajib kecuali catatan; waktu harus di masa depan; jumlah pemain 2–30.
 
 ### L-09 · Detail Aktivitas
-Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**. Jika bukan: tombol **Gabung** atau label status permintaannya.
+Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**. Jika bukan: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya.
 
 ### L-10 · Ajukan Reservasi (form)
 Pilih tanggal, jam mulai, durasi (jam). Tampilkan slot yang sudah terisi agar tidak dipilih (chip jam bertanda "Penuh", mengikuti gaya Figma). Tampilkan estimasi total harga. Tombol **Ajukan Reservasi** menjalankan AB-04.
@@ -657,11 +682,10 @@ Dibuka dari tab **Profil**.
 
 | Bagian | Isi |
 |---|---|
-| Header | Avatar inisial + nama + surel + nomor telepon, tombol Edit Profil |
+| Header | Avatar (foto dari `fotoProfilBase64` bila terisi — v1.2, jatuh balik ke inisial) + nama + surel + nomor telepon, tombol Edit Profil |
 | Kotak statistik | **Booking** · **Aktivitas** · **Favorit** — dihitung dengan AB-12 |
 | Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
-| Lapangan Favorit | Daftar dari subkoleksi `favorit` (AB-10) |
 | Riwayat Pemesanan | Daftar booking pengguna dengan 5 status |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
 | Menu statis | Bantuan, Kebijakan Privasi, Tentang — halaman statis saja |
@@ -882,6 +906,15 @@ Keduanya tidak bisa benar sekaligus. Dua opsi yang dipertimbangkan:
 
 **Keputusan: Opsi A.** Alasan: fitur upload foto tidak menjawab satu pun dari tiga rumusan masalah (pencarian lapangan berbasis lokasi, cari rekan bermain, reservasi), jadi Opsi B tidak menambah nilai ke penelitian — hanya menambah kompleksitas dan titik gagal baru untuk tim pemula Flutter. Kode T-26 (`form_lapangan_screen.dart`) sudah dibangun sesuai Opsi A: kolom "URL Foto" biasa, bukan `image_picker`.
 
+**Diperluas v1.2 (15 September 2026, tahap 1):** foto profil pengguna sempat bisa diisi lewat URL eksternal opsional (sebelumnya selalu avatar inisial, tanpa jalan lain). Ini masih Opsi A murni — pola dan alasannya identik dengan foto lapangan (URL, bukan upload, tanpa Storage).
+
+**Diperluas v1.2 (15 September 2026, tahap 2) — diganti lagi jadi upload asli via Base64:** URL diganti total dengan pilih foto langsung dari galeri (`image_picker`), disimpan sebagai **Base64 di dokumen Firestore `users/{uid}`** — BUKAN Firebase Storage, BUKAN URL lagi. Ini **pendekatan ketiga**, beda dari Opsi A (tempel URL) maupun Opsi B (Storage+Blaze) yang dipertimbangkan semula:
+
+- Tetap **tanpa Firebase Storage/Blaze** — keputusan T-40 (Opsi A) soal Storage sendiri tidak berubah.
+- Tapi **upload asli** (bukan tempel URL) — mengatasi masalah nyata Opsi A: kebanyakan pengguna tidak punya foto diri yang sudah ter-hosting di URL manapun untuk ditempel.
+- Bergantung pada **batas 1 MB per dokumen Firestore**, jadi HANYA cocok untuk foto profil yang dikompres kecil (`maxWidth`/`maxHeight`/`imageQuality` bawaan `image_picker` di `ubah_profil_sheet.dart`, tanpa paket kompresi tambahan) — TIDAK dipakai untuk foto lapangan (`lapangan.fotoURL` tetap URL, foto lapangan bisa lebih besar/banyak per lapangan).
+- Menambah **satu paket baru** ke PRD Bagian 4: `image_picker`.
+
 **Sisa pekerjaan dari keputusan ini (dokumen, bukan kode):** revisi Tabel 3.4 (hapus baris Firebase Storage) dan Bab 2.9 (hapus poin yang menyebut Storage) bersama Pak Gintoro — lihat §14 daftar revisi dokumen skripsi.
 
 > **Catatan untuk masa depan:** kalau tim berubah pikiran dan ingin upload foto asli (Opsi B), ini bukan perubahan besar — cukup tambah `image_picker`+`firebase_storage` ke `pubspec.yaml`, ganti `TextFormField` URL di `form_lapangan_screen.dart` jadi pemilih gambar, dan upload ke Storage sebelum `tambahLapangan()`/`perbaruiLapangan()` dipanggil (field `fotoURL` di model sudah `List<String>`, tidak perlu berubah). Butuh paket Blaze aktif (T-00d).
@@ -935,3 +968,13 @@ Kerjakan bersama Pak Gintoro sebelum Bab 4 ditulis:
 | 6 | Bab 4 tabel Black Box | Tambah BB-31 sampai BB-37 |
 | 7 | Bab 5 saran | Tambah rating antar-pengguna sebagai pengembangan lanjutan (§12c) |
 | 8 | Tabel 3.4, Bab 2.9 | Hapus Firebase Storage dari daftar teknologi — keputusan T-40 (§12b, bukan akibat v1.1, tapi tenggatnya sama: sebelum Bab 4) |
+
+### Tambahan akibat v1.2 (15 September 2026)
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 9 | Bab 3.3.2 poin 6 / Tabel 3.10 | Tambah atribut `nomorTelepon` pada entitas Lapangan |
+| 10 | Tabel 3.10 | Ganti nama atribut `fotoProfilURL` → `fotoProfilBase64` pada entitas Users — bukan "selalu null" lagi, opsional, isinya Base64 hasil pilih foto galeri (bukan URL) |
+| 11 | Bab 3.3.2 poin 5 (rancangan L-04) | Tambah tombol toggle ♥ Favorit di search bar; hapus rancangan daftar Lapangan Favorit dari L-13 |
+| 12 | Bab 3.3.2 poin 5 (rancangan L-05) | Tambah search bar (di luar Figma/PRD awal) |
+| 13 | Bab 3 use case / Activity Diagram | Tambah alur "Batalkan Keikutsertaan Aktivitas" (AB-06 lanjutan) |

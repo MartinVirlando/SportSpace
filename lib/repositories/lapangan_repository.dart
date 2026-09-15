@@ -134,6 +134,7 @@ class LapanganRepository {
     required String jamTutup,
     required List<String> fasilitas,
     required List<String> fotoURL,
+    String nomorTelepon = '',
     required String pemilikId,
   }) async {
     try {
@@ -150,6 +151,7 @@ class LapanganRepository {
         jamTutup: jamTutup,
         fasilitas: fasilitas,
         fotoURL: fotoURL,
+        nomorTelepon: nomorTelepon,
         isMitra: true,
         pemilikId: pemilikId,
         sumberData: 'mitra',
@@ -195,6 +197,7 @@ class LapanganRepository {
     required String jamTutup,
     required List<String> fasilitas,
     required List<String> fotoURL,
+    String nomorTelepon = '',
   }) async {
     try {
       await _db.collection('lapangan').doc(lapanganId).update({
@@ -208,6 +211,7 @@ class LapanganRepository {
         'jamTutup': jamTutup,
         'fasilitas': fasilitas,
         'fotoURL': fotoURL,
+        'nomorTelepon': nomorTelepon,
       });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {

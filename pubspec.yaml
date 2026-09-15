@@ -31,6 +31,9 @@ dependencies:
   # --- Utilitas ---
   intl: ^0.19.0 # format tanggal dan rupiah
   cached_network_image: ^3.4.1 # foto lapangan
+  image_picker: ^1.1.2 # T-43 lanjutan — pilih JPG galeri untuk foto profil
+  # (disimpan sebagai Base64 di dokumen Firestore, BUKAN Firebase Storage
+  # — lihat PRD §12b. Hanya untuk foto profil, foto lapangan tetap URL.)
 
   cupertino_icons: ^1.0.8
 

@@ -229,6 +229,17 @@ class _Isi extends StatelessWidget {
                       .map(AppSports.labelDari)
                       .join(', '),
                 ),
+                // T-44: kontak lapangan — opsional, banyak lapangan lama
+                // masih kosong sampai diisi manual/mitra, jadi barisnya
+                // disembunyikan total daripada menampilkan "-".
+                if (lapangan.nomorTelepon.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _BarisInfo(
+                    ikon: '📞',
+                    label: AppStrings.kontak,
+                    nilai: lapangan.nomorTelepon,
+                  ),
+                ],
                 if (lapangan.isMitra) ...[
                   const SizedBox(height: 28),
                   SizedBox(

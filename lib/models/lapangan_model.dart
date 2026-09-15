@@ -22,6 +22,12 @@ class LapanganModel {
   final String jamTutup;
   final List<String> fasilitas;
   final List<String> fotoURL;
+
+  /// Kontak/nomor telepon lapangan — opsional, v1.2 (T-44). Boleh kosong
+  /// sampai diisi manual/mitra; sengaja `String` non-null berdefault `''`,
+  /// pola sama dengan `UserModel.nomorTelepon`.
+  final String nomorTelepon;
+
   final bool isMitra;
   final String? pemilikId;
   final String sumberData;
@@ -49,6 +55,7 @@ class LapanganModel {
     required this.jamTutup,
     required this.fasilitas,
     required this.fotoURL,
+    this.nomorTelepon = '',
     required this.isMitra,
     this.pemilikId,
     required this.sumberData,
@@ -91,6 +98,7 @@ class LapanganModel {
       jamTutup: data['jamTutup'] as String? ?? '23:59',
       fasilitas: List<String>.from(data['fasilitas'] ?? const []),
       fotoURL: List<String>.from(data['fotoURL'] ?? const []),
+      nomorTelepon: data['nomorTelepon'] as String? ?? '',
       isMitra: data['isMitra'] as bool? ?? false,
       pemilikId: data['pemilikId'] as String?,
       sumberData: data['sumberData'] as String? ?? 'places_api',
@@ -113,6 +121,7 @@ class LapanganModel {
         'jamTutup': jamTutup,
         'fasilitas': fasilitas,
         'fotoURL': fotoURL,
+        'nomorTelepon': nomorTelepon,
         'isMitra': isMitra,
         'pemilikId': pemilikId,
         'sumberData': sumberData,
@@ -141,6 +150,7 @@ class LapanganModel {
         jamTutup: jamTutup,
         fasilitas: fasilitas,
         fotoURL: fotoURL,
+        nomorTelepon: nomorTelepon,
         isMitra: isMitra,
         pemilikId: pemilikId,
         sumberData: sumberData,

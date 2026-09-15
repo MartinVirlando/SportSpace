@@ -114,6 +114,24 @@ class DetailAktivitasViewModel extends ChangeNotifier {
     }
   }
 
+  /// Batalkan keikutsertaan — PRD AB-06 lanjutan, T-45. Mengembalikan
+  /// `null` kalau berhasil, atau pesan kesalahan kalau gagal.
+  Future<String?> batalkanKeikutsertaan({
+    required String userId,
+    required String namaUser,
+  }) async {
+    try {
+      await _repository.batalkanKeikutsertaan(
+        aktivitasId: aktivitasId,
+        userId: userId,
+        namaUser: namaUser,
+      );
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
+
   /// Tolak permintaan gabung — PRD AB-06, T-20, BB-19. Mengembalikan
   /// `null` kalau berhasil, atau pesan kesalahan kalau gagal.
   Future<String?> tolakPermintaan({

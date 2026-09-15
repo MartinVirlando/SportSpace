@@ -56,6 +56,26 @@ class HomeViewModel extends ChangeNotifier {
   /// View memakai ini untuk memunculkan spanduk pemberitahuan.
   bool get pakaiLokasiDefault => _pakaiLokasiDefault;
 
+  bool _hanyaFavorit = false;
+
+  /// True kalau tombol toggle ♥ di search bar sedang aktif — View lalu
+  /// menyaring [lapanganTampil] lagi terhadap ID favorit (T-41). Murni
+  /// state UI: ViewModel ini SENGAJA tidak tahu apa-apa soal Firestore
+  /// favorit — keanggotaan favorit hanya diketahui View lewat
+  /// `FavoritViewModel.streamIdFavorit`, sama seperti ikon ♡/♥ per kartu
+  /// yang sudah ada. Menyaringnya di sini akan melanggar aturan lapisan
+  /// (HomeViewModel harus tetap tidak butuh FavoritRepository).
+  ///
+  /// PRD AB-10: "Tidak memengaruhi pengurutan di L-04" tetap berlaku —
+  /// ini MENYARING, bukan mengurutkan ulang. Urutan jarak (AB-02) tetap
+  /// terjaga di kedua mode karena `where` tidak mengubah urutan asal.
+  bool get hanyaFavorit => _hanyaFavorit;
+
+  void ubahHanyaFavorit() {
+    _hanyaFavorit = !_hanyaFavorit;
+    notifyListeners();
+  }
+
   /// Nomor urut permintaan [muatLapangan] yang sedang berjalan — dipakai
   /// supaya panggilan yang tumpang tindih tidak saling menimpa state.
   /// Tanpa ini: kalau pengguna menekan "Coba Lagi" atau menarik-refresh

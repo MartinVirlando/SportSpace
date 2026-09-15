@@ -115,6 +115,14 @@ class _PetaBerhasil extends StatefulWidget {
 class _PetaBerhasilState extends State<_PetaBerhasil> {
   final _mapController = MapController();
 
+  // T-42 lanjutan: daftar saran ala Google Maps di bawah search bar,
+  // tampil hanya selagi field ini fokus DAN ada kata kunci. Status fokus
+  // murni state UI (bukan milik MapViewModel) — sama seperti alasan
+  // `hanyaFavorit` di Home tetap di ViewModel tapi `idFavorit` tetap di
+  // View: yang bersifat "cuma buat menggambar" tidak perlu naik ke
+  // ViewModel.
+  final _fokusPencarian = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -124,6 +132,26 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
     // supaya `_mapController` sudah terpasang ke FlutterMap sebelum
     // `.move()` dipanggil.
     WidgetsBinding.instance.addPostFrameCallback((_) => _terapkanFokusJikaAda());
+    // FocusNode tidak memicu rebuild sendiri — perlu didengarkan manual
+    // supaya daftar saran muncul/hilang begitu fokus berubah.
+    _fokusPencarian.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _fokusPencarian.dispose();
+    super.dispose();
+  }
+
+  /// Menekan satu saran — auto-pan ke lokasinya (pola sama dengan "Lihat
+  /// di peta" L-06) sekaligus memilihnya supaya kartu ringkas muncul,
+  /// dari situ pengguna bisa lanjut ke Detail Lapangan lewat tombol
+  /// "Lihat" yang sudah ada.
+  void _pilihSaran(LapanganModel lapangan) {
+    final vm = widget.vm;
+    vm.fokusKeLapangan(lapangan.latitude, lapangan.longitude);
+    vm.pilihLapangan(lapangan);
+    _fokusPencarian.unfocus();
   }
 
   @override
@@ -172,7 +200,7 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
                   height: 24,
                   child: const _PenandaPengguna(),
                 ),
-                for (final l in vm.lapangan)
+                for (final l in vm.lapanganTampil)
                   Marker(
                     point: LatLng(l.latitude, l.longitude),
                     width: 40,
@@ -187,24 +215,52 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
             ),
           ],
         ),
-        if (vm.pakaiLokasiDefault || vm.lapangan.isEmpty)
-          Positioned(
-            top: 12,
-            left: AppSizes.marginLayar,
-            right: AppSizes.marginLayar,
-            child: Column(
-              children: [
-                if (vm.pakaiLokasiDefault) const _SpandukLokasiDefault(),
-                if (vm.pakaiLokasiDefault && vm.lapangan.isEmpty)
+        Positioned(
+          top: 12,
+          left: AppSizes.marginLayar,
+          right: AppSizes.marginLayar,
+          child: Column(
+            children: [
+              // T-42: search bar — tidak ada di PRD L-05 awal, disaring
+              // nama/alamat lapangan di klien, pola sama dengan L-04.
+              _KolomPencarianPeta(
+                focusNode: _fokusPencarian,
+                onBerubah: context.read<MapViewModel>().ubahKataKunci,
+              ),
+              // Daftar saran ala Google Maps — tampil selagi field fokus
+              // dan ada kata kunci. Menggantikan spanduk kosong di bawah
+              // selagi aktif, supaya tidak dobel pesan.
+              if (_fokusPencarian.hasFocus && vm.kataKunci.trim().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: _SaranPencarian(
+                    daftar: vm.lapanganTampil,
+                    onPilih: _pilihSaran,
+                  ),
+                )
+              else ...[
+                if (vm.pakaiLokasiDefault) ...[
                   const SizedBox(height: 8),
+                  const _SpandukLokasiDefault(),
+                ],
                 // Peta tetap valid secara visual dengan hanya marker
                 // posisi pengguna, tapi spanduk ini tetap dibutuhkan
                 // supaya "kosong" terlihat sebagai kondisi yang memang
                 // ditangani, bukan cuma peta yang belum selesai memuat.
-                if (vm.lapangan.isEmpty) const _SpandukKosong(),
+                // Dua kondisi kosong dibedakan: tidak ada data sama
+                // sekali, versus pencarian tidak menyisakan hasil (beda
+                // solusi, beda pesan — sama seperti Home).
+                if (vm.lapangan.isEmpty) ...[
+                  const SizedBox(height: 8),
+                  const _SpandukKosong(teks: AppStrings.kosongLapangan),
+                ] else if (vm.lapanganTampil.isEmpty) ...[
+                  const SizedBox(height: 8),
+                  const _SpandukKosong(teks: AppStrings.kosongHasilPencarian),
+                ],
               ],
-            ),
+            ],
           ),
+        ),
         if (vm.lapanganTerpilih != null)
           Positioned(
             left: 0,
@@ -404,20 +460,144 @@ class _SpandukLokasiDefault extends StatelessWidget {
 }
 
 class _SpandukKosong extends StatelessWidget {
-  const _SpandukKosong();
+  final String teks;
+
+  const _SpandukKosong({required this.teks});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
         boxShadow: AppColors.shadowKartu,
       ),
-      child: const Text(
-        AppStrings.kosongLapangan,
-        style: AppTextStyles.metaLapangan,
+      child: Text(teks, style: AppTextStyles.metaLapangan),
+    );
+  }
+}
+
+/// Search bar mengambang di atas peta — T-42, fitur baru di luar PRD L-05
+/// awal. Gaya sama dengan `_KolomPencarian` milik Home (L-04).
+class _KolomPencarianPeta extends StatelessWidget {
+  final FocusNode focusNode;
+  final ValueChanged<String> onBerubah;
+
+  const _KolomPencarianPeta({required this.focusNode, required this.onBerubah});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: AppSizes.tinggiPencarian,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusPencarian),
+        boxShadow: AppColors.shadowKartu,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Row(
+        children: [
+          const Icon(Icons.search, size: 18, color: AppColors.textSecondary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              focusNode: focusNode,
+              onChanged: onBerubah,
+              style: const TextStyle(fontSize: 13),
+              decoration: const InputDecoration(
+                hintText: AppStrings.cariLapangan,
+                hintStyle: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Daftar saran di bawah search bar, ala Google Maps — muncul selagi
+/// field fokus dan ada kata kunci (T-42 lanjutan). Menekan satu baris
+/// auto-pan peta ke lokasinya + memunculkan kartu ringkas (`_KartuRingkas`)
+/// tempat pengguna lanjut ke Detail Lapangan lewat tombol "Lihat" yang
+/// sudah ada — jadi tidak perlu jalur navigasi baru.
+class _SaranPencarian extends StatelessWidget {
+  final List<LapanganModel> daftar;
+  final ValueChanged<LapanganModel> onPilih;
+
+  const _SaranPencarian({required this.daftar, required this.onPilih});
+
+  @override
+  Widget build(BuildContext context) {
+    if (daftar.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
+          boxShadow: AppColors.shadowKartu,
+        ),
+        child: const Text(
+          AppStrings.kosongHasilPencarian,
+          style: AppTextStyles.metaLapangan,
+        ),
+      );
+    }
+
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 280),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
+        boxShadow: AppColors.shadowKartu,
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        itemCount: daftar.length,
+        separatorBuilder: (_, __) =>
+            const Divider(height: 1, indent: 14, endIndent: 14),
+        itemBuilder: (context, i) {
+          final l = daftar[i];
+          return InkWell(
+            onTap: () => onPilih(l),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l.nama, style: AppTextStyles.namaLapangan),
+                        Text(
+                          l.alamat,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.metaLapangan,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

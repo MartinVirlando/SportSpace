@@ -22,6 +22,7 @@ Dokumen ini **belum bisa langsung dipakai sebagai data hasil survei di skripsi.*
 | `harga` / `hargaSlot` | ⚠️ Perkiraan pasaran, bukan tarif resmi | **Wajib diperbaiki** untuk yang `observasi` |
 | `fasilitas` | ⚠️ Sebagian dari sumber, sebagian perkiraan | Konfirmasi saat survei |
 | `fotoURL` | ⬜ Sengaja dikosongkan | Foto sendiri saat survei |
+| `nomorTelepon` | ⬜ **v1.2 — belum diisi untuk 30 lapangan ini** | Isi manual saat survei, lalu reseed |
 | `isMitra` / `pemilikId` | 🎭 Simulasi untuk keperluan demo | Lihat bagian "Lapangan mitra" |
 
 **Kenapa ini penting.** Kalau penguji bertanya "koordinat ini dapat dari mana?" dan jawabannya "dari internet", itu masalah — karena Bab 3 mengklaim sumber data Places API + observasi langsung. Data di bawah adalah **kerangka kerja yang sudah jadi**, bukan pengganti T-00e. Bagusnya: kerja survei kalian sekarang tinggal *memverifikasi dan mengoreksi* 30 baris, bukan mengumpulkan dari nol.

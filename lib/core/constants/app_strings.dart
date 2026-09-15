@@ -49,6 +49,10 @@ class AppStrings {
   static const kosongHasilFilter =
       'Coba ubah kata kunci atau pilih olahraga lain.';
 
+  // ---------- Peta Lapangan (L-05), search bar T-42 ----------
+  static const kosongHasilPencarian =
+      'Tidak ada lapangan yang cocok dengan pencarian ini.';
+
   // ---------- Lokasi (AB-03) ----------
   static const lokasiBelumAktif = 'Lokasi belum aktif';
   static const lokasiKeterangan =
@@ -60,6 +64,7 @@ class AppStrings {
 
   // ---------- Detail Lapangan (L-06) ----------
   static const jamBuka = 'Jam Buka';
+  static const kontak = 'Kontak';
   static const harga = 'Harga';
   static const fasilitas = 'Fasilitas';
   static const jenisOlahraga = 'Jenis';
@@ -93,6 +98,10 @@ class AppStrings {
   static const menungguPersetujuan = 'Menunggu persetujuan pembuat';
   static const sudahBergabung = 'Kamu sudah bergabung';
   static const pembuatAktivitas = 'Pembuat';
+  static const batalkanKeikutsertaan = 'Batalkan Keikutsertaan';
+  static const konfirmasiBatalKeikutsertaan =
+      'Batalkan keikutsertaanmu di aktivitas ini?';
+  static const keikutsertaanDibatalkan = 'Kamu keluar dari aktivitas ini.';
 
   // ---------- Notifikasi (L-12) ----------
   static const notifikasi = 'Notifikasi';
@@ -115,12 +124,17 @@ class AppStrings {
 
   // ---------- Profil (L-13) ----------
   static const editProfil = 'Edit Profil';
+  static const pilihFoto = 'Pilih Foto';
+  static const gantiFoto = 'Ganti Foto';
+  static const hapusFoto = 'Hapus Foto';
+  static const errFotoTerlaluBesar =
+      'Ukuran foto terlalu besar. Pilih foto lain.';
+  static const errGagalPilihFoto = 'Gagal memilih foto. Coba lagi.';
   static const statBooking = 'Booking';
   static const statAktivitas = 'Aktivitas';
   static const statFavorit = 'Favorit';
   static const olahragaFavorit = 'Olahraga Favorit';
   static const lokasiDefault = 'Lokasi Default';
-  static const lapanganFavorit = 'Lapangan Favorit';
   static const riwayatPemesanan = 'Riwayat Pemesanan';
   static const aktivitasSaya = 'Aktivitas Saya';
   static const dashboardMitra = 'Dashboard Mitra';
@@ -147,6 +161,8 @@ class AppStrings {
   static const ambilLokasiSaatIni = 'Ambil Lokasi Saat Ini';
   static const jamTutup = 'Jam Tutup';
   static const urlFotoOpsional = 'URL Foto (opsional)';
+  static const nomorTeleponLapanganOpsional =
+      'Nomor Telepon Lapangan (opsional)';
   static const lapanganTersimpan = 'Lapangan berhasil disimpan.';
   static const errPilihOlahraga = 'Pilih minimal satu jenis olahraga.';
   static const errGagalAmbilLokasi =
@@ -163,6 +179,7 @@ class AppStrings {
   static const ubah = 'Ubah';
   static const kosongRiwayatBooking = 'Belum ada riwayat pemesanan.';
   static const kosongAktivitasSaya = 'Belum ada aktivitas yang kamu buat atau ikuti.';
+  // Dipakai Home (L-04) saat toggle ♥ aktif tapi belum ada favorit — T-41.
   static const kosongLapanganFavorit = 'Belum ada lapangan favorit.';
   static const bantuan = 'Bantuan';
   static const kebijakanPrivasi = 'Kebijakan Privasi';

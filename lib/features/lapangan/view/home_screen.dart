@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../models/notifikasi_model.dart';
 import '../../../repositories/favorit_repository.dart';
 import '../../../repositories/notifikasi_repository.dart';
@@ -79,6 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 4),
               _KolomPencarian(
                 onBerubah: context.read<HomeViewModel>().ubahKataKunci,
+                hanyaFavorit: vm.hanyaFavorit,
+                onTapFavorit: context.read<HomeViewModel>().ubahHanyaFavorit,
               ),
               const SizedBox(height: 10),
               BarisChipOlahraga(
@@ -158,12 +161,12 @@ class _Isi extends StatelessWidget {
         );
 
       case KondisiHome.berhasil:
-        final daftar = vm.lapanganTampil;
+        final hasilFilter = vm.lapanganTampil;
 
         // Kondisi kosong kedua: data ADA, tapi filter/pencarian tidak
         // menyisakan apa pun. Pesannya harus beda dari kosong di atas,
         // karena solusinya beda — di sini pengguna tinggal mengubah filter.
-        if (daftar.isEmpty) {
+        if (hasilFilter.isEmpty) {
           return const _Pesan(
             ikon: Icons.filter_alt_off_outlined,
             judul: 'Tidak ada hasil',
@@ -179,6 +182,23 @@ class _Isi extends StatelessWidget {
             stream: favoritVm.streamIdFavorit,
             builder: (context, snapshotFavorit) {
               final idFavorit = snapshotFavorit.data ?? const <String>{};
+
+              // T-41: tombol toggle ♥ menyaring LAGI hasil di atas terhadap
+              // ID favorit — urutan jarak (AB-02) tetap terjaga karena
+              // `where` tidak mengubah urutan.
+              final daftar = vm.hanyaFavorit
+                  ? hasilFilter
+                      .where((l) => idFavorit.contains(l.lapanganId))
+                      .toList()
+                  : hasilFilter;
+
+              if (daftar.isEmpty) {
+                return const _Pesan(
+                  ikon: Icons.favorite_border,
+                  judul: 'Belum ada favorit',
+                  keterangan: AppStrings.kosongLapanganFavorit,
+                );
+              }
 
               return ListView.builder(
                 padding: const EdgeInsets.fromLTRB(
@@ -330,8 +350,14 @@ class _IkonLonceng extends StatelessWidget {
 
 class _KolomPencarian extends StatelessWidget {
   final ValueChanged<String> onBerubah;
+  final bool hanyaFavorit;
+  final VoidCallback onTapFavorit;
 
-  const _KolomPencarian({required this.onBerubah});
+  const _KolomPencarian({
+    required this.onBerubah,
+    required this.hanyaFavorit,
+    required this.onTapFavorit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -360,6 +386,23 @@ class _KolomPencarian extends StatelessWidget {
                   ),
                   border: InputBorder.none,
                   isDense: true,
+                ),
+              ),
+            ),
+            // T-41: toggle "hanya tampilkan favorit" — dipindah dari daftar
+            // di Profil (AB-10). Tidak mengubah urutan jarak (AB-02),
+            // hanya menyaring — lihat HomeViewModel.hanyaFavorit.
+            GestureDetector(
+              onTap: onTapFavorit,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(
+                  hanyaFavorit ? Icons.favorite : Icons.favorite_border,
+                  size: 18,
+                  color: hanyaFavorit
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                 ),
               ),
             ),

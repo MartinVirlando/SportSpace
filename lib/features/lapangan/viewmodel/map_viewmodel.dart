@@ -13,8 +13,9 @@ enum KondisiMap { memuat, berhasil, gagal, lokasiDitolak }
 ///
 /// ATURAN LAPISAN: TIDAK `import cloud_firestore`. Data lewat
 /// [LapanganRepository], posisi lewat [LocationService] — pola yang
-/// sama persis dengan HomeViewModel, cuma tanpa filter/pencarian karena
-/// PRD L-05 tidak menyebutkannya.
+/// sama persis dengan HomeViewModel. Search bar (T-42, [ubahKataKunci])
+/// adalah tambahan di luar PRD L-05 awal — tanpa filter olahraga karena
+/// layar ini memang tidak punya chip olahraga.
 class MapViewModel extends ChangeNotifier {
   final LapanganRepository _repository;
   final LocationService _locationService;
@@ -33,6 +34,27 @@ class MapViewModel extends ChangeNotifier {
 
   List<LapanganModel> _lapangan = [];
   List<LapanganModel> get lapangan => _lapangan;
+
+  String _kataKunci = '';
+  String get kataKunci => _kataKunci;
+
+  /// Daftar yang benar-benar digambar sebagai marker — hasil pencarian
+  /// nama/alamat (T-42, fitur baru di luar PRD L-05 awal). Pola sama
+  /// persis dengan `HomeViewModel.lapanganTampil`, tanpa filter olahraga
+  /// karena L-05 memang tidak punya chip olahraga.
+  List<LapanganModel> get lapanganTampil {
+    final kunci = _kataKunci.trim().toLowerCase();
+    if (kunci.isEmpty) return _lapangan;
+    return _lapangan.where((l) {
+      return l.nama.toLowerCase().contains(kunci) ||
+          l.alamat.toLowerCase().contains(kunci);
+    }).toList();
+  }
+
+  void ubahKataKunci(String kunci) {
+    _kataKunci = kunci;
+    notifyListeners();
+  }
 
   double? _latPengguna;
   double? get latPengguna => _latPengguna;

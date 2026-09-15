@@ -384,6 +384,8 @@ class _AksiGabung extends StatefulWidget {
 }
 
 class _AksiGabungState extends State<_AksiGabung> {
+  bool _sedangBatal = false;
+
   Future<void> _gabung(UserModel user) async {
     final vm = context.read<DetailAktivitasViewModel>();
     final berhasil = await vm.kirimPermintaanGabung(
@@ -404,6 +406,45 @@ class _AksiGabungState extends State<_AksiGabung> {
     );
   }
 
+  /// Batalkan keikutsertaan (T-45) — dikonfirmasi dulu lewat dialog
+  /// karena aksi ini membebaskan slot yang mungkin diperebutkan orang
+  /// lain, bukan sekadar preferensi tampilan seperti favorit.
+  Future<void> _batalkanKeikutsertaan(UserModel user) async {
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(AppStrings.batalkanKeikutsertaan),
+        content: const Text(AppStrings.konfirmasiBatalKeikutsertaan),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(AppStrings.batal),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(AppStrings.batalkanKeikutsertaan),
+          ),
+        ],
+      ),
+    );
+    if (konfirmasi != true || !mounted) return;
+
+    setState(() => _sedangBatal = true);
+    final vm = context.read<DetailAktivitasViewModel>();
+    final error = await vm.batalkanKeikutsertaan(
+      userId: user.userId,
+      namaUser: user.nama,
+    );
+
+    if (!mounted) return;
+    setState(() => _sedangBatal = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? AppStrings.keikutsertaanDibatalkan),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthViewModel>().user;
@@ -413,9 +454,30 @@ class _AksiGabungState extends State<_AksiGabung> {
 
     final sudahJadiPeserta = widget.aktivitas.peserta.contains(user.userId);
     if (sudahJadiPeserta) {
-      return const _LabelStatus(
-        ikon: Icons.check_circle,
-        teks: AppStrings.sudahBergabung,
+      return Column(
+        children: [
+          const _LabelStatus(
+            ikon: Icons.check_circle,
+            teks: AppStrings.sudahBergabung,
+          ),
+          const SizedBox(height: 8),
+          _sedangBatal
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : TextButton(
+                  onPressed: () => _batalkanKeikutsertaan(user),
+                  child: const Text(
+                    AppStrings.batalkanKeikutsertaan,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+        ],
       );
     }
 

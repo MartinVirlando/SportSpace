@@ -127,6 +127,22 @@ Mulai sini pakai satu cabang git per fitur.
 
 **Demo akhir Sprint 4:** seluruh alur berjalan ujung ke ujung — cari lapangan, simpan favorit, buat aktivitas, gabung, terima permintaan, beri rating, ajukan reservasi, mitra mengonfirmasi.
 
+### v1.2 — lima penambahan pasca-Sprint 4 (15 September 2026)
+
+| ID | Tugas | Bergantung | Selesai jika |
+|---|---|---|---|
+| **T-41** | Favorit dipindah dari L-13 ke tombol toggle ♥ di search bar L-04 — **AB-10 lanjutan** | T-35 | Toggle menyaring tanpa mengubah urutan jarak; daftar di L-13 dihapus, kotak angka tetap |
+| **T-42** | Search bar + daftar saran ala Google Maps di Map (L-05) — fitur baru di luar PRD awal | T-14 | Marker tersaring nama/alamat; saran muncul selagi fokus+ada kata kunci; tap saran auto-pan + kartu ringkas; pesan kosong-hasil beda dari kosong-total |
+| **T-43** | Foto profil dari galeri (opsional) di Edit Profil, disimpan Base64 di Firestore — pendekatan ketiga di luar Opsi A/B (§12b) | T-27 | Pilih foto via `image_picker`, kompres otomatis, tersimpan & tampil, jatuh balik ke inisial kalau kosong/gagal. Tanpa Firebase Storage/Blaze |
+| **T-44** | Atribut `nomorTelepon` pada `lapangan` — kontak, opsional | T-03, T-26 | Field tampil di L-06 (hanya kalau terisi), bisa diisi/diubah lewat form mitra L-15 |
+| **T-45** | Batalkan keikutsertaan aktivitas — **AB-06 lanjutan** | T-20 | Peserta (bukan pembuat) bisa keluar, slot & status disesuaikan via transaction, bisa gabung ulang |
+
+> **Kelimanya sudah selesai secara kode** (15 September 2026) — diverifikasi `flutter analyze` bersih, `flutter test` hijau, pemeriksaan lapisan MVVM bersih, dan diuji manual langsung di emulator lewat `adb`/`uiautomator` untuk tiap fitur (toggle favorit, search Map, ganti foto profil, isi kontak lapangan lewat Dashboard Mitra, batalkan keikutsertaan aktivitas — semua jalur bahagia terverifikasi berfungsi). PRD.md (§6.1, §6.2, §7 AB-06/AB-10, §8 L-04/L-05/L-06/L-09/L-13/L-15, §12b, §14) dan CLAUDE.md sudah diperbarui mengikuti. **Belum masuk T-30 Black Box formal** — lima fitur ini di luar 37 kasus BB-01…BB-37 yang sudah didefinisikan PRD §11; kalau mau diuji formal, perlu kasus BB baru ditambahkan dulu.
+>
+> **Verifikasi menyeluruh sebelum merge (15 September 2026)** — sebelum push ke `main`: `./gradlew assembleDebug` BUILD SUCCESSFUL, lalu APK debug baru di-*install ulang dari nol* (bukan hot reload) dan seluruh alur v1.2 diuji ulang: kontak lapangan tampil & persisten lewat restart, "Lihat di peta" auto-pan dari L-06 ke L-05 tetap jalan, kotak statistik Profil termuat penuh tanpa nyangkut, foto profil persisten, dan — pengecekan khusus — Detail Aktivitas (L-09) dari sudut pandang **pembuat** dikonfirmasi TIDAK menampilkan tombol "Batalkan Keikutsertaan" (hanya peserta biasa yang punya tombol itu), sesuai batasan yang disengaja di T-45. Sempat ditemukan gejala "kotak statistik Booking/Aktivitas nyangkut di kondisi memuat" di sesi testing panjang (>1 jam, banyak switch akun) — dicek log `flutter run` penuh, tidak ada exception/error Firestore sama sekali, dan pulih total setelah restart aplikasi. Tidak terulang di seluruh pengujian fresh-install berikutnya, jadi disimpulkan kondisi sesaat terkait `Stream` Firestore yang idle lama, BUKAN regresi dari kode v1.2 — dicatat sebagai kandidat pengamatan lebih lanjut di T-30, bukan bug yang diperbaiki sesi ini.
+>
+> **"List teman" (sistem pertemanan) diusulkan lalu dibatalkan** — tidak menjawab rumusan masalah manapun di Bab 1 dan butuh entitas ERD baru sama sekali, beda dari kelima tugas di atas yang semuanya perluasan dari entitas yang sudah ada.
+
 ---
 
 ## Sprint 5 · Pengujian dan Evaluasi (Minggu 12–14)

@@ -164,11 +164,13 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  /// Ubah Profil (nama, nomor telepon) — PRD L-13. Mengembalikan `true`
-  /// kalau berhasil; kalau `false`, baca [pesanError].
+  /// Ubah Profil (nama, nomor telepon, foto profil Base64) — PRD L-13,
+  /// T-43. Mengembalikan `true` kalau berhasil; kalau `false`, baca
+  /// [pesanError].
   Future<bool> ubahProfil({
     required String nama,
     required String nomorTelepon,
+    required String fotoProfilBase64,
   }) async {
     final userSaatIni = _user;
     if (userSaatIni == null) return false;
@@ -178,8 +180,18 @@ class AuthViewModel extends ChangeNotifier {
         userSaatIni.userId,
         nama: nama,
         nomorTelepon: nomorTelepon,
+        fotoProfilBase64: fotoProfilBase64,
       );
-      _user = userSaatIni.salinDengan(nama: nama, nomorTelepon: nomorTelepon);
+      // Dikirim apa adanya (bukan `isEmpty ? null : ...` seperti di
+      // Repository) — `salinDengan` memakai `??` yang hanya menghindari
+      // `null` eksplisit, jadi mengirim `null` di sini justru akan
+      // mempertahankan foto LAMA alih-alih mengosongkannya saat pengguna
+      // menghapus foto.
+      _user = userSaatIni.salinDengan(
+        nama: nama,
+        nomorTelepon: nomorTelepon,
+        fotoProfilBase64: fotoProfilBase64,
+      );
       notifyListeners();
       return true;
     } catch (e) {
