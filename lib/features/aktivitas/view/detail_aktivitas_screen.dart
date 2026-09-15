@@ -177,9 +177,16 @@ class _Isi extends StatelessWidget {
             _BarisPeserta(nama: p.namaUser, pembuat: false),
           const Divider(height: 32),
           if (apakahPembuat)
-            _SeksiPermintaanMasuk(
-              aktivitas: aktivitas,
-              permintaan: permintaanMenunggu,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SeksiPermintaanMasuk(
+                  aktivitas: aktivitas,
+                  permintaan: permintaanMenunggu,
+                ),
+                const SizedBox(height: 20),
+                _TombolBatalkanAktivitas(aktivitas: aktivitas),
+              ],
             )
           else
             _AksiGabung(
@@ -270,6 +277,94 @@ class _SeksiPermintaanMasuk extends StatelessWidget {
           for (final p in permintaan)
             _BarisPermintaan(aktivitas: aktivitas, permintaan: p),
       ],
+    );
+  }
+}
+
+/// Tombol "Batalkan Aktivitas" — hanya untuk pembuat, PRD AB-06 lanjutan,
+/// T-47. Beda dari [_AksiGabungState._batalkanKeikutsertaan]: ini
+/// menghapus seluruh aktivitas, bukan cuma keikutsertaan satu peserta,
+/// jadi konfirmasinya menyebutkan seluruh peserta ikut terdampak.
+class _TombolBatalkanAktivitas extends StatefulWidget {
+  final AktivitasBermainModel aktivitas;
+
+  const _TombolBatalkanAktivitas({required this.aktivitas});
+
+  @override
+  State<_TombolBatalkanAktivitas> createState() =>
+      _TombolBatalkanAktivitasState();
+}
+
+class _TombolBatalkanAktivitasState extends State<_TombolBatalkanAktivitas> {
+  bool _sedangBatal = false;
+
+  Future<void> _batalkan() async {
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(AppStrings.batalkanAktivitas),
+        content: const Text(AppStrings.konfirmasiBatalAktivitas),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(AppStrings.batal),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(AppStrings.batalkanAktivitas),
+          ),
+        ],
+      ),
+    );
+    if (konfirmasi != true || !mounted) return;
+
+    setState(() => _sedangBatal = true);
+    final vm = context.read<DetailAktivitasViewModel>();
+    final error = await vm.batalkanAktivitas(widget.aktivitas);
+
+    if (!mounted) return;
+    if (error != null) {
+      setState(() => _sedangBatal = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+
+    // Dokumennya sudah dihapus — tidak ada lagi yang bisa ditampilkan
+    // layar ini (streamAktivitas akan error "Aktivitas tidak ditemukan").
+    // Pola sama seperti form_lapangan_screen.dart/ajukan_reservasi_screen.dart:
+    // SnackBar ditampilkan DULU baru pop, supaya pesannya sempat terlihat
+    // di context layar ini sebelum route-nya dilepas.
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(AppStrings.aktivitasDibatalkan)),
+    );
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_sedangBatal) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: _batalkan,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.red,
+          side: const BorderSide(color: Colors.red),
+        ),
+        child: const Text(AppStrings.batalkanAktivitas),
+      ),
     );
   }
 }

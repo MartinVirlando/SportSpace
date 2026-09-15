@@ -83,7 +83,15 @@ class _NotifikasiBody extends StatelessWidget {
       // itu, lalu pindah ke tab Profil (indeks 3).
       Navigator.of(context).popUntil((route) => route.isFirst);
       AppRoutes.kunciShell.currentState?.pindahKeTab(3);
+    } else if (item.tipe == 'BOOKING_DIBATALKAN') {
+      // Penerimanya mitra (T-46) — sama tujuannya dengan BOOKING_BARU.
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const DashboardMitraScreen()),
+      );
     }
+    // AKTIVITAS_DIBATALKAN (T-47) sengaja tidak dinavigasikan ke mana pun
+    // — sama seperti PESERTA_KELUAR sekarang, dokumen aktivitasnya sudah
+    // dihapus jadi tidak ada Detail Aktivitas yang bisa dibuka lagi.
   }
 
   @override
@@ -163,7 +171,11 @@ class _KartuNotifikasi extends StatelessWidget {
       case 'BOOKING_BARU':
       case 'BOOKING_DIKONFIRMASI':
       case 'BOOKING_DITOLAK':
+      case 'BOOKING_DIBATALKAN':
         return Icons.event_note_outlined;
+      case 'PESERTA_KELUAR':
+      case 'AKTIVITAS_DIBATALKAN':
+        return Icons.person_remove_outlined;
       default:
         return Icons.notifications_none;
     }

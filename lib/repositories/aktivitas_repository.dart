@@ -431,4 +431,66 @@ class AktivitasRepository {
       throw Exception('Gagal menolak permintaan. Coba lagi.');
     }
   }
+
+  /// Pembuat membatalkan seluruh aktivitas — PRD AB-06 lanjutan, T-47.
+  ///
+  /// Beda dari [batalkanKeikutsertaan] (satu peserta keluar): ini
+  /// menghapus dokumen aktivitas itu sendiri, jadi hanya pembuat yang
+  /// boleh (ditegakkan `firestore.rules` — `allow delete: if
+  /// resource.data.pembuatId == request.auth.uid`).
+  ///
+  /// Subkoleksi `permintaan` SENGAJA tidak ikut dihapus di sini walau jadi
+  /// dokumen yatim (menunjuk ke `aktivitasBermain/{id}` yang sudah tidak
+  /// ada) — sempat dicoba, tapi `firestore.rules` membatasi `delete` pada
+  /// `permintaan/{userId}` hanya untuk `pemilikDok(userId)` (dokumen milik
+  /// peserta itu sendiri, lihat [batalkanKeikutsertaan]). Pembuat aktivitas
+  /// menghapus dokumen permintaan MILIK ORANG LAIN akan kena
+  /// `permission-denied` dan menggagalkan seluruh transaction. Memperbaiki
+  /// ini butuh mengubah rules (`get()` untuk cek `pembuatId` pemilik
+  /// aktivitas) yang butuh `firebase deploy` — di luar cakupan T-47.
+  /// Dokumen yatim ini tidak mengganggu fungsi apa pun: tidak ada kode
+  /// yang membaca subkoleksi `permintaan` tanpa lewat `aktivitasId` yang
+  /// aktivitasnya sendiri sudah dicek ada (`streamDetailAktivitas`).
+  ///
+  /// Transaction (bukan `WriteBatch` biasa) supaya idempoten: dua tap
+  /// cepat "Batalkan Aktivitas" tidak sama-sama lolos dan mengirim
+  /// notifikasi dobel ke seluruh peserta.
+  Future<void> batalkanAktivitas(AktivitasBermainModel aktivitas) async {
+    final aktivitasRef =
+        _db.collection('aktivitasBermain').doc(aktivitas.aktivitasId);
+
+    try {
+      await _db.runTransaction((transaction) async {
+        final snap = await transaction.get(aktivitasRef);
+        if (!snap.exists) {
+          throw Exception('Aktivitas ini sudah dibatalkan.');
+        }
+
+        transaction.delete(aktivitasRef);
+        for (final userId in aktivitas.peserta) {
+          // Pembuat tidak perlu diberi tahu tentang aksinya sendiri.
+          if (userId == aktivitas.pembuatId) continue;
+          final notifRef = _db.collection('notifikasi').doc();
+          transaction.set(
+            notifRef,
+            NotifikasiModel(
+              notifikasiId: notifRef.id,
+              untukUserId: userId,
+              tipe: 'AKTIVITAS_DIBATALKAN',
+              judul: 'Aktivitas dibatalkan',
+              pesan:
+                  'Aktivitas "${aktivitas.namaLapangan}" dibatalkan oleh pembuatnya.',
+              refId: aktivitas.aktivitasId,
+              dibuatPada: DateTime.now(),
+            ).toFirestore(),
+          );
+        }
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membatalkan aktivitas.');
+      }
+      throw Exception('Gagal membatalkan aktivitas. Coba lagi.');
+    }
+  }
 }

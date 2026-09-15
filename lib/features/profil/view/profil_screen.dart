@@ -549,11 +549,18 @@ class _SeksiRiwayatBooking extends StatelessWidget {
   }
 }
 
-class _KartuRiwayatBooking extends StatelessWidget {
+class _KartuRiwayatBooking extends StatefulWidget {
   final BookingModel booking;
   final ProfilViewModel vm;
 
   const _KartuRiwayatBooking({required this.booking, required this.vm});
+
+  @override
+  State<_KartuRiwayatBooking> createState() => _KartuRiwayatBookingState();
+}
+
+class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
+  bool _sedangBatal = false;
 
   String _label(String status) {
     switch (status) {
@@ -570,11 +577,48 @@ class _KartuRiwayatBooking extends StatelessWidget {
     }
   }
 
+  /// Batalkan booking (T-46) — dikonfirmasi dulu lewat dialog karena
+  /// aksi ini membebaskan slot jam yang mungkin diperebutkan orang lain,
+  /// pola sama seperti [batalkanKeikutsertaan] di Detail Aktivitas (T-45).
+  Future<void> _batalkan() async {
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(AppStrings.batalkanBooking),
+        content: const Text(AppStrings.konfirmasiBatalBooking),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(AppStrings.batal),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(AppStrings.batalkanBooking),
+          ),
+        ],
+      ),
+    );
+    if (konfirmasi != true || !mounted) return;
+
+    setState(() => _sedangBatal = true);
+    final error = await widget.vm.batalkanBooking(widget.booking);
+
+    if (!mounted) return;
+    setState(() => _sedangBatal = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error ?? AppStrings.bookingDibatalkan)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // AB-07: tulis balik ke Firestore begitu baris ini ditampilkan dan
     // memenuhi syarat lewat jam selesai — lihat dokumentasi method-nya.
-    vm.tandaiSelesaiJikaPerlu(booking);
+    widget.vm.tandaiSelesaiJikaPerlu(widget.booking);
+
+    final statusTampilan = widget.vm.statusTampilan(widget.booking);
+    final bisaDibatalkan =
+        statusTampilan == 'MENUNGGU' || statusTampilan == 'DIKONFIRMASI';
 
     return Container(
       width: double.infinity,
@@ -592,28 +636,55 @@ class _KartuRiwayatBooking extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  booking.namaLapangan,
+                  widget.booking.namaLapangan,
                   style: AppTextStyles.namaLapangan,
                 ),
               ),
               Text(
-                Formatter.rupiah(booking.totalHarga),
+                Formatter.rupiah(widget.booking.totalHarga),
                 style: AppTextStyles.harga,
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            '${booking.tanggal} · ${booking.jamMulai}–${booking.jamSelesai}',
+            '${widget.booking.tanggal} · ${widget.booking.jamMulai}–'
+            '${widget.booking.jamSelesai}',
             style: AppTextStyles.metaLapangan,
           ),
           const SizedBox(height: 4),
-          Text(
-            _label(vm.statusTampilan(booking)),
-            style: AppTextStyles.metaLapangan.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                _label(statusTampilan),
+                style: AppTextStyles.metaLapangan.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (bisaDibatalkan)
+                _sedangBatal
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : TextButton(
+                        onPressed: _batalkan,
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                        ),
+                        child: const Text(
+                          AppStrings.batalkanBooking,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+            ],
           ),
         ],
       ),

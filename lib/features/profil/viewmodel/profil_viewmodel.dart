@@ -78,4 +78,15 @@ class ProfilViewModel extends ChangeNotifier {
       _bookingRepository.tandaiBookingSelesai(booking.bookingId);
     }
   }
+
+  /// Batalkan booking milik pengguna — PRD AB-04 lanjutan, T-46.
+  /// Mengembalikan `null` kalau berhasil, atau pesan kesalahan kalau gagal.
+  Future<String?> batalkanBooking(BookingModel booking) async {
+    try {
+      await _bookingRepository.batalkanBooking(booking);
+      return null;
+    } catch (e) {
+      return e.toString().replaceFirst('Exception: ', '');
+    }
+  }
 }

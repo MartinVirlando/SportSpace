@@ -103,6 +103,13 @@ class AppStrings {
       'Batalkan keikutsertaanmu di aktivitas ini?';
   static const keikutsertaanDibatalkan = 'Kamu keluar dari aktivitas ini.';
 
+  // ---------- Batalkan Aktivitas (T-47) ----------
+  static const batalkanAktivitas = 'Batalkan Aktivitas';
+  static const konfirmasiBatalAktivitas =
+      'Batalkan aktivitas ini? Seluruh peserta akan diberi tahu dan tidak '
+      'bisa dibatalkan lagi.';
+  static const aktivitasDibatalkan = 'Aktivitas berhasil dibatalkan.';
+
   // ---------- Notifikasi (L-12) ----------
   static const notifikasi = 'Notifikasi';
   static const kosongNotifikasi = 'Belum ada notifikasi.';
@@ -121,6 +128,11 @@ class AppStrings {
   static const errPilihTanggalDulu = 'Pilih tanggal dulu.';
   static const errPilihJamMulai = 'Pilih jam mulai.';
   static const kosongJamTersedia = 'Tidak ada jam tersedia di tanggal ini.';
+
+  // ---------- Batalkan Booking (T-46) ----------
+  static const batalkanBooking = 'Batalkan';
+  static const konfirmasiBatalBooking = 'Batalkan reservasi ini?';
+  static const bookingDibatalkan = 'Reservasi berhasil dibatalkan.';
 
   // ---------- Profil (L-13) ----------
   static const editProfil = 'Edit Profil';

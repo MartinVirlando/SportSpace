@@ -143,6 +143,21 @@ Mulai sini pakai satu cabang git per fitur.
 >
 > **"List teman" (sistem pertemanan) diusulkan lalu dibatalkan** — tidak menjawab rumusan masalah manapun di Bab 1 dan butuh entitas ERD baru sama sekali, beda dari kelima tugas di atas yang semuanya perluasan dari entitas yang sudah ada.
 
+### Backlog terbuka — diusulkan 15 September 2026, belum dikerjakan
+
+Empat saran dari audit kode setelah v1.2 selesai. Belum masuk PRD.md (belum ada keputusan resmi untuk membangunnya) — dicatat di sini dulu sebagai rencana, urutan sesuai prioritas yang disarankan.
+
+| ID | Tugas | Kenapa | Bergantung | Catatan implementasi |
+|---|---|---|---|---|
+| **T-46** | Batalkan Booking (sisi pengguna) — AB-04 lanjutan | Security rules SUDAH punya komentar `// pemilik mengonfirmasi, pengguna membatalkan`; status `DIBATALKAN` sudah ada di enum; AB-04 sudah menyebut "saat booking ditolak atau dibatalkan: hapus `slotBooking` miliknya" — tinggal belum ada UI/method yang memanggilnya sama sekali | T-23 | `BookingRepository` baru punya `konfirmasiBooking`/`tolakBooking` (mitra)/`tandaiBookingSelesai` — tambah `batalkanBooking(booking)` (pengguna), hapus dokumen `slotBooking` terkait dalam transaction yang sama. UI: tombol di `_KartuRiwayatBooking` (Profil L-13), pola dialog konfirmasi sama seperti T-45 |
+| **T-47** | Batalkan Aktivitas (sisi pembuat) — AB-06 lanjutan | `firestore.rules` SUDAH punya `allow delete: if ... pembuatId == uid`, tapi `AktivitasRepository` tidak punya method delete/batalkan sama sekali — pembuat yang berubah pikiran tidak punya jalan keluar | T-45 | Tambah `batalkanAktivitas(aktivitasId)` di `AktivitasRepository` (hapus dokumen + kirim notifikasi ke seluruh peserta). UI: tombol di Detail Aktivitas (L-09), hanya tampil kalau `apakahPembuat == true` |
+| T-48 | Notifikasi booking bisa di-tap | Sudah dicatat sendiri di PRD.md "Koreksi teknis pasca-v1.1 (20 Agustus 2026)" #4/#5/#6 — notifikasi `BOOKING_DIKONFIRMASI`/`BOOKING_DITOLAK` belum berpindah layar kalau ditekan, sudah lama diketahui tapi belum dikerjakan | T-27 | Perlu mekanisme navigasi lintas-shell (Profil ada di dalam `IndexedStack`, bukan rute ter-`push`) — lihat catatan lengkap di PRD.md untuk detail kendalanya |
+| T-49 | Filter harga di Home (L-04) | Sekarang cuma ada filter olahraga + kata kunci. Filter rentang harga MENYARING (bukan menyortir) jadi tidak menyentuh AB-02 (urutan tetap murni jarak) — pola sama dengan toggle favorit T-41 | T-41 | Tambah state rentang harga di `HomeViewModel` (mirip `hanyaFavorit`), UI slider/input di dekat filter chip olahraga |
+
+> T-46 dan T-47 paling direkomendasikan duluan — fondasinya (security rules, status enum, pola kode dari T-45) sudah ada, tinggal disambung.
+
+> **T-46 dan T-47 SELESAI (15 September 2026).** `BookingRepository.batalkanBooking()` dan `AktivitasRepository.batalkanAktivitas()` ditambahkan mengikuti pola transaction idempoten yang sudah ada (`tolakBooking`/`batalkanKeikutsertaan`). `flutter analyze` bersih, `flutter test` hijau, pemeriksaan lapisan MVVM bersih, `./gradlew assembleDebug` BUILD SUCCESSFUL, dan kedua alur diuji manual di emulator lewat `adb`/`uiautomator` dengan Firestore produksi sungguhan: booking baru dibuat lalu dibatalkan (status langsung `Dibatalkan`, tombol hilang), aktivitas dengan peserta lain dibatalkan (SnackBar sukses, kartu langsung hilang dari "Aktivitas Saya" lewat live stream). **Satu penyesuaian dari rencana awal:** subkoleksi `permintaan` pada aktivitas yang dibatalkan SENGAJA tidak ikut dihapus — dicoba, tapi `firestore.rules` cuma izinkan pemilik dokumen `permintaan/{userId}` menghapusnya sendiri, bukan pembuat aktivitas, jadi kalau dipaksakan transaction gagal `permission-denied` begitu ada peserta lain. Dokumen itu jadi yatim tapi tidak mengganggu fungsi apa pun (tidak ada kode yang membacanya tanpa aktivitas induk juga ada). T-48 dan T-49 masih di backlog, belum dikerjakan.
+
 ---
 
 ## Sprint 5 · Pengujian dan Evaluasi (Minggu 12–14)

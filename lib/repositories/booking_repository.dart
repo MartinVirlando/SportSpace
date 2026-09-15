@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../core/utils/status_booking.dart';
 import '../models/booking_model.dart';
 import '../models/notifikasi_model.dart';
 
@@ -230,6 +231,65 @@ class BookingRepository {
         throw Exception('Tidak punya izin menolak booking.');
       }
       throw Exception('Gagal menolak booking. Coba lagi.');
+    }
+  }
+
+  /// Pengguna membatalkan booking miliknya — PRD AB-04 lanjutan, T-46.
+  ///
+  /// Kebalikan dari [tolakBooking] tapi dipicu pengguna, bukan mitra: sama
+  /// polanya (transaction baca-status-dulu untuk idempotensi, hapus
+  /// `slotBooking` dengan ID deterministik supaya slotnya terbuka lagi).
+  /// Hanya bisa dibatalkan dari status `MENUNGGU`/`DIKONFIRMASI` dan
+  /// sebelum jam selesainya lewat — booking yang sudah `DITOLAK`/`SELESAI`/
+  /// `DIBATALKAN` ditolak di sini juga (bukan cuma disembunyikan View).
+  Future<void> batalkanBooking(BookingModel booking) async {
+    try {
+      final jamAwal = int.parse(booking.jamMulai.split(':')[0]);
+      final jamAkhir = int.parse(booking.jamSelesai.split(':')[0]);
+
+      final bookingRef = _db.collection('booking').doc(booking.bookingId);
+      final notifRef = _db.collection('notifikasi').doc();
+
+      await _db.runTransaction((transaction) async {
+        final snap = await transaction.get(bookingRef);
+        if (!snap.exists) {
+          throw Exception('Booking tidak ditemukan.');
+        }
+        final status = snap.data()?['status'] as String?;
+        if (status != 'MENUNGGU' && status != 'DIKONFIRMASI') {
+          throw Exception('Booking ini tidak bisa dibatalkan.');
+        }
+        if (sudahLewatJamSelesai(booking)) {
+          throw Exception('Booking ini sudah lewat jam selesainya.');
+        }
+
+        transaction.update(bookingRef, {'status': 'DIBATALKAN'});
+        for (var jam = jamAwal; jam < jamAkhir; jam++) {
+          transaction.delete(
+            _db
+                .collection('slotBooking')
+                .doc('${booking.lapanganId}_${booking.tanggal}_$jam'),
+          );
+        }
+        transaction.set(
+          notifRef,
+          NotifikasiModel(
+            notifikasiId: notifRef.id,
+            untukUserId: booking.pemilikId,
+            tipe: 'BOOKING_DIBATALKAN',
+            judul: 'Reservasi dibatalkan',
+            pesan:
+                '${booking.namaUser} membatalkan reservasi di "${booking.namaLapangan}".',
+            refId: booking.bookingId,
+            dibuatPada: DateTime.now(),
+          ).toFirestore(),
+        );
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membatalkan booking.');
+      }
+      throw Exception('Gagal membatalkan booking. Coba lagi.');
     }
   }
 
