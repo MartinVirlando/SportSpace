@@ -41,6 +41,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # Menambah package di luar daftar ini butuh izin dulu (CLAUDE.md).
 #
@@ -51,5 +52,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # assets:
-  #   - assets/images/     # aktifkan kalau logo Sport Space sudah dibuat
+  assets:
+    - assets/images/
+
+# Ikon launcher Android — dibuat dari assets/images/logo.jpg lewat
+# `dart run flutter_launcher_icons` (T-berikutnya). Cuma dev tool, tidak
+# ikut ke APK; hasilnya (file di android/app/src/main/res/mipmap-*/) yang
+# ikut ter-commit.
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: false
+  image_path: "assets/images/logo.jpg"

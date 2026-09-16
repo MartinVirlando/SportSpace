@@ -11,11 +11,15 @@ import 'app_routes.dart';
 
 /// Splash Screen — PRD L-01.
 ///
-/// Tampil ~2 detik, lalu cek status login lewat [AuthViewModel] dan
-/// pindah otomatis ke [ShellNavigasi] (sudah login) atau [LoginScreen]
-/// (belum). TIDAK ADA tombol "Mulai Sekarang" — Figma menampilkannya,
-/// tapi PRD §8 L-01 sengaja tidak membangunnya karena splash harus
-/// berpindah sendiri, bukan menunggu ditekan.
+/// Menunggu pengguna menekan "Mulai Sekarang", baru pindah ke
+/// [ShellNavigasi] (sudah login) atau [LoginScreen] (belum). Pengecekan
+/// status login lewat [AuthViewModel] tetap berjalan di latar belakang
+/// SEJAK splash ini dibuka (bahkan sejak `main.dart`, karena
+/// `AuthViewModel` dipasang sekali sebagai Provider lintas-layar dan
+/// langsung berlangganan `authStateChanges` di constructor-nya) — bukan
+/// baru dicek setelah tombol ditekan. Jadi begitu tombol ditekan, biasanya
+/// statusnya sudah siap dan langsung berpindah tanpa jeda tambahan;
+/// `_tungguStatusSiap` cuma jaga-jaga untuk kasus jaringan lambat.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -24,23 +28,13 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _mulai());
-  }
+  bool _sedangProses = false;
 
-  Future<void> _mulai() async {
-    // Dua syarat dijalankan bersamaan: jeda minimal 2 detik (PRD L-01)
-    // DAN menunggu AuthViewModel selesai memeriksa sesi tersimpan
-    // (status masih `memuat` sesaat setelah app dibuka, sampai
-    // `authStateChanges` mengirim nilai pertamanya).
+  Future<void> _mulaiSekarang() async {
+    setState(() => _sedangProses = true);
+
     final authVm = context.read<AuthViewModel>();
-
-    await Future.wait([
-      Future.delayed(const Duration(seconds: 2)),
-      _tungguStatusSiap(authVm),
-    ]);
+    await _tungguStatusSiap(authVm);
 
     if (!mounted) return;
 
@@ -76,15 +70,17 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                // 180x221 — rasio asli logo.jpg (212x260), supaya gambar
+                // utuh tampil tanpa terpotong (logo aslinya juga memuat
+                // tulisan "SportSpace" + tagline di bagian bawah).
+                child: Image.asset(
+                  'assets/images/logo.jpg',
+                  width: 180,
+                  height: 221,
+                  fit: BoxFit.contain,
                 ),
-                alignment: Alignment.center,
-                child: const Text('⚽', style: TextStyle(fontSize: 48)),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -104,14 +100,88 @@ class _SplashScreenState extends State<SplashScreen> {
                   style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
                 ),
               ),
-              const SizedBox(height: 40),
-              const CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2.5,
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: ElevatedButton(
+                    onPressed: _sedangProses ? null : _mulaiSekarang,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: _sedangProses
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : const Text(
+                            AppStrings.mulaiSekarang,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              // Badge fitur utama — dari desain Figma splash screen.
+              const _BadgeFitur(),
+              const SizedBox(height: 16),
+              Text(
+                AppStrings.splashDaftarOlahraga,
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BadgeFitur extends StatelessWidget {
+  const _BadgeFitur();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        _Chip(ikon: '📍', label: AppStrings.splashBadgeLokasi),
+        _Chip(ikon: '🏸', label: AppStrings.splashBadgeMultiOlahraga),
+        _Chip(ikon: '👥', label: AppStrings.splashBadgeCariRekan),
+      ],
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final String ikon;
+  final String label;
+
+  const _Chip({required this.ikon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '$ikon $label',
+        style: const TextStyle(color: Colors.white, fontSize: 13),
       ),
     );
   }

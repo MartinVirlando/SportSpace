@@ -188,6 +188,9 @@ dependencies:
   intl: ^0.19.x              # format tanggal dan rupiah
   cached_network_image: ^3.x # foto lapangan
   image_picker: ^1.x         # v1.2 — pilih foto profil dari galeri (disimpan Base64, BUKAN Storage)
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.x  # 16 September 2026 — generate ikon launcher Android dari assets/images/logo.jpg, dev-only, tidak ikut ke APK
 ```
 
 > `latlong2` hanya dipakai untuk kelas `LatLng` yang dibutuhkan `flutter_map`. **Jangan** pakai `Distance()` bawaannya untuk menghitung jarak.
@@ -619,9 +622,7 @@ Navigasi bawah punya **4 tab: Home · Map · Teman · Profil** (v1.1, mengikuti 
 Tab **Map** langsung membuka L-05. Tab **Teman** membuka L-07.
 
 ### L-01 · Splash Screen
-Logo + nama "Sport Space" di tengah, tagline di bawah logo, indikator loading, latar warna utama. Tampil ~2 detik, lalu cek status login: sudah login → Home; belum → Login.
-
-> Figma menampilkan tombol "Mulai Sekarang" di layar ini. Tombol itu **tidak dibangun** — splash berpindah otomatis. Hapus tombolnya dari Figma agar tangkapan layar Bab 4 konsisten.
+Logo asli aplikasi (`assets/images/logo.jpg`, juga dipakai sebagai ikon launcher Android sejak 16 September 2026) + nama "Sport Space" di tengah, tagline di bawah logo, badge fitur utama, latar warna utama. **Tombol "Mulai Sekarang"** (Koreksi teknis 15 September 2026 — sebelumnya auto-pindah ~2 detik tanpa tombol; diubah karena figma memang menampilkan tombol ini dan pemilik produk memutuskan splash menunggu ditekan). Pengecekan status login (`AuthViewModel`/`authStateChanges`) tetap berjalan di latar belakang sejak splash dibuka, tidak menunggu tombol — begitu ditekan: sudah login → Home; belum → Login.
 
 ### L-02 · Login
 Input surel + kata sandi, tombol Masuk, tautan ke Register. Tampilkan pesan kesalahan berbahasa Indonesia (mis. "Surel atau kata sandi salah").
@@ -665,7 +666,7 @@ Dibuka dari tab **Teman**. Tab filter olahraga — **lima chip termasuk "Semua",
 Pilih olahraga, pilih lapangan (dari daftar lapangan), tanggal & jam, jumlah pemain dibutuhkan, catatan opsional. Validasi: semua wajib kecuali catatan; waktu harus di masa depan; jumlah pemain 2–30.
 
 ### L-09 · Detail Aktivitas
-Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**. Jika bukan: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya.
+Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**, plus tombol **"Batalkan Aktivitas"** di bagian bawah (T-47, 15 September 2026, dengan dialog konfirmasi — menghapus seluruh dokumen aktivitas dan mengirim notifikasi ke semua peserta selain pembuat, lihat AB-06 lanjutan). Jika bukan pembuat: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya.
 
 ### L-10 · Ajukan Reservasi (form)
 Pilih tanggal, jam mulai, durasi (jam). Tampilkan slot yang sudah terisi agar tidak dipilih (chip jam bertanda "Penuh", mengikuti gaya Figma). Tampilkan estimasi total harga. Tombol **Ajukan Reservasi** menjalankan AB-04.
@@ -686,7 +687,7 @@ Dibuka dari tab **Profil**.
 | Kotak statistik | **Booking** · **Aktivitas** · **Favorit** — dihitung dengan AB-12 |
 | Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
-| Riwayat Pemesanan | Daftar booking pengguna dengan 5 status |
+| Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
 | Menu statis | Bantuan, Kebijakan Privasi, Tentang — halaman statis saja |
 | Dashboard Mitra | Hanya muncul jika `role == "mitra"` |
@@ -834,6 +835,17 @@ Format satu entri seed:
 
 Data siap pakai beserta catatan verifikasinya ada di **`SEED-DATA.md`**.
 
+### Akun Uji (QA)
+
+Dua akun tetap untuk pengujian manual — **pakai ini, jangan bikin akun baru tiap sesi**:
+
+| Peran | Surel | Kata Sandi |
+|---|---|---|
+| Pengguna | `pengguna.uji@sportspace.test` | `Testing123` |
+| Mitra | `mitra.uji@sportspace.test` | `Testing123` |
+
+Dibuat 15 September 2026 sebagai pengganti akun-akun test lama (`qa1`, `qa2`, `*.bb`, `*.demo*`) yang sudah dihapus dari Firebase Console (Authentication + dokumen Firestore terkait) supaya data test tidak terus menumpuk. Akun asli (bukan test) milik anggota tim/teman yang mencoba aplikasi — **jangan dihapus/pakai untuk eksperimen**.
+
 ---
 
 ## 11. Kriteria Terima (sekaligus kasus uji Black Box)
@@ -879,6 +891,8 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-35** | **Buka Home dengan izin lokasi ditolak, tapi punya `lokasiDefault`** | **Daftar tetap tampil terurut dari lokasi default, muncul spanduk pemberitahuan** |
 | **BB-36** | **Buka Profil** | **Angka Booking, Aktivitas, dan Favorit cocok dengan isi Firestore** |
 | **BB-37** | **Pengguna A mencoba membaca favorit pengguna B** | **Ditolak Security Rules** |
+| **BB-38** | **Pengguna membatalkan booking status `MENUNGGU`/`DIKONFIRMASI`** | **Status jadi `DIBATALKAN`, `slotBooking` terhapus (slot terbuka lagi), mitra dapat notifikasi** |
+| **BB-39** | **Pembuat membatalkan aktivitasnya sendiri** | **Dokumen `aktivitasBermain` terhapus, hilang dari daftar Cari Rekan, seluruh peserta (selain pembuat) dapat notifikasi** |
 
 ---
 
@@ -978,3 +992,12 @@ Kerjakan bersama Pak Gintoro sebelum Bab 4 ditulis:
 | 11 | Bab 3.3.2 poin 5 (rancangan L-04) | Tambah tombol toggle ♥ Favorit di search bar; hapus rancangan daftar Lapangan Favorit dari L-13 |
 | 12 | Bab 3.3.2 poin 5 (rancangan L-05) | Tambah search bar (di luar Figma/PRD awal) |
 | 13 | Bab 3 use case / Activity Diagram | Tambah alur "Batalkan Keikutsertaan Aktivitas" (AB-06 lanjutan) |
+
+### Tambahan akibat T-46/T-47/L-01 (15–16 September 2026)
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 14 | Bab 3 use case / Activity Diagram | Tambah use case "Batalkan Booking" (AB-04 lanjutan, T-46) dan "Batalkan Aktivitas oleh Pembuat" (AB-06 lanjutan, T-47) |
+| 15 | Bab 4 tabel Black Box | Tambah BB-38 dan BB-39 |
+| 16 | Bab 3.3.2 poin 5 (rancangan L-01 Splash Screen) | Splash sekarang **memakai tombol "Mulai Sekarang"** (menunggu ditekan), bukan auto-pindah otomatis seperti draf sebelumnya — kalau Bab 4 sudah menyertakan tangkapan layar/narasi splash auto-pindah, perlu disesuaikan |
+| 17 | Bab 4 lampiran tangkapan layar (kalau ada) | Ikon aplikasi (launcher icon) dan gambar splash screen sudah pakai logo asli (`assets/images/logo.jpg`), bukan lagi ikon bawaan Flutter/emoji ⚽ |

@@ -12,6 +12,13 @@ class AppStrings {
   static const namaAplikasi = 'Sport Space';
   static const tagline = 'Temukan lapangan & rekan olahraga di sekitarmu';
 
+  // ---------- Splash Screen (L-01) ----------
+  static const mulaiSekarang = 'Mulai Sekarang';
+  static const splashBadgeLokasi = 'Berbasis Lokasi';
+  static const splashBadgeMultiOlahraga = 'Multi-Olahraga';
+  static const splashBadgeCariRekan = 'Cari Rekan';
+  static const splashDaftarOlahraga = 'Futsal · Badminton · Padel · Mini Soccer';
+
   // ---------- Navigasi bawah (4 tab, PRD v1.1) ----------
   static const tabHome = 'Home';
   static const tabMap = 'Map';
