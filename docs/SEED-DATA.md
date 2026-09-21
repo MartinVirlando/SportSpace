@@ -1,10 +1,12 @@
 # Data Awal Lapangan — Sport Space
 
 **Wilayah penelitian:** Alam Sutera, BSD, Gading Serpong, dan sekitarnya (Kota Tangerang Selatan, Kota Tangerang, Kabupaten Tangerang)
-**Jumlah:** 30 lapangan · **Dibuat:** 17 Agustus 2026 · **Koordinat diperbarui:** 18 Agustus 2026 (7/30 terverifikasi)
+**Jumlah:** 30 lapangan · **Dibuat:** 17 Agustus 2026 · **Koordinat diperbarui:** 21 September 2026 (30/30 terverifikasi, T-51 — lihat catatan di bawah)
 **Dipakai oleh:** T-10 (`AdminSeedScreen`) · **Skema:** PRD Bagian 6.2 · **Format seed:** PRD Bagian 10
 
 > **Catatan 13 September 2026 (T-29):** tile "Seed Data Awal" di menu Profil sudah di-comment (bukan dihapus) di `profil_screen.dart` supaya tidak ikut ke APK release/SUS. Kalau perlu menjalankan seed lagi (mis. setelah T-00e selesai dan 8 lapangan `observasi` di bawah ini diperbarui dengan data survei asli), buka dulu `_TileMenu` yang di-comment di dekat tombol Keluar, jalankan seed, lalu comment lagi sebelum build berikutnya.
+
+> **Catatan 21 September 2026 (T-51):** cek manual satu-per-satu seluruh 30 lapangan ke Google Maps (bukan cuma audit kode) — seluruh koordinat sekarang terverifikasi 30/30 (sebelumnya dokumen ini sempat basi, masih bilang 7/30 padahal `seed_lapangan.dart` sudah 30/30 sejak 21 Agustus). Ditemukan juga: 3 koordinat ternyata meleset (MS Sport Arena, Arsa Sport Mini Soccer, Mad Padel Club BSD) — sudah dikoreksi; dan Raw Futsal ternyata multi-olahraga (futsal & badminton) seperti Taruna Futsal — nama keduanya diganti jadi "Raw Futsal & Badminton" / "Taruna Futsal & Badminton". `nomorTelepon` dan `tautanMaps` (field baru, link Google Maps asli untuk tombol "Buka di Google Maps") juga sudah terisi untuk seluruh 30 lapangan — nilainya ada langsung di `seed_lapangan.dart`, tidak diduplikasi ke tabel di bawah supaya tidak dobel-maintain. Detail lengkap: `PRD.md` "Koreksi teknis + v1.2 tahap baru (21 September 2026)".
 
 ---
 
@@ -18,11 +20,12 @@ Dokumen ini **belum bisa langsung dipakai sebagai data hasil survei di skripsi.*
 | `alamat` | ✅ Nyata, dari sumber publik | — |
 | `jenisOlahraga` | ✅ Nyata | — |
 | `jamBuka` / `jamTutup` | ⚠️ Sebagian dari sumber, sebagian perkiraan | Konfirmasi saat survei |
-| `latitude` / `longitude` | ⚠️ **7 terverifikasi** (18 Agustus 2026), 23 sisanya perkiraan tingkat kelurahan | **Wajib diperbaiki** — lihat di bawah |
+| `latitude` / `longitude` | ✅ **30/30 terverifikasi** (21 September 2026, T-51 — cek manual dua kali: T-00f 21 Agustus, lalu ulang satu-per-satu 21 September, 3 di antaranya ternyata meleset dan sudah dikoreksi) | — |
 | `harga` / `hargaSlot` | ⚠️ Perkiraan pasaran, bukan tarif resmi | **Wajib diperbaiki** untuk yang `observasi` |
 | `fasilitas` | ⚠️ Sebagian dari sumber, sebagian perkiraan | Konfirmasi saat survei |
 | `fotoURL` | ⬜ Sengaja dikosongkan | Foto sendiri saat survei |
-| `nomorTelepon` | ⬜ **v1.2 — belum diisi untuk 30 lapangan ini** | Isi manual saat survei, lalu reseed |
+| `nomorTelepon` | ✅ **30/30 terisi** (21 September 2026, T-51, hasil cek manual Google Maps — 3 di antaranya memang tidak punya nomor publik, dibiarkan kosong) | — |
+| `tautanMaps` | ✅ **30/30 terisi** (21 September 2026, T-51 — field baru, link Google Maps asli untuk tombol "Buka di Google Maps") | — |
 | `isMitra` / `pemilikId` | 🎭 Simulasi untuk keperluan demo | Lihat bagian "Lapangan mitra" |
 
 **Kenapa ini penting.** Kalau penguji bertanya "koordinat ini dapat dari mana?" dan jawabannya "dari internet", itu masalah — karena Bab 3 mengklaim sumber data Places API + observasi langsung. Data di bawah adalah **kerangka kerja yang sudah jadi**, bukan pengganti T-00e. Bagusnya: kerja survei kalian sekarang tinggal *memverifikasi dan mengoreksi* 30 baris, bukan mengumpulkan dari nol.
@@ -35,7 +38,7 @@ Dokumen ini **belum bisa langsung dipakai sebagai data hasil survei di skripsi.*
 4. Baris paling atas menu adalah koordinatnya — klik untuk menyalin
 5. Tempel ke `seed_lapangan.dart`, ganti angka `latitude` dan `longitude`
 
-Total sekitar 8 menit untuk 23 lapangan sisanya (7 sudah beres per 18 Agustus 2026 — lihat kolom 📍 di tabel bawah). **Ini yang paling saya sarankan kalian kerjakan duluan** — Haversine tidak ada artinya kalau koordinatnya salah, dan BB-13 (selisih < 0,1 km dengan hitungan manual) tidak akan lulus dengan data perkiraan.
+**Sudah selesai (T-51, 21 September 2026)** — seluruh 30 lapangan sudah dicek manual, lihat catatan di atas.
 
 ---
 
@@ -45,48 +48,48 @@ Total sekitar 8 menit untuk 23 lapangan sisanya (7 sudah beres per 18 Agustus 20
 |---|---|---|---|
 | Jumlah lapangan | 30 | 20–30 | ✅ |
 | Futsal | 8 | ada isinya | ✅ |
-| Badminton | 10 | ada isinya | ✅ |
+| Badminton | 11 (termasuk Raw Futsal & Badminton sejak T-51) | ada isinya | ✅ |
 | Padel | 8 | ada isinya | ✅ |
 | Mini soccer | 5 | ada isinya | ✅ |
 | `isMitra: true` | 5 | minimal 3 | ✅ |
 | `sumberData` | 17 `places_api` · 8 `observasi` · 5 `mitra` | tiga sumber terwakili | ✅ |
 | Nama duplikat | tidak ada | — | ✅ |
-| Rentang jarak dari Binus Alam Sutera | 0,8 km – 16,4 km | — | ✅ bagus untuk uji pengurutan |
+| Rentang jarak dari Binus Alam Sutera | 0,95 km – ±17 km | — | ✅ bagus untuk uji pengurutan |
 
 Rentang jarak yang lebar itu disengaja: kalau semua lapangan berjarak 2–3 km, pengurutan jarak (BB-05) jadi sulit dibuktikan di depan penguji karena selisihnya tidak kelihatan.
 
-**5 terdekat dari kampus Binus Alam Sutera** (−6,2214 / 106,6520) — pakai ini untuk uji manual BB-05:
+**5 terdekat dari kampus Binus Alam Sutera** (−6,2214 / 106,6520) — dihitung ulang 21 September 2026 dari koordinat final (30/30 terverifikasi), sudah dicocokkan langsung dengan urutan yang tampil di Home lewat emulator — pakai ini untuk uji manual BB-05:
 
 | # | Lapangan | Jarak |
 |---|---|---|
-| 1 | The Good Padel Club | 1,0 km ✅ dihitung dari koordinat terverifikasi |
-| 2 | Hey Beach Padel Club | 1,7 km |
-| 3 | Stadiums Futsal | 2,9 km |
-| 4 | Hall Badminton Jonex | 3,3 km |
-| ~~5~~ | ~~Candra Wijaya International Badminton Centre~~ | Koordinatnya baru diverifikasi (18 Agustus 2026) — jaraknya sebenarnya **≈6,0 km**, bukan 3,5 km. Sudah tidak masuk 5 besar; urutan #5 yang benar belum diketahui sampai lapangan lain juga terverifikasi. |
+| 1 | The Good Padel Club | 0,95 km |
+| 2 | Hey Beach Padel Club | 1,89 km |
+| 3 | Sabnani Football | 3,69 km |
+| 4 | KM7 Mini Soccer | 3,77 km |
+| 5 | Stadiums Futsal | 3,92 km |
 
-> Baris #2–#4 masih pakai koordinat perkiraan (belum diverifikasi), jadi urutannya bisa berubah begitu kalian verifikasi sisanya. Ini contoh nyata kenapa T-00f penting — perkiraan yang meleset bisa mengubah urutan hasil pencarian.
+> Tabel ini sebelumnya basi (sempat menyebut Stadiums Futsal #3 dan Hall Badminton Jonex #4, padahal keduanya tidak masuk 5 besar dengan koordinat final) — kalau ada revisi koordinat lagi nanti, hitung ulang jangan cuma percaya tabel ini.
 
 ---
 
 ## Daftar lengkap 30 lapangan
 
-Kolom **📍** = koordinat terverifikasi dari sumber resmi. Kolom **Sumber** = nilai atribut `sumberData`.
+Kolom **📍** = koordinat terverifikasi (30/30 sejak T-51, 21 September 2026 — 3 di antaranya dikoreksi ulang, ditandai 🔧). Kolom **Sumber** = nilai atribut `sumberData`. `nomorTelepon`/`tautanMaps` tidak diulang di sini — lihat langsung `seed_lapangan.dart`.
 
 ### Futsal (8)
 
 | # | Nama | Alamat | Harga/jam | Jam | 📍 | Sumber |
 |---|---|---|---|---|---|---|
-| 1 | Stadiums Futsal | Jl. Pondok Jagung Timur No. 35, Serpong Utara | 200.000 | 08:00–22:00 | | observasi |
-| 2 | MS Sport Arena | Kav. Ocean Walk, Jl. Pahlawan Seribu Blok CBD Lot VI A, Lengkong Gudang, Serpong | 300.000 | 06:00–00:00 | ✅ | observasi |
-| 3 | Vegas Futsal | Jl. Raya Buaran-Viktor, BSD, Serpong | 180.000 | 08:00–22:00 | | places_api |
-| 4 | Noel Futsal | Jl. Raya Puspitek No. 58, Buaran, Serpong | 150.000 | 07:00–22:00 | | places_api |
-| 5 | Primaraga Hall | Jl. Mandor Baret No. 1, Legoso, Ciputat Timur | 120.000 | 07:00–00:00 | | places_api |
-| 6 | Raw Futsal | Jl. Pahlawan No. 79, Ciputat Timur | 185.000 | 06:00–17:00 | | places_api |
-| 7 | Garasi Futsal | Jl. R.E. Martadinata No. 73, Cipayung, Ciputat | 140.000 | 07:00–23:00 | | places_api |
-| 8 | Taruna Futsal † | Jl. Salak Raya No. 76, Pondok Benda, Pamulang | 130.000 | 07:00–23:00 | | places_api |
+| 1 | Stadiums Futsal | Jl. Pondok Jagung Timur No. 35, Serpong Utara | 200.000 | 08:00–22:00 | ✅ | observasi |
+| 2 | MS Sport Arena | Kav. Ocean Walk, Jl. Pahlawan Seribu Blok CBD Lot VI A, Lengkong Gudang, Serpong | 300.000 | 06:00–00:00 | 🔧 | observasi |
+| 3 | Vegas Futsal | Jl. Raya Buaran-Viktor, BSD, Serpong | 180.000 | 08:00–22:00 | ✅ | places_api |
+| 4 | Noel Futsal | Jl. Raya Puspitek No. 58, Buaran, Serpong | 150.000 | 07:00–22:00 | ✅ | places_api |
+| 5 | Primaraga Hall | Jl. Mandor Baret No. 1, Legoso, Ciputat Timur | 120.000 | 07:00–00:00 | ✅ | places_api |
+| 6 | Raw Futsal & Badminton † | Jl. Pahlawan No. 79, Ciputat Timur | 185.000 | 06:00–17:00 | ✅ | places_api |
+| 7 | Garasi Futsal | Jl. R.E. Martadinata No. 73, Cipayung, Ciputat | 140.000 | 07:00–23:00 | ✅ | places_api |
+| 8 | Taruna Futsal & Badminton † | Jl. Salak Raya No. 76, Pondok Benda, Pamulang | 130.000 | 07:00–23:00 | ✅ | places_api |
 
-† Satu-satunya lapangan multi-olahraga (futsal **dan** badminton). Sengaja dipertahankan — berguna untuk membuktikan filter chip bekerja pada `List<String>`, bukan `String` (BB-07).
+† 2 lapangan multi-olahraga (futsal **dan** badminton) — Raw Futsal & Badminton ditemukan T-51 (21 September 2026), Taruna Futsal & Badminton sudah sejak awal. Berguna untuk membuktikan filter chip bekerja pada `List<String>`, bukan `String` (BB-07). **Keterbatasan:** harga/jam untuk keduanya tetap satu nilai berlaku untuk semua jenis olahraga di venue itu — lihat `PRD.md` bagian Keterbatasan, dan `SPRINT-PLAN.md` "Ide masa depan" untuk rencana kalau mau dibuat per-jenis-olahraga.
 
 ### Mini Soccer (5)
 
@@ -95,36 +98,39 @@ Kolom **📍** = koordinat terverifikasi dari sumber resmi. Kolom **Sumber** = n
 | 9 | Kicktopia Mini Soccer Gading Serpong | Gading Serpong, Kelapa Dua, Kab. Tangerang | 600.000 | 06:00–00:00 | ✅ | **mitra** |
 | 10 | KM7 Mini Soccer | Jl. Raya Serpong KM. 7 No. 28, Pondok Jagung, Serpong Utara | 550.000 | 06:00–00:00 | ✅ | **mitra** |
 | 11 | Sabnani Football | Rawa Kutuk, Serpong Utara | 550.000 | 06:00–23:00 | ✅ | observasi |
-| 12 | Arsa Sport Mini Soccer | Jl. Cilenggang 1, Cilenggang, Serpong | 500.000 | 06:00–22:00 | ✅ | observasi |
-| 13 | AM Soccer Arena | Kp. Curug Kongsi Baru, Medang, Pagedangan | 700.000 | 06:00–00:00 | | places_api |
+| 12 | Arsa Sport Mini Soccer | Jl. Cilenggang 1, Cilenggang, Serpong | 500.000 | 06:00–22:00 | 🔧 | observasi |
+| 13 | AM Soccer Arena | Kp. Curug Kongsi Baru, Medang, Pagedangan | 700.000 | 06:00–00:00 | ✅ | places_api |
 
-### Badminton (10)
+### Badminton (11)
 
 | # | Nama | Alamat | Harga/jam | Jam | 📍 | Sumber |
 |---|---|---|---|---|---|---|
 | 14 | Candra Wijaya International Badminton Centre | Jl. Jelupang Raya No. 15, Jelupang, Serpong Utara | 150.000 | 06:00–00:00 | ✅ | **mitra** |
-| 15 | Hall Badminton Jonex | Jl. Pemakanan No. 37, Pondok Jagung, Serpong Utara | 55.000 | 08:00–23:00 | | observasi |
-| 16 | Matrix Badminton Arena | BSD City | 90.000 | 07:00–23:00 | | places_api |
-| 17 | Tontowi Ahmad Badminton Hall BSD | Lengkong Kulon, Pagedangan | 80.000 | 06:00–23:00 | | places_api |
-| 18 | Benteng Badminton Hall | Jl. Ciakar, Kp. Pangger, Situgadung, Pagedangan | 70.000 | 07:00–23:00 | | places_api |
-| 19 | Ultra Badminton Hall | Kp. Ciakar, Jl. Raya Pagedangan, Situgadung, Pagedangan | 65.000 | 07:00–23:00 | | places_api |
-| 20 | GOR Panca Putra | Gg. Betawi, Ciater, Serpong | 60.000 | 07:00–23:00 | | observasi |
-| 21 | GOR Saratoga | Jl. Mede No. 60, Pamulang Barat | 40.000 | 07:00–00:00 | | places_api |
-| 22 | GOR Jambu | Jl. Jambu No. 8B, Pisangan, Ciputat Timur | 35.000 | 07:00–23:00 | | places_api |
-| 23 | *(Taruna Futsal, lihat #8)* | | | | | |
+| 15 | Hall Badminton Jonex | Jl. Pemakanan No. 37, Pondok Jagung, Serpong Utara | 55.000 | 08:00–23:00 | ✅ | observasi |
+| 16 | Matrix Badminton Arena | BSD City | 90.000 | 07:00–23:00 | ✅ | places_api |
+| 17 | Tontowi Ahmad Badminton Hall BSD | Lengkong Kulon, Pagedangan | 80.000 | 06:00–23:00 | ✅ | places_api |
+| 18 | Benteng Badminton Hall | Jl. Ciakar, Kp. Pangger, Situgadung, Pagedangan | 70.000 | 07:00–23:00 | ✅ | places_api |
+| 19 | Ultra Badminton Hall | Kp. Ciakar, Jl. Raya Pagedangan, Situgadung, Pagedangan | 65.000 | 07:00–23:00 | ✅ | places_api |
+| 20 | GOR Panca Putra | Gg. Betawi, Ciater, Serpong | 60.000 | 07:00–23:00 | ✅ | observasi |
+| 21 | GOR Saratoga | Jl. Mede No. 60, Pamulang Barat | 40.000 | 07:00–00:00 | ✅ | places_api |
+| 22 | GOR Jambu | Jl. Jambu No. 8B, Pisangan, Ciputat Timur | 35.000 | 07:00–23:00 | ✅ | places_api |
+| 23 | *(Taruna Futsal & Badminton, lihat #8)* | | | | | |
+| — | *(Raw Futsal & Badminton, lihat #6)* | | | | | |
 
 ### Padel (8)
 
 | # | Nama | Alamat | Harga/jam | Jam | 📍 | Sumber |
 |---|---|---|---|---|---|---|
-| 24 | Hey Beach Padel Club | Jalur Sutera No. 30A, Pakualam, Serpong Utara | 280.000 | 07:00–23:00 | | **mitra** |
-| 25 | Mad Padel Club BSD | Jl. Damar Poso 8 No. 23 Blok AA8, Medang, Pagedangan | 320.000 | 06:00–00:00 | | **mitra** |
-| 26 | Rekket Space Padel Hall BSD | Jl. Buaran Raya, Buaran, Serpong | 240.000 | 06:00–23:00 | | observasi |
-| 27 | Beyond Padel BSD | Jl. Melati VIII No. 7, Jelupang, Serpong Utara | 260.000 | 07:00–23:00 | | observasi |
-| 28 | Racquet Padel Club BSD | Jl. Raya Pagedangan, BSD | 160.000 | 06:00–23:00 | | places_api |
-| 29 | Go Padel BSD | Jl. Jatake-Babakan Raya No. 78, Jatake, Pagedangan | 200.000 | 06:00–23:00 | | places_api |
+| 24 | Hey Beach Padel Club | Jalur Sutera No. 30A, Pakualam, Serpong Utara | 280.000 | 07:00–23:00 | ✅ | **mitra** |
+| 25 | Mad Padel Club BSD | Jl. Damar Poso 8 No. 23 Blok AA8, Medang, Pagedangan | 320.000 | 06:00–00:00 | 🔧 | **mitra** |
+| 26 | Rekket Space Padel Hall BSD | Jl. Buaran Raya, Buaran, Serpong | 240.000 | 06:00–23:00 | ✅ | observasi |
+| 27 | Beyond Padel BSD | Jl. Melati VIII No. 7, Jelupang, Serpong Utara | 260.000 | 07:00–23:00 | ✅ | observasi |
+| 28 | Racquet Padel Club BSD | Jl. Raya Pagedangan, BSD | 160.000 | 06:00–23:00 | ✅ | places_api |
+| 29 | Go Padel BSD | Jl. Jatake-Babakan Raya No. 78, Jatake, Pagedangan | 200.000 | 06:00–23:00 | ✅ | places_api |
 | 30 | The Good Padel Club | Jl. Alam Utama Kav. 10, Panunggangan Timur, Pinang, Kota Tangerang | 350.000 | 07:00–23:00 | ✅ | places_api |
-| 31 | Powerhouse Padel | Jl. Kejaksaan Raya No. 60, Kreo, Larangan, Kota Tangerang | 250.000 | 07:00–23:00 | | places_api |
+| 31 | Powerhouse Padel | Jl. Kejaksaan Raya No. 60, Kreo, Larangan, Kota Tangerang | 250.000 | 07:00–23:00 | ✅ | places_api |
+
+🔧 = 3 lapangan yang koordinatnya dikoreksi T-51 (bukan sekadar diverifikasi baru — koordinat lama di seed sebelumnya memang meleset).
 
 > **8 lapangan bertanda `observasi`** adalah yang paling dekat kampus dan paling realistis kalian datangi saat T-00e. Untuk yang ini, harga/jam/fasilitas **wajib** diganti dengan data asli — kalau tidak, ubah `sumberData`-nya jadi `places_api` supaya tidak mengklaim observasi yang tidak dilakukan.
 

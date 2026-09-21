@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
@@ -642,33 +643,78 @@ class _BarisAlamat extends StatelessWidget {
 
   const _BarisAlamat({required this.lapangan});
 
+  /// Buka [LapanganModel.tautanMaps] di aplikasi/browser Google Maps
+  /// eksternal (T-51) — beda dari "Lihat di peta" yang pindah ke tab Map
+  /// bawaan aplikasi (flutter_map/OSM, internal, tidak pernah keluar app).
+  Future<void> _bukaGoogleMaps(BuildContext context) async {
+    final uri = Uri.tryParse(lapangan.tautanMaps);
+    final berhasil = uri != null &&
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    if (!berhasil && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.gagalBukaTautan)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('📍', style: TextStyle(fontSize: 14)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('📍', style: TextStyle(fontSize: 14)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
+            ),
+            TextButton(
+              onPressed: () {
+                // Detail Lapangan selalu di-push DI ATAS ShellNavigasi (lihat
+                // komentar di atas build()), yang selalu jadi rute root
+                // tunggal (dibuat lewat pushReplacement/pushAndRemoveUntil) —
+                // jadi popUntil(isFirst) sudah pasti kembali ke ShellNavigasi,
+                // seberapa pun dalam layar ini dibuka (Home/Map/Favorit).
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                AppRoutes.kunciShell.currentState?.pindahKeMapDenganFokus(
+                  lapangan.latitude,
+                  lapangan.longitude,
+                );
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 0),
+              ),
+              child: const Text(
+                'Lihat di peta',
+                style: AppTextStyles.metaLapangan,
+              ),
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () {
-            // Detail Lapangan selalu di-push DI ATAS ShellNavigasi (lihat
-            // komentar di atas build()), yang selalu jadi rute root
-            // tunggal (dibuat lewat pushReplacement/pushAndRemoveUntil) —
-            // jadi popUntil(isFirst) sudah pasti kembali ke ShellNavigasi,
-            // seberapa pun dalam layar ini dibuka (Home/Map/Favorit).
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            AppRoutes.kunciShell.currentState
-                ?.pindahKeMapDenganFokus(lapangan.latitude, lapangan.longitude);
-          },
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 0),
+        // T-51: tombol eksternal — cuma tampil kalau tautanMaps terisi,
+        // pola sama seperti baris kontak (nomorTelepon) di bawah.
+        if (lapangan.tautanMaps.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => _bukaGoogleMaps(context),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 0),
+              ),
+              icon: const Icon(Icons.map_outlined, size: 14),
+              label: const Text(
+                AppStrings.bukaGoogleMaps,
+                style: AppTextStyles.metaLapangan,
+              ),
+            ),
           ),
-          child: const Text('Lihat di peta', style: AppTextStyles.metaLapangan),
-        ),
+        ],
       ],
     );
   }

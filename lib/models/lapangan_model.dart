@@ -28,6 +28,13 @@ class LapanganModel {
   /// pola sama dengan `UserModel.nomorTelepon`.
   final String nomorTelepon;
 
+  /// Tautan Google Maps lapangan — opsional, v1.2 (T-51). Link asli hasil
+  /// verifikasi manual (bukan dibangkitkan dari `latitude`/`longitude`),
+  /// dipakai tombol "Buka di Google Maps" di L-06. Pola sama seperti
+  /// [nomorTelepon]: `String` non-null berdefault `''`, baris disembunyikan
+  /// total kalau kosong.
+  final String tautanMaps;
+
   final bool isMitra;
   final String? pemilikId;
   final String sumberData;
@@ -56,6 +63,7 @@ class LapanganModel {
     required this.fasilitas,
     required this.fotoURL,
     this.nomorTelepon = '',
+    this.tautanMaps = '',
     required this.isMitra,
     this.pemilikId,
     required this.sumberData,
@@ -99,6 +107,7 @@ class LapanganModel {
       fasilitas: List<String>.from(data['fasilitas'] ?? const []),
       fotoURL: List<String>.from(data['fotoURL'] ?? const []),
       nomorTelepon: data['nomorTelepon'] as String? ?? '',
+      tautanMaps: data['tautanMaps'] as String? ?? '',
       isMitra: data['isMitra'] as bool? ?? false,
       pemilikId: data['pemilikId'] as String?,
       sumberData: data['sumberData'] as String? ?? 'places_api',
@@ -122,6 +131,7 @@ class LapanganModel {
         'fasilitas': fasilitas,
         'fotoURL': fotoURL,
         'nomorTelepon': nomorTelepon,
+        'tautanMaps': tautanMaps,
         'isMitra': isMitra,
         'pemilikId': pemilikId,
         'sumberData': sumberData,
@@ -151,6 +161,7 @@ class LapanganModel {
         fasilitas: fasilitas,
         fotoURL: fotoURL,
         nomorTelepon: nomorTelepon,
+        tautanMaps: tautanMaps,
         isMitra: isMitra,
         pemilikId: pemilikId,
         sumberData: sumberData,

@@ -77,6 +77,8 @@ class AppStrings {
   static const jenisOlahraga = 'Jenis';
   static const beriRating = 'Beri Rating';
   static const ajukanReservasi = 'Ajukan Reservasi';
+  static const bukaGoogleMaps = 'Buka di Google Maps';
+  static const gagalBukaTautan = 'Tidak bisa membuka tautan peta.';
   static const ulasanPengguna = 'Ulasan Pengguna';
   static const belumAdaUlasan = 'Belum ada ulasan';
   static const badgeMitra = '✅ Mitra Terdaftar';

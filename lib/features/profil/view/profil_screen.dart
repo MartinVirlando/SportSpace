@@ -182,6 +182,11 @@ class _ProfilBody extends StatelessWidget {
             // asli, tile ini tinggal dimunculkan lagi (uncomment blok di
             // bawah), tanpa perlu menulis ulang fiturnya dari nol.
             //
+            // Dimunculkan sekali lagi 21 September 2026 (T-51) untuk reseed
+            // 30 lapangan dengan data terkoreksi (koordinat, nomorTelepon,
+            // tautanMaps, 2 nama diganti jadi "... & Badminton") — sudah
+            // dijalankan dan berhasil, tile di-comment lagi.
+            //
             // _TileMenu(
             //   ikon: Icons.dataset_outlined,
             //   label: AppStrings.adminSeedJudul,

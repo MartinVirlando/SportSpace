@@ -96,6 +96,22 @@ Ditemukan lewat audit kode menyeluruh (dibantu Claude, bukan Black Box formal) s
 
 Ketiganya diverifikasi `flutter analyze` bersih, `flutter test` hijau, aturan lapisan MVVM bersih. #13 dan #14 sudah dites langsung di emulator (edit profil dicek dua arah lewat Firestore REST API; lihat-di-peta dicoba dengan 2 lapangan berbeda). **Masih perlu verifikasi ulang di perangkat Android nyata** sesuai Definisi Selesai §12 poin 1.
 
+### Koreksi teknis + v1.2 tahap baru (21 September 2026) — T-51
+
+Dipicu cek manual satu-per-satu 30 data seed lapangan terhadap Google Maps (bukan sekadar audit kode) — ditemukan 3 koordinat masih meleset dan 2 lapangan ternyata multi-olahraga yang belum tercermin di nama tampilannya. Sekalian ditambah fitur baru yang diminta: link Google Maps eksternal per lapangan.
+
+| # | Koreksi/penambahan | Bagian yang terdampak |
+|---|---|---|
+| 16 | **Atribut baru `tautanMaps` pada `lapangan`** — link Google Maps asli (bukan dibangkitkan dari koordinat), opsional. Tombol baru **"Buka di Google Maps"** di L-06 (dekat "Lihat di peta"), pakai `url_launcher` (paket baru, lihat §4) untuk membuka aplikasi/browser Maps eksternal — beda dari "Lihat di peta" yang tetap ke tab Map internal (flutter_map/OSM). | §4, §6.2, §8 L-06 |
+| 17 | **3 koordinat lapangan dikoreksi** hasil cek ulang manual (Google Maps): MS Sport Arena, Arsa Sport Mini Soccer, Mad Padel Club BSD. Ditandai `// KOORDINAT DIKOREKSI (T-51)` di `seed_lapangan.dart`. | §6.2, §10 |
+| 18 | **Raw Futsal ternyata multi-olahraga** (futsal & badminton, sama seperti Taruna Futsal yang sudah ada) — `jenisOlahraga` ditambah `badminton`, nama diganti jadi "Raw Futsal & Badminton". **Taruna Futsal** juga diganti nama jadi "Taruna Futsal & Badminton" (jenisOlahraga-nya sudah benar sejak awal, cuma nama tampilannya yang belum mencerminkan itu). | §6.2, §10 |
+
+**Keterbatasan yang perlu ditulis di Bab Keterbatasan Penelitian:** untuk kedua lapangan multi-olahraga di atas, `harga`/`hargaSlot`/`jamBuka`/`jamTutup` tetap satu nilai berlaku untuk seluruh jenis olahraga di venue itu — sistem belum mendukung harga/jam berbeda per jenis olahraga dalam satu lapangan. Lihat `SPRINT-PLAN.md` bagian "Ide masa depan" untuk rencana kalau ini mau dikembangkan lebih lanjut.
+
+**T-51 SELESAI (21 September 2026).** Data 30 lapangan sudah live di Firestore produksi sejak 21 Agustus 2026 dengan rating/booking asli menempel ke `lapanganId`-nya, jadi koreksi di atas tidak bisa ditulis dengan `.update()` per dokumen — `firestore.rules` hanya izinkan pemilik/`pemilikId` mengubah lapangan miliknya, dan 25 dari 30 lapangan non-mitra `pemilikId`-nya `null`. Jalan yang dipakai: **hapus koleksi `lapangan` di Firebase Console (dilakukan pemilik proyek), lalu jalankan ulang `AdminSeedScreen` dari akun `mitra.uji`** (bukan `pengguna.uji`) supaya 5 lapangan `isMitra: true` ter-assign ke `pemilikId` yang benar — tile "Seed Data Awal" dimunculkan sebentar untuk ini, lalu di-comment lagi setelah selesai. **Konsekuensi yang disetujui pemilik proyek:** rating dan favorit yang sudah ada untuk 30 lapangan ini ikut ter-reset (data uji, bukan data sidang), dan `lapanganId` seluruhnya berganti (dokumen baru).
+
+Diverifikasi langsung di emulator (`sport_space_avd`) via `adb`/`uiautomator` terhadap Firestore produksi sungguhan: (1) urutan jarak di Home sekarang cocok persis dengan hitungan ulang manual (The Good Padel Club 0,95 km → Hey Beach Padel Club 1,89 km → Sabnani Football 3,69 km → KM7 Mini Soccer 3,77 km → Stadiums Futsal 3,92 km); (2) pencarian "Raw" menampilkan "Raw Futsal & Badminton" dengan jarak yang sudah memakai koordinat terkoreksi; (3) tombol "Buka di Google Maps" ditekan pada Sabnani Football dan berhasil membuka **aplikasi Google Maps asli** (bukan browser) tepat ke lokasinya; (4) baris Kontak tampil dengan nomor telepon yang benar. `flutter analyze` bersih, pemeriksaan lapisan MVVM bersih, `flutter test` hijau. **Belum diverifikasi di perangkat Android nyata** sesuai Definisi Selesai §12 poin 1 — juga belum dicek manual satu-per-satu ke-27 lapangan lain yang tidak diubah datanya (hanya ditambah `nomorTelepon`/`tautanMaps`) di luar 5 yang sudah dilihat langsung di atas.
+
 ---
 
 ## 1. Ringkasan Produk
@@ -188,6 +204,7 @@ dependencies:
   intl: ^0.19.x              # format tanggal dan rupiah
   cached_network_image: ^3.x # foto lapangan
   image_picker: ^1.x         # v1.2 — pilih foto profil dari galeri (disimpan Base64, BUKAN Storage)
+  url_launcher: ^6.x         # v1.2 (T-51) — tombol "Buka di Google Maps" (L-06), buka aplikasi/browser eksternal
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.x  # 16 September 2026 — generate ikon launcher Android dari assets/images/logo.jpg, dev-only, tidak ikut ke APK
@@ -304,6 +321,7 @@ Nama atribut mengikuti ERD Bab 3 **persis**. Jangan diterjemahkan ke bahasa Ingg
 | `fasilitas` | List\<String\> | ✓ | mis. `["parkir","toilet","kantin","ruang ganti"]` |
 | `fotoURL` | List\<String\> | ✓ | boleh larik kosong |
 | `nomorTelepon` | String | | **v1.2** — kontak lapangan, opsional, boleh kosong sampai diisi manual/mitra |
+| `tautanMaps` | String | | **v1.2 (T-51)** — link Google Maps asli hasil verifikasi manual (bukan dibangkitkan dari `latitude`/`longitude`), opsional, boleh kosong |
 | `isMitra` | bool | ✓ | menentukan apakah tombol reservasi muncul |
 | `pemilikId` | String? | | hanya terisi jika `isMitra == true` |
 | `sumberData` | String | ✓ | `"places_api"` \| `"observasi"` \| `"mitra"` |
@@ -653,7 +671,7 @@ Tile URL: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
 `userAgentPackageName` wajib diisi sesuai package aplikasi.
 
 ### L-06 · Detail Lapangan — **diperbarui v1.1**
-Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`.
+Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta (internal, tab Map) + **tombol "Buka di Google Maps" (v1.2, T-51, hanya tampil kalau `tautanMaps` terisi, buka aplikasi/browser eksternal lewat `url_launcher`)**, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`.
 
 > Figma menampilkan pemilihan slot jam langsung di layar ini. Pemilihan slot tetap di **L-10** sesuai PRD, karena butuh pemilihan tanggal dan perhitungan estimasi harga yang tidak muat di layar detail. Tombol "Booking Sekarang" di Figma = tombol "Ajukan Reservasi" yang membuka L-10.
 >
@@ -894,6 +912,7 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-38** | **Pengguna membatalkan booking status `MENUNGGU`/`DIKONFIRMASI`** | **Status jadi `DIBATALKAN`, `slotBooking` terhapus (slot terbuka lagi), mitra dapat notifikasi** |
 | **BB-39** | **Pembuat membatalkan aktivitasnya sendiri** | **Dokumen `aktivitasBermain` terhapus, hilang dari daftar Cari Rekan, seluruh peserta (selain pembuat) dapat notifikasi** |
 | **BB-40** | **Tekan tombol zoom + / − di Map berulang kali sampai batas** | **Peta memperbesar/memperkecil satu level per tekan, berhenti tepat di level 3 (zoom −) dan 18 (zoom +), tidak melewati batas** |
+| **BB-41** | **Buka detail lapangan dengan `tautanMaps` terisi, tekan "Buka di Google Maps"** | **Aplikasi/browser Google Maps eksternal terbuka menuju lokasi lapangan; kalau `tautanMaps` kosong, tombolnya tidak muncul sama sekali** |
 
 ---
 
@@ -1009,3 +1028,13 @@ Kerjakan bersama Pak Gintoro sebelum Bab 4 ditulis:
 |---|---|---|
 | 18 | Bab 3.3.2 poin 5 (rancangan L-05) | Tambah tombol zoom +/− (di luar Figma/PRD awal), dan sebutkan batas zoom 3–18 yang berlaku untuk tombol, pinch, maupun scroll mouse |
 | 19 | Bab 4 tabel Black Box | Tambah BB-40 |
+
+### Tambahan akibat T-51 (21 September 2026)
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 20 | Bab 3.3.2 poin 6 / Tabel 3.10, ERD Bab 3 | Tambah atribut `tautanMaps` pada entitas Lapangan (String, opsional — link Google Maps asli) |
+| 21 | Bab 3.3.2 poin 5 (rancangan L-06 Detail Lapangan) | Tambah tombol "Buka di Google Maps" (di luar Figma/PRD awal), berdampingan dengan "Lihat di peta" yang sudah ada — jelaskan bedanya (eksternal vs internal ke tab Map) |
+| 22 | Tabel 3.4 (daftar package/dependensi) | Tambah `url_launcher` |
+| 23 | Bab 4 tabel Black Box | Tambah BB-41 (tombol "Buka di Google Maps" membuka aplikasi/browser eksternal, hanya tampil kalau `tautanMaps` terisi) |
+| 24 | Bab 5 saran / Keterbatasan Penelitian | Tambah keterbatasan: lapangan multi-olahraga (Raw Futsal & Badminton, Taruna Futsal & Badminton) memakai satu nilai harga/jam untuk seluruh jenis olahraga di venue itu — belum ada dukungan harga/jam per jenis olahraga dalam satu lapangan |

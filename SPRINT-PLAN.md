@@ -175,6 +175,27 @@ Awalnya empat saran dari audit kode setelah v1.2 selesai (T-46...T-49); T-49 (fi
 
 > **T-50 SELESAI (21 September 2026).** Sebelum menulis kode, dicek dulu ke source `flutter_map-7.0.2` di pub cache (`interaction.dart`, `interactive_flag.dart`) — ternyata pinch-zoom dan scroll-wheel-zoom **sudah aktif sejak awal** lewat `InteractiveFlag.all` (default `MapOptions.interactionOptions`, tidak pernah di-override kode ini), jadi tidak butuh kode tambahan untuk itu. Yang ditambahkan cuma dua tombol +/− (pola sama dengan tombol recenter T-14: murni `_mapController.move()` di View, tidak menyentuh `MapViewModel`/Firestore) dan `minZoom`/`maxZoom` di `MapOptions` supaya batas 3–18 berlaku sama untuk tombol, pinch, maupun scroll. `flutter analyze` bersih, diuji langsung di emulator (`sport_space_avd`) via `adb`: zoom in sampai level jalan, zoom out ditekan 14x berturut-turut berhenti tepat di level 3 (bukan terus turun), recenter tetap kembali ke zoom 14. PRD.md §8 L-05, §11 (BB-40), §14 diperbarui mengikuti. **Belum diuji pinch/scroll sungguhan** (emulator tidak dikendalikan lewat gesture multi-touch/mouse asli di sesi ini) dan **belum verifikasi di perangkat Android nyata** sesuai Definisi Selesai PRD §12 poin 1.
 
+### Koreksi data lapangan + link Google Maps + kontak — T-51 (21 September 2026)
+
+| ID | Tugas | Bergantung | Selesai jika |
+|---|---|---|---|
+| **T-51** | Cek manual 30 lapangan ke Google Maps, koreksi yang meleset; tambah `nomorTelepon`/`tautanMaps` ke seluruh 30 lapangan; tombol "Buka di Google Maps" (L-06) — fitur baru di luar PRD awal | T-10, T-44 | 30/30 lapangan terverifikasi manual; 3 koordinat yang meleset dikoreksi; 2 lapangan multi-olahraga namanya mencerminkan itu; tombol Maps eksternal berfungsi dan hanya tampil kalau `tautanMaps` terisi |
+
+> **T-51 SELESAI (21 September 2026).** User cek manual satu-per-satu 30 lapangan ke Google Maps (di luar sesi ini, hasilnya diserahkan sebagai daftar link + nomor telepon + catatan revisi). Temuan: 3 koordinat meleset (MS Sport Arena, Arsa Sport Mini Soccer, Mad Padel Club BSD) — dikoreksi; Raw Futsal ternyata multi-olahraga (futsal & badminton) sama seperti Taruna Futsal yang sudah ada — `jenisOlahraga` ditambah, kedua nama diganti jadi "... & Badminton" supaya kelihatan dari daftar tanpa buka detail. Field baru `tautanMaps` ditambahkan ke `LapanganModel`/skema, package `url_launcher` ditambah (izin diberikan user), tombol "Buka di Google Maps" ditambahkan di L-06 berdampingan dengan "Lihat di peta" yang sudah ada (internal, ke tab Map — beda tujuan). Data didorong ke Firestore produksi lewat hapus-koleksi-lalu-reseed dari akun `mitra.uji` (bukan `.update()` — `firestore.rules` tidak mengizinkan untuk 25/30 lapangan non-mitra), dengan konsekuensi rating/favorit lama ter-reset (disetujui, data uji bukan data sidang). Diverifikasi di emulator: urutan jarak Home cocok hitungan ulang, "Raw Futsal & Badminton" muncul benar di pencarian, tombol Maps membuka aplikasi Google Maps asli (dicoba di Sabnani Football), Kontak tampil benar. `flutter analyze` bersih, aturan lapisan MVVM bersih, `flutter test` hijau. `PRD.md` §4/§6.2/§8 L-06/"Koreksi teknis" dan `docs/SEED-DATA.md` diperbarui mengikuti. **Belum diverifikasi di perangkat Android nyata** sesuai Definisi Selesai PRD §12 poin 1, dan baru 5/30 lapangan yang benar-benar dilihat ulang tampilannya di emulator pasca-reseed (sisanya diasumsikan benar dari data yang sama, belum dicek visual satu-satu).
+
+### Ide masa depan (belum diputuskan): harga/jam per jenis olahraga — 21 September 2026
+
+Ditemukan saat verifikasi manual data lapangan (T-51 di atas): **Raw Futsal** di Google Maps ternyata juga menyediakan badminton (bukan cuma futsal), sama seperti pola **Taruna Futsal** (`['futsal', 'badminton']`, satu-satunya lapangan multi-olahraga yang sudah ada sebelum T-51). Skema `jenisOlahraga: List<String>` sudah mendukung satu lapangan dengan >1 jenis olahraga — itu bukan masalah. **Yang belum didukung:** `harga`/`hargaSlot`/`jamBuka`/`jamTutup` itu satu set nilai per dokumen lapangan, berlaku rata untuk semua jenis olahraga di venue itu — padahal di dunia nyata futsal dan badminton di venue yang sama bisa beda harga dan beda jam.
+
+**Keputusan yang sudah dieksekusi (T-51):** untuk Raw Futsal, ikuti pola Taruna Futsal — tambahkan `'badminton'` ke `jenisOlahraga`, harga/jam tetap satu nilai (simplifikasi, ditulis sebagai keterbatasan di Bab Keterbatasan Penelitian).
+
+**Ide untuk nanti (kalau user memutuskan mau dikerjakan):** harga/jam per jenis olahraga, misalnya `hargaPerOlahraga: {'futsal': {...}, 'badminton': {...}}` menggantikan/mendampingi field `harga` datar. Bukan rombak arsitektur (tidak perlu package/Cloud Functions baru), tapi menyentuh 3 tempat:
+1. `LapanganModel` — skema nested per jenis olahraga.
+2. **Mekanisme kunci slot booking** (PRD "hal paling gampang salah" #1) — ID dokumen `slotBooking/{lapanganId}_{tanggal}_{jam}` perlu jadi `{lapanganId}_{jenisOlahraga}_{tanggal}_{jam}`, supaya booking futsal dan badminton di venue yang sama tidak saling kunci slot yang salah. Ini bagian paling sensitif — bukan cuma tambah field, harus diubah hati-hati karena ini fondasi anti-double-booking.
+3. UI Home card / Detail Lapangan / alur booking (AB-04) — perlu pilih jenis olahraga dulu baru harga & jam yang relevan ditampilkan.
+
+Hanya berdampak ke 2 dari 30 lapangan saat ini (Taruna Futsal, Raw Futsal). Tidak urgent, belum masuk PRD, tunggu keputusan eksplisit user sebelum dikerjakan.
+
 ---
 
 ## Sprint 5 · Pengujian dan Evaluasi (Minggu 12–14)
