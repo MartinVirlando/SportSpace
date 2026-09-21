@@ -113,6 +113,9 @@ class _PetaBerhasil extends StatefulWidget {
 }
 
 class _PetaBerhasilState extends State<_PetaBerhasil> {
+  static const _zoomMin = 3.0;
+  static const _zoomMax = 18.0;
+
   final _mapController = MapController();
 
   // T-42 lanjutan: daftar saran ala Google Maps di bawah search bar,
@@ -185,6 +188,11 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
           options: MapOptions(
             initialCenter: posisiPengguna,
             initialZoom: 14,
+            // Batas bawah/atas ini juga otomatis berlaku untuk pinch dan
+            // scroll mouse (bawaan flutter_map, bukan cuma tombol +/- di
+            // bawah), supaya ketiga cara zoom konsisten.
+            minZoom: _zoomMin,
+            maxZoom: _zoomMax,
             onTap: (_, __) => context.read<MapViewModel>().pilihLapangan(null),
           ),
           children: [
@@ -270,6 +278,14 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
           ),
         Positioned(
           right: 12,
+          bottom: (vm.lapanganTerpilih != null ? 132 : 16) + 52,
+          child: _KontrolZoom(
+            onZoomIn: () => _ubahZoom(1),
+            onZoomOut: () => _ubahZoom(-1),
+          ),
+        ),
+        Positioned(
+          right: 12,
           bottom: vm.lapanganTerpilih != null ? 132 : 16,
           child: _TombolRecenter(
             onTap: () => _mapController.move(posisiPengguna, 14),
@@ -277,6 +293,17 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
         ),
       ],
     );
+  }
+
+  /// Zoom in/out lewat tombol — tidak ada di PRD L-05 eksplisit.
+  /// Pinch-to-zoom bawaan flutter_map sudah aktif secara default, tapi
+  /// gesture itu sulit disimulasikan lewat tap tunggal (mis. saat
+  /// testing manual via adb/uiautomator), jadi tombol +/- ala kontrol
+  /// zoom Leaflet ditambahkan sebagai cara lain yang setara.
+  void _ubahZoom(double delta) {
+    final zoomBaru =
+        (_mapController.camera.zoom + delta).clamp(_zoomMin, _zoomMax);
+    _mapController.move(_mapController.camera.center, zoomBaru);
   }
 }
 
@@ -306,6 +333,56 @@ class _TombolRecenter extends StatelessWidget {
           size: 20,
           color: AppColors.primary,
         ),
+      ),
+    );
+  }
+}
+
+/// Kontrol zoom in/out ala Leaflet — dua tombol bertumpuk di atas
+/// tombol recenter, lihat penjelasan di `_ubahZoom`.
+class _KontrolZoom extends StatelessWidget {
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+
+  const _KontrolZoom({required this.onZoomIn, required this.onZoomOut});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        boxShadow: AppColors.shadowKartu,
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _TombolZoom(ikon: Icons.add, onTap: onZoomIn),
+            const Divider(height: 1, thickness: 1, indent: 8, endIndent: 8),
+            _TombolZoom(ikon: Icons.remove, onTap: onZoomOut),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TombolZoom extends StatelessWidget {
+  final IconData ikon;
+  final VoidCallback onTap;
+
+  const _TombolZoom({required this.ikon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Icon(ikon, size: 20, color: AppColors.primary),
       ),
     );
   }

@@ -647,7 +647,7 @@ Input nama, surel, nomor telepon, kata sandi, konfirmasi kata sandi, dan pilihan
 Kondisi kosong: "Belum ada lapangan di sekitar kamu." Kondisi izin lokasi ditolak: sesuai AB-03.
 
 ### L-05 · Peta Lapangan
-Dibuka dari tab **Map**. `FlutterMap` dengan tile OpenStreetMap, marker posisi pengguna + marker tiap lapangan. Menekan marker menampilkan kartu ringkas (nama, jarak, harga) dengan tombol menuju L-06. Tombol kecil "kembali ke posisi saya" (ikon target, pojok kanan bawah peta) menggeser peta balik ke posisi pengguna — ditambahkan saat implementasi (T-14) karena marker posisi bisa keluar layar setelah peta digeser untuk melihat lapangan lain, dan Figma/PRD sebelumnya tidak menyediakan jalan kembali selain geser manual.
+Dibuka dari tab **Map**. `FlutterMap` dengan tile OpenStreetMap, marker posisi pengguna + marker tiap lapangan. Menekan marker menampilkan kartu ringkas (nama, jarak, harga) dengan tombol menuju L-06. Tombol kecil "kembali ke posisi saya" (ikon target, pojok kanan bawah peta) menggeser peta balik ke posisi pengguna — ditambahkan saat implementasi (T-14) karena marker posisi bisa keluar layar setelah peta digeser untuk melihat lapangan lain, dan Figma/PRD sebelumnya tidak menyediakan jalan kembali selain geser manual. Tombol **zoom +/−** (di atasnya, pojok kanan bawah peta) memperbesar/memperkecil peta satu level per tekan — ditambahkan (T-50, 21 September 2026) sebagai pelengkap gestur pinch dan scroll mouse bawaan `flutter_map`, yang sudah aktif sejak awal lewat `InteractiveFlag.all` (default `MapOptions.interactionOptions`, tidak pernah diubah kode ini) tanpa perlu kode tambahan. Level zoom dibatasi **3–18** lewat `MapOptions.minZoom`/`maxZoom`, berlaku sekaligus untuk ketiga cara (tombol, pinch, scroll) supaya konsisten.
 
 Tile URL: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
 `userAgentPackageName` wajib diisi sesuai package aplikasi.
@@ -893,6 +893,7 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-37** | **Pengguna A mencoba membaca favorit pengguna B** | **Ditolak Security Rules** |
 | **BB-38** | **Pengguna membatalkan booking status `MENUNGGU`/`DIKONFIRMASI`** | **Status jadi `DIBATALKAN`, `slotBooking` terhapus (slot terbuka lagi), mitra dapat notifikasi** |
 | **BB-39** | **Pembuat membatalkan aktivitasnya sendiri** | **Dokumen `aktivitasBermain` terhapus, hilang dari daftar Cari Rekan, seluruh peserta (selain pembuat) dapat notifikasi** |
+| **BB-40** | **Tekan tombol zoom + / − di Map berulang kali sampai batas** | **Peta memperbesar/memperkecil satu level per tekan, berhenti tepat di level 3 (zoom −) dan 18 (zoom +), tidak melewati batas** |
 
 ---
 
@@ -1001,3 +1002,10 @@ Kerjakan bersama Pak Gintoro sebelum Bab 4 ditulis:
 | 15 | Bab 4 tabel Black Box | Tambah BB-38 dan BB-39 |
 | 16 | Bab 3.3.2 poin 5 (rancangan L-01 Splash Screen) | Splash sekarang **memakai tombol "Mulai Sekarang"** (menunggu ditekan), bukan auto-pindah otomatis seperti draf sebelumnya — kalau Bab 4 sudah menyertakan tangkapan layar/narasi splash auto-pindah, perlu disesuaikan |
 | 17 | Bab 4 lampiran tangkapan layar (kalau ada) | Ikon aplikasi (launcher icon) dan gambar splash screen sudah pakai logo asli (`assets/images/logo.jpg`), bukan lagi ikon bawaan Flutter/emoji ⚽ |
+
+### Tambahan akibat T-50 (21 September 2026)
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 18 | Bab 3.3.2 poin 5 (rancangan L-05) | Tambah tombol zoom +/− (di luar Figma/PRD awal), dan sebutkan batas zoom 3–18 yang berlaku untuk tombol, pinch, maupun scroll mouse |
+| 19 | Bab 4 tabel Black Box | Tambah BB-40 |

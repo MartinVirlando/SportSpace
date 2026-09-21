@@ -167,6 +167,14 @@ Awalnya empat saran dari audit kode setelah v1.2 selesai (T-46...T-49); T-49 (fi
 > | Pengguna | `pengguna.uji@sportspace.test` | `Testing123` |
 > | Mitra | `mitra.uji@sportspace.test` | `Testing123` |
 
+### Kontrol zoom di Map — T-50 (21 September 2026)
+
+| ID | Tugas | Bergantung | Selesai jika |
+|---|---|---|---|
+| **T-50** | Tombol zoom +/− di Map (L-05), plus batas zoom 3–18 konsisten untuk tombol/pinch/scroll — fitur baru di luar PRD awal | T-14 | Tombol menambah/mengurangi satu level zoom per tekan; `MapOptions.minZoom`/`maxZoom` di-set 3/18 supaya pinch dan scroll mouse bawaan `flutter_map` ikut batas yang sama |
+
+> **T-50 SELESAI (21 September 2026).** Sebelum menulis kode, dicek dulu ke source `flutter_map-7.0.2` di pub cache (`interaction.dart`, `interactive_flag.dart`) — ternyata pinch-zoom dan scroll-wheel-zoom **sudah aktif sejak awal** lewat `InteractiveFlag.all` (default `MapOptions.interactionOptions`, tidak pernah di-override kode ini), jadi tidak butuh kode tambahan untuk itu. Yang ditambahkan cuma dua tombol +/− (pola sama dengan tombol recenter T-14: murni `_mapController.move()` di View, tidak menyentuh `MapViewModel`/Firestore) dan `minZoom`/`maxZoom` di `MapOptions` supaya batas 3–18 berlaku sama untuk tombol, pinch, maupun scroll. `flutter analyze` bersih, diuji langsung di emulator (`sport_space_avd`) via `adb`: zoom in sampai level jalan, zoom out ditekan 14x berturut-turut berhenti tepat di level 3 (bukan terus turun), recenter tetap kembali ke zoom 14. PRD.md §8 L-05, §11 (BB-40), §14 diperbarui mengikuti. **Belum diuji pinch/scroll sungguhan** (emulator tidak dikendalikan lewat gesture multi-touch/mouse asli di sesi ini) dan **belum verifikasi di perangkat Android nyata** sesuai Definisi Selesai PRD §12 poin 1.
+
 ---
 
 ## Sprint 5 · Pengujian dan Evaluasi (Minggu 12–14)
