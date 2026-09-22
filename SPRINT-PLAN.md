@@ -196,6 +196,18 @@ Ditemukan saat verifikasi manual data lapangan (T-51 di atas): **Raw Futsal** di
 
 Hanya berdampak ke 2 dari 30 lapangan saat ini (Taruna Futsal, Raw Futsal). Tidak urgent, belum masuk PRD, tunggu keputusan eksplisit user sebelum dikerjakan.
 
+### Backlog belum dikerjakan: banyak foto per lapangan — diusulkan 22 September 2026
+
+Muncul saat isi coba `fotoURL` pertama kali (T-40 lanjutan, pakai link eksternal Google Drive — PostImages/ImgBB/Imgur ternyata diblokir ISP Indonesia, lihat catatan di bawah). Home card dan Detail Lapangan **sudah otomatis menampilkan foto** begitu `fotoURL` terisi (`kartu_lapangan.dart`, `detail_lapangan_screen.dart` sudah `CachedNetworkImage` dari `fotoURL.first`, tidak perlu perubahan kode). Yang belum ada: dukungan **lebih dari satu** foto per lapangan.
+
+| ID | Tugas | Bergantung | Selesai jika |
+|---|---|---|---|
+| **T-52** | Dukung banyak `fotoURL` per lapangan — form Tambah/Edit Lapangan bisa tambah beberapa URL, Detail Lapangan tampilkan sebagai carousel/`PageView` bergeser (bukan cuma `.first`) | T-40 | Mitra bisa simpan >1 URL foto lewat form; Detail Lapangan bisa geser antar foto dengan indikator halaman; Home card tetap 1 thumbnail (`.first`) |
+
+**Catatan penting — pilihan host foto:** jangan sarankan PostImages/ImgBB/Imgur ke mitra. Ketiganya diverifikasi **diblokir ISP Indonesia** (TLS reset/sertifikat palsu di dua jaringan berbeda; normal begitu lewat VPN). **Google Drive** (`https://drive.google.com/uc?export=view&id=FILE_ID`, dari link share file "Anyone with the link") terverifikasi jalan tanpa VPN — pakai ini sebagai rekomendasi ke mitra selama belum didokumentasikan ulang di tempat lain.
+
+Belum urgent, tunggu keputusan user sebelum dikerjakan.
+
 ---
 
 ## Sprint 5 · Pengujian dan Evaluasi (Minggu 12–14)

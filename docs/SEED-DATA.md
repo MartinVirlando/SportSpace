@@ -23,12 +23,18 @@ Dokumen ini **belum bisa langsung dipakai sebagai data hasil survei di skripsi.*
 | `latitude` / `longitude` | ✅ **30/30 terverifikasi** (21 September 2026, T-51 — cek manual dua kali: T-00f 21 Agustus, lalu ulang satu-per-satu 21 September, 3 di antaranya ternyata meleset dan sudah dikoreksi) | — |
 | `harga` / `hargaSlot` | ⚠️ Perkiraan pasaran, bukan tarif resmi | **Wajib diperbaiki** untuk yang `observasi` |
 | `fasilitas` | ⚠️ Sebagian dari sumber, sebagian perkiraan | Konfirmasi saat survei |
-| `fotoURL` | ⬜ Sengaja dikosongkan | Foto sendiri saat survei |
+| `fotoURL` | ⬜ Sengaja dikosongkan | Foto sendiri saat survei — cara host-nya, lihat catatan di bawah tabel |
 | `nomorTelepon` | ✅ **30/30 terisi** (21 September 2026, T-51, hasil cek manual Google Maps — 3 di antaranya memang tidak punya nomor publik, dibiarkan kosong) | — |
 | `tautanMaps` | ✅ **30/30 terisi** (21 September 2026, T-51 — field baru, link Google Maps asli untuk tombol "Buka di Google Maps") | — |
 | `isMitra` / `pemilikId` | 🎭 Simulasi untuk keperluan demo | Lihat bagian "Lapangan mitra" |
 
 **Kenapa ini penting.** Kalau penguji bertanya "koordinat ini dapat dari mana?" dan jawabannya "dari internet", itu masalah — karena Bab 3 mengklaim sumber data Places API + observasi langsung. Data di bawah adalah **kerangka kerja yang sudah jadi**, bukan pengganti T-00e. Bagusnya: kerja survei kalian sekarang tinggal *memverifikasi dan mengoreksi* 30 baris, bukan mengumpulkan dari nol.
+
+### Cara host foto (22 September 2026)
+
+`fotoURL` diisi URL eksternal (PRD §12b, Opsi A — bukan upload). **Jangan pakai PostImages, ImgBB, atau Imgur** — ketiganya diverifikasi diblokir ISP Indonesia (diuji lewat `curl` di dua jaringan berbeda, baru normal lewat VPN). Kalau dipakai, foto tidak akan muncul untuk kebanyakan pengguna, bukan karena aplikasinya salah.
+
+Pakai **Google Drive** sebagai gantinya: upload foto → klik kanan file → Share → "Anyone with the link" → salin link → ambil `FILE_ID` dari `.../file/d/FILE_ID/view` → ubah jadi `https://drive.google.com/uc?export=view&id=FILE_ID` → itu yang ditempel ke `fotoURL`. Detail lengkap di `PRD.md` §12b.
 
 ### Cara memperbaiki koordinat (± 20 detik per lapangan)
 

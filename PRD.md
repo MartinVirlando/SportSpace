@@ -951,7 +951,19 @@ Keduanya tidak bisa benar sekaligus. Dua opsi yang dipertimbangkan:
 
 **Sisa pekerjaan dari keputusan ini (dokumen, bukan kode):** revisi Tabel 3.4 (hapus baris Firebase Storage) dan Bab 2.9 (hapus poin yang menyebut Storage) bersama Pak Gintoro — lihat §14 daftar revisi dokumen skripsi.
 
+**Catatan istilah — jangan tertukar saat menulis ulang Bab 2.9/Tabel 3.4:** "Firebase" adalah nama platform (payung besar), bukan nama basis datanya. Produk yang benar-benar dipakai punya nama sendiri-sendiri: **Cloud Firestore** (basis data NoSQL — ini yang disebut kalau bicara soal "database") dan **Firebase Authentication** (login). **Firebase Storage** adalah produk terpisah lagi (penyimpanan file) yang TIDAK dipakai — jangan sampai kalimat baru malah menyebut "Firebase" secara umum lalu tetap terkesan mencakup Storage.
+
+Draf kalimat pengganti paragraf ke-2 Bab 2.9 (yang saat ini masih menyebut Storage):
+
+> *"Layanan Firebase yang dimanfaatkan dalam penelitian ini meliputi: (1) Cloud Firestore, basis data NoSQL berbasis dokumen yang mendukung sinkronisasi data real-time, sekaligus menyimpan foto profil pengguna dalam format Base64 langsung di dalam dokumen; serta (2) Firebase Authentication, sistem autentikasi pengguna. Firebase Storage sengaja tidak digunakan dalam penelitian ini — foto lapangan disediakan mitra dalam bentuk tautan URL eksternal, bukan diunggah ke penyimpanan cloud — sehingga aplikasi tetap dapat berjalan sepenuhnya pada paket Firebase gratis (Spark), tanpa perlu upgrade ke paket Blaze."*
+
+Tabel 3.4 baris 4 (kategori "Penyimpanan Berkas" / teknologi "Firebase Storage") — paling sederhana dihapus barisnya sekalian, karena tidak ada produk penyimpanan file terpisah yang dipakai (foto profil ikut nempel di baris Cloud Firestore, foto lapangan cukup disebut di teks sebagai URL eksternal, bukan "teknologi" tersendiri).
+
 > **Catatan untuk masa depan:** kalau tim berubah pikiran dan ingin upload foto asli (Opsi B), ini bukan perubahan besar — cukup tambah `image_picker`+`firebase_storage` ke `pubspec.yaml`, ganti `TextFormField` URL di `form_lapangan_screen.dart` jadi pemilih gambar, dan upload ke Storage sebelum `tambahLapangan()`/`perbaruiLapangan()` dipanggil (field `fotoURL` di model sudah `List<String>`, tidak perlu berubah). Butuh paket Blaze aktif (T-00d).
+
+**Catatan praktik (22 September 2026) — host URL mana yang boleh disarankan ke mitra.** Opsi A mengasumsikan mitra tinggal "tempel link yang sudah ada", tapi tiga layanan image-hosting anonim paling populer untuk itu — **PostImages, ImgBB, dan Imgur** — diverifikasi **diblokir di level ISP Indonesia** (kemungkinan Kominfo Trust+ Positif): dicoba dari dua jaringan berbeda, koneksi TLS ke domain-domain itu di-reset/disodori sertifikat palsu, dan baru normal begitu lewat VPN (Cloudflare WARP). DNS tetap resolve benar di semua kondisi, jadi ini pemblokiran DPI berbasis SNI, bukan DNS sinkhole — artinya kemungkinan besar berlaku luas ke pengguna ISP Indonesia lain juga, bukan cuma jaringan yang dites.
+
+**Rekomendasi pengganti: Google Drive.** Mitra upload foto ke Drive → klik kanan file → Share → "Anyone with the link" → salin link (`.../file/d/FILE_ID/view`) → ambil `FILE_ID` → ubah jadi `https://drive.google.com/uc?export=view&id=FILE_ID` → itu yang ditempel ke field "URL Foto". Diverifikasi jalan tanpa VPN (`curl` 200 OK, `content-type: image/webp`) dan tampil benar di Home card maupun Detail Lapangan tanpa perubahan kode (keduanya sudah render `fotoURL` kalau terisi). Tidak mengubah keputusan T-40 (tetap Opsi A, tetap URL eksternal, tetap tanpa Storage) — cuma soal domain mana yang aman disarankan.
 
 ---
 
@@ -1001,7 +1013,7 @@ Kerjakan bersama Pak Gintoro sebelum Bab 4 ditulis:
 | 5 | Bab 3 use case | Tambah use case "Simpan Lapangan Favorit" |
 | 6 | Bab 4 tabel Black Box | Tambah BB-31 sampai BB-37 |
 | 7 | Bab 5 saran | Tambah rating antar-pengguna sebagai pengembangan lanjutan (§12c) |
-| 8 | Tabel 3.4, Bab 2.9 | Hapus Firebase Storage dari daftar teknologi — keputusan T-40 (§12b, bukan akibat v1.1, tapi tenggatnya sama: sebelum Bab 4) |
+| 8 | Tabel 3.4, Bab 2.9 | Hapus Firebase Storage dari daftar teknologi — keputusan T-40 (§12b, bukan akibat v1.1, tapi tenggatnya sama: sebelum Bab 4). **Perhatikan kontrasnya dengan poin #10 di bawah:** hanya atribut foto **Users** yang berubah jadi Base64 — atribut `fotoURL` pada entitas **Lapangan** (Tabel 3.10) TIDAK berubah, tetap `List<String>` berisi URL eksternal, jangan ikut direvisi jadi Base64 |
 
 ### Tambahan akibat v1.2 (15 September 2026)
 
