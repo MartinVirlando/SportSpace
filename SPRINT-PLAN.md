@@ -208,6 +208,26 @@ Muncul saat isi coba `fotoURL` pertama kali (T-40 lanjutan, pakai link eksternal
 
 Belum urgent, tunggu keputusan user sebelum dikerjakan.
 
+### Backlog belum dikerjakan: aktivitas cari rekan tampil di Detail Lapangan — diusulkan 22 September 2026
+
+Ide dari user: saat ini "cari lapangan" (Home/Map) dan "cari rekan main" (tab Teman) dua silo terpisah — padahal `AktivitasBermainModel` **sudah** punya field `lapanganId`, jadi setiap aktivitas sebenarnya sudah terikat ke lapangan tertentu, cuma belum ditampilkan di situ. Usulan: tampilkan section kecil di Detail Lapangan berisi aktivitas yang masih buka di lapangan itu (mis. "Jam 19:00 · kurang 2 orang"), supaya orang yang lihat lapangan langsung tahu ada yang bisa digabung tanpa pindah tab.
+
+| ID | Tugas | Bergantung | Selesai jika |
+|---|---|---|---|
+| **T-53** | Tampilkan aktivitas cari rekan (status masih buka, `lapanganId` cocok) sebagai section di Detail Lapangan (L-06), tiap item bisa tap ke Detail Aktivitas (L-09) | T-13, T-19 | Section muncul kalau ada aktivitas terkait, tersembunyi/pesan kosong kalau tidak ada (bukan section kosong polos); tap item membuka Detail Aktivitas yang benar |
+
+**Sudah dicek, bukan penghalang:**
+- Data: `lapanganId` sudah ada di `AktivitasBermainModel`, tidak perlu ubah skema.
+- Security Rules: `aktivitasBermain` sudah `allow read: if login()` untuk semua dokumen — tidak perlu ubah `firestore.rules`.
+
+**Belum dicek, perlu sebelum mulai:**
+- **Index Firestore baru** — `FIRESTORE-INDEXES.md` belum punya index dengan `lapanganId` sebagai filter untuk `aktivitasBermain` (yang ada baru `status`+`waktu`, `status`+`jenisOlahraga`+`waktu`, `pembuatId`+`waktu`, `peserta`+`waktu`). Query baru (`lapanganId` == ini + kemungkinan `status`/`waktu`) perlu index baru ditambahkan ke `firestore.indexes.json` lalu `firebase deploy`.
+- **Persetujuan Pak Gintoro** — ini di luar PRD v1.1, sama seperti pola keputusan T-40/T-50/T-51: perlu didiskusikan dulu apakah ini "pengembangan dari AB-10/AB-06 yang sudah ada" atau perlu use case/activity diagram baru di Bab 3 (user sudah setuju 22 September 2026 kalau ini kemungkinan besar butuh diagram baru karena menggabungkan dua rumusan masalah sekaligus). **User baru ada waktu untuk hal-hal terkait skripsi di akhir pekan** — jangan tunggu jawaban ini di hari kerja.
+- **Desain UI** — belum ada acuan Figma untuk section ini; perlu diputuskan tampilannya dulu (berapa item ditampilkan, urutan, gaya kartu) sebelum dikoding, konsisten dengan pola proyek ini (`app_colors.dart` dari Figma, bukan hex manual).
+- **Kasus Black Box baru** — kalau jadi dibangun, perlu ditambahkan ke tabel BB-01...BB-37 (jadi BB-38 dst) untuk T-30/T-33.
+
+Belum urgent, tunggu keputusan user sebelum dikerjakan.
+
 ---
 
 ## Sprint 5 · Pengujian dan Evaluasi (Minggu 12–14)
