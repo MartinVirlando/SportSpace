@@ -965,6 +965,8 @@ Tabel 3.4 baris 4 (kategori "Penyimpanan Berkas" / teknologi "Firebase Storage")
 
 **Rekomendasi pengganti: Google Drive.** Mitra upload foto ke Drive → klik kanan file → Share → "Anyone with the link" → salin link (`.../file/d/FILE_ID/view`) → ambil `FILE_ID` → ubah jadi `https://drive.google.com/uc?export=view&id=FILE_ID` → itu yang ditempel ke field "URL Foto". Diverifikasi jalan tanpa VPN (`curl` 200 OK, `content-type: image/webp`) dan tampil benar di Home card maupun Detail Lapangan tanpa perubahan kode (keduanya sudah render `fotoURL` kalau terisi). Tidak mengubah keputusan T-40 (tetap Opsi A, tetap URL eksternal, tetap tanpa Storage) — cuma soal domain mana yang aman disarankan.
 
+**SELESAI (23 September 2026):** seluruh 30 lapangan sudah punya `fotoURL` terisi (foto asli via Google Drive, tiap link diverifikasi `curl` 200 OK sebelum ditempel ke Firestore — status lengkap di `docs/SEED-DATA.md`). Satu bug ditemukan dan diperbaiki dalam prosesnya: `kartu_lapangan.dart` (kartu Home) tidak memberi `height` tetap ke thumbnail, sehingga `IntrinsicHeight` membaca rasio aspek asli foto dan membuat kartu dengan foto berorientasi potret (mis. Hey Beach Padel Club) jadi lebih tinggi dari kartu lain — diperbaiki dengan `height: lebar` tetap di `_Thumbnail`/`_BlokWarna` (commit `ff8e38d`), `flutter analyze`/`flutter test` tetap bersih.
+
 ---
 
 ## 12c. Rating antar-pengguna — ditunda ke Bab 5

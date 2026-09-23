@@ -200,6 +200,8 @@ Hanya berdampak ke 2 dari 30 lapangan saat ini (Taruna Futsal, Raw Futsal). Tida
 
 Muncul saat isi coba `fotoURL` pertama kali (T-40 lanjutan, pakai link eksternal Google Drive — PostImages/ImgBB/Imgur ternyata diblokir ISP Indonesia, lihat catatan di bawah). Home card dan Detail Lapangan **sudah otomatis menampilkan foto** begitu `fotoURL` terisi (`kartu_lapangan.dart`, `detail_lapangan_screen.dart` sudah `CachedNetworkImage` dari `fotoURL.first`, tidak perlu perubahan kode). Yang belum ada: dukungan **lebih dari satu** foto per lapangan.
 
+**Update 23 September 2026:** seluruh 30 lapangan sudah selesai diisi `fotoURL` (1 foto per lapangan, via Google Drive, diverifikasi `curl` satu-satu — detail di `docs/SEED-DATA.md`). Ditemukan bug layout saat verifikasi (bukan soal T-52): kartu Home tidak punya `height` tetap di thumbnail, jadi kartu dengan foto potret (mis. Hey Beach Padel Club) jadi lebih tinggi dari kartu lain — sudah diperbaiki (commit `ff8e38d`, lihat `PRD.md` §12b). T-52 (dukung >1 foto) di bawah ini tetap backlog terpisah, belum dikerjakan.
+
 | ID | Tugas | Bergantung | Selesai jika |
 |---|---|---|---|
 | **T-52** | Dukung banyak `fotoURL` per lapangan — form Tambah/Edit Lapangan bisa tambah beberapa URL, Detail Lapangan tampilkan sebagai carousel/`PageView` bergeser (bukan cuma `.first`) | T-40 | Mitra bisa simpan >1 URL foto lewat form; Detail Lapangan bisa geser antar foto dengan indikator halaman; Home card tetap 1 thumbnail (`.first`) |
