@@ -136,6 +136,13 @@ class _Thumbnail extends StatelessWidget {
       return CachedNetworkImage(
         imageUrl: lapangan.fotoURL.first,
         width: lebar,
+        // Tinggi tetap (bukan cuma lebar) — supaya tinggi kartu tidak
+        // ikut membengkak mengikuti rasio aspek asli foto (mis. foto
+        // potret jadi bikin kartu itu lebih tinggi dari kartu lain).
+        // IntrinsicHeight di KartuLapangan tetap membaca ukuran ini,
+        // jadi harus tetap (bukan aspek rasio) supaya semua kartu sama
+        // tinggi terlepas dari orientasi foto masing-masing lapangan.
+        height: lebar,
         fit: BoxFit.cover,
         placeholder: (_, __) => Container(color: AppColors.surfaceVariant),
         // Foto gagal dimuat bukan alasan untuk merusak kartu —
@@ -159,6 +166,7 @@ class _BlokWarna extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: lebar,
+      height: lebar,
       color: _warnaOlahraga(olahraga),
       alignment: Alignment.center,
       child: Text(
