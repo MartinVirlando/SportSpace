@@ -821,9 +821,11 @@ Sumber data dan atribut `sumberData`:
 
 | Sumber | `sumberData` | `isMitra` | Kelengkapan |
 |---|---|---|---|
-| Google Places API (diambil manual di luar aplikasi) | `"places_api"` | `false` | nama, alamat, koordinat, jam, foto |
+| Verifikasi manual via Google Maps + konfirmasi telepon (bukan panggilan Google Places API) | `"places_api"` | `false` | nama, alamat, koordinat, jam, foto |
 | Observasi langsung peneliti | `"observasi"` | `false` | lengkap termasuk harga & fasilitas |
 | Pendaftaran mitra lewat aplikasi | `"mitra"` | `true` | lengkap + bisa direservasi |
+
+> **Catatan 27 September 2026:** nilai string `sumberData` tetap `"places_api"` di kode (tidak diganti, supaya tidak perlu reseed ulang Firestore) — yang diperbaiki hanya deskripsi metodenya di sini, karena datanya ternyata dikumpulkan lewat cek manual satu-per-satu ke Google Maps (T-51) plus rencana konfirmasi telepon untuk harga/jam, bukan lewat pemanggilan Google Places API sungguhan. Lihat `SPRINT-PLAN.md` bagian "sumberData 'places_api'" untuk detail dan revisi Bab 1.3/Bab 3 yang masih menyusul di dokumen skripsi.
 
 Format satu entri seed:
 
@@ -990,7 +992,7 @@ Catat rating antar-pengguna di **Bab 5 sebagai saran pengembangan lanjutan**. Ka
 | Bagian PRD | Sumber di skripsi |
 |---|---|
 | Masalah & tujuan | Bab 1.1, 1.2, 1.4 |
-| Batasan | Bab 1.3 Ruang Lingkup |
+| Batasan | Bab 1.3 Ruang Lingkup ⚠️ **perlu revisi: klaim sumber data "Google Places API" → "verifikasi manual Google Maps + konfirmasi telepon"** |
 | Haversine | Bab 2.3 |
 | OSM & flutter_map | Bab 2.4 |
 | Firebase | Bab 2.9 |

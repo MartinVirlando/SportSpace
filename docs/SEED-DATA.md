@@ -28,7 +28,9 @@ Dokumen ini **belum bisa langsung dipakai sebagai data hasil survei di skripsi.*
 | `tautanMaps` | ✅ **30/30 terisi** (21 September 2026, T-51 — field baru, link Google Maps asli untuk tombol "Buka di Google Maps") | — |
 | `isMitra` / `pemilikId` | 🎭 Simulasi untuk keperluan demo | Lihat bagian "Lapangan mitra" |
 
-**Kenapa ini penting.** Kalau penguji bertanya "koordinat ini dapat dari mana?" dan jawabannya "dari internet", itu masalah — karena Bab 3 mengklaim sumber data Places API + observasi langsung. Data di bawah adalah **kerangka kerja yang sudah jadi**, bukan pengganti T-00e. Bagusnya: kerja survei kalian sekarang tinggal *memverifikasi dan mengoreksi* 30 baris, bukan mengumpulkan dari nol.
+**Kenapa ini penting.** Kalau penguji bertanya "koordinat ini dapat dari mana?" dan jawabannya "dari internet", itu masalah. Data di bawah adalah **kerangka kerja yang sudah jadi**, bukan pengganti T-00e. Bagusnya: kerja survei kalian sekarang tinggal *memverifikasi dan mengoreksi* 30 baris, bukan mengumpulkan dari nol.
+
+> **Update 27 September 2026:** klaim metodologi di Bab 1.3/Bab 3 yang menyebut "Google Places API" sedang direvisi jadi **"verifikasi manual via Google Maps + konfirmasi telepon"** — karena itu yang sebenarnya dilakukan (T-51: cek satu-per-satu 30 lapangan ke Google Maps untuk koordinat/`nomorTelepon`/`tautanMaps`), bukan pemanggilan Google Places API. Ini lebih murah (gratis, tanpa API key/kartu) dan lebih kuat secara validitas data. Revisi kalimat di dokumen skripsi masih pekerjaan kalian sendiri — lihat `SPRINT-PLAN.md` dan `PRD.md` §10/§13 untuk detail. Nilai `sumberData: "places_api"` di kode **tidak diubah** (supaya tidak perlu reseed Firestore), hanya deskripsi metodenya yang diperbaiki.
 
 ### Cara host foto (22 September 2026, selesai 23 September 2026)
 

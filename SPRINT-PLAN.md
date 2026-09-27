@@ -228,6 +228,23 @@ Ide dari user: saat ini "cari lapangan" (Home/Map) dan "cari rekan main" (tab Te
 - **Desain UI** — belum ada acuan Figma untuk section ini; perlu diputuskan tampilannya dulu (berapa item ditampilkan, urutan, gaya kartu) sebelum dikoding, konsisten dengan pola proyek ini (`app_colors.dart` dari Figma, bukan hex manual).
 - **Kasus Black Box baru** — kalau jadi dibangun, perlu ditambahkan ke tabel BB-01...BB-37 (jadi BB-38 dst) untuk T-30/T-33.
 
+### Catatan skripsi: `sumberData: 'places_api'` belum benar-benar dari Google Places API — diusulkan 23 September 2026
+
+Ditemukan saat diskusi soal akurasi data seed (`docs/SEED-DATA.md`): 25 dari 30 lapangan berlabel `sumberData: 'places_api'` atau `'observasi'`, tapi datanya **sebenarnya dikumpulkan manual dari direktori booking (Gelora, Ayo Indonesia, Traveloka, portal lokal)**, bukan dari pemanggilan Google Places API sungguhan. Definisi resmi di `PRD.md` (baris 824) bilang `"places_api"` = "Google Places API, diambil manual di luar aplikasi" — jadi label yang dipakai sekarang **tidak cocok dengan definisinya sendiri di Bab 3**, dan user mengingat sudah menulis eksplisit "Google Places API" di skripsi (Bab 1-3).
+
+**Rekomendasi yang diberikan (belum dieksekusi):** karena klaim itu sudah tertulis di skripsi, lebih aman **benar-benar memanggil Google Places API sekali secara offline** (script/manual query, di luar app — tidak melanggar larangan "Places API saat runtime") untuk cross-check nama/alamat/koordinat/jam 25 lapangan itu, lalu update `seed_lapangan.dart`, daripada melonggarkan kalimat metodologi di Bab 3. Kuota gratis bulanan Places API cukup untuk 25 lookup sekali jalan (kemungkinan Rp0, tapi setup API key di Google Cloud Console butuh kartu untuk verifikasi billing).
+
+**Yang perlu dicek user dulu (bukan keputusan teknis):** apakah Bab 1-3 yang menyebut Google Places API itu sudah disetujui/direview Pak Gintoro (pembimbing) atau masih draft — kalau masih draft, opsi lain (revisi satu kalimat metodologi jadi "sumber daring publik") jadi lebih murah daripada setup API. **User baru ada waktu untuk hal terkait skripsi di akhir pekan** — jangan kejar jawaban ini di hari kerja, cukup dicatat di sini untuk ditindaklanjuti.
+
+**Update 27 September 2026 — arah revisi diputuskan (masih diskusi, belum dieksekusi ke docx/kode).** Deadline pengumpulan akhir skripsi masih Januari, jadi revisi Bab 1-3 masih memungkinkan. Setelah didiskusikan, dipilih opsi yang **beneran gratis, tidak butuh kartu/API key sama sekali**: reframe klaim "Google Places API" jadi **"verifikasi manual via Google Maps + konfirmasi telepon"** — karena ini **sudah benar-benar dilakukan** di T-51 (cek satu-satu 30 lapangan ke Google Maps untuk koordinat/`nomorTelepon`/`tautanMaps`), bukan klaim baru yang perlu dikerjakan dari nol. Ini juga lebih kuat secara validitas data dibanding klaim API yang tidak bisa dibuktikan ke penguji.
+
+**Yang masih perlu dikerjakan (pekerjaan user, bukan Claude):**
+1. Revisi kalimat Ruang Lingkup §1.3 dari "Google Places API sekunder" jadi menyebut verifikasi manual Google Maps + konfirmasi telepon.
+2. Update `PRD.md` §6.2 tabel definisi `sumberData` dan nilai string di `seed_lapangan.dart` (`'places_api'` → nama baru, mis. `'google_maps_manual'`) — kode ini bisa dibantu Claude begitu wording final disepakati.
+3. **Harga/jam masih perlu dikonfirmasi manual lewat telepon** ke 17-25 venue (nomor telepon sudah ada dari T-51) — Google Maps biasanya tidak menampilkan tarif, jadi cek Maps saja tidak cukup untuk field ini. Ini pekerjaan telepon manual, tidak bisa dieksekusi Claude.
+
+Detail lengkap ada di memory `project_skripsi_bab1-3_revisi` (item #7) dan `project_sumberdata_places_api`. Sama seperti item lain di atas: **akhir pekan saja**, jangan dikejar hari kerja.
+
 Belum urgent, tunggu keputusan user sebelum dikerjakan.
 
 ---
