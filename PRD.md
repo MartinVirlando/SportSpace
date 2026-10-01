@@ -1054,3 +1054,36 @@ Kerjakan bersama Pak Gintoro sebelum Bab 4 ditulis:
 | 22 | Tabel 3.4 (daftar package/dependensi) | Tambah `url_launcher` |
 | 23 | Bab 4 tabel Black Box | Tambah BB-41 (tombol "Buka di Google Maps" membuka aplikasi/browser eksternal, hanya tampil kalau `tautanMaps` terisi) |
 | 24 | Bab 5 saran / Keterbatasan Penelitian | Tambah keterbatasan: lapangan multi-olahraga (Raw Futsal & Badminton, Taruna Futsal & Badminton) memakai satu nilai harga/jam untuk seluruh jenis olahraga di venue itu — belum ada dukungan harga/jam per jenis olahraga dalam satu lapangan |
+
+### Tambahan akibat koreksi sumber data (1 Oktober 2026)
+
+Klaim "Google Places API" di Bab 1–3 tidak sesuai kenyataan (data dikumpulkan dari direktori booking publik, lalu diverifikasi manual lewat Google Maps di T-51; aplikasi tidak pernah memanggil Places API). Hasil pembacaan `SportSpace_Bab1-3_Revisi_Highlight_1.docx` menemukan klaim itu di 12 tempat. **Ganti semuanya dengan istilah yang sama** ("verifikasi manual melalui Google Maps"); jangan menulis "konfirmasi telepon" sebelum teleponnya benar-benar dilakukan.
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 25 | **Bab 2.5 + Daftar Isi** | Ganti judul "Google Places API" → **"Google Maps sebagai Sumber Verifikasi Data Lapangan"** (jangan dihapus, supaya penomoran 2.6–2.13 dan rujukan silang seperti "Subbab 2.11.2" tidak bergeser). Isi: Google Maps dipakai manual sebagai acuan verifikasi, tanpa API, didukung data kuesioner 39,6% responden memakai Google Maps untuk mencari lapangan. Hapus kalimat "cakupan data luas sejak diluncurkan" |
+| 26 | Bab 1.3 poin 1 dan poin 2 (daftar teknologi) | Ganti kalimat sumber data sekunder; hapus baris "Google Places API untuk data lapangan eksternal" dari daftar teknologi |
+| 27 | Bab 1.5 poin 2 (Pengumpulan Data) | Ganti "Data sekunder diperoleh dari Google Places API" |
+| 28 | **Tabel 3.1, Sprint 3** | "integrasi Google Places API" → pengumpulan, verifikasi, dan seeding data lapangan ke Firestore |
+| 29 | Bab 3.1 (3 tempat: paragraf multi-sumber, dan ringkasan "Pengumpulan Data") | Ganti sumber sekunder; kalimat "tidak disediakan oleh Google Places API" juga diganti |
+| 30 | Bab 3.2.3 Usulan Solusi 1 | Tertulis "dua sumber" — samakan dengan "tiga sumber" di bagian lain, dan ganti isi sumber sekunder |
+| 31 | Bab 3.2.3 narasi Gambar 3.2, Tabel 3.3 fungsi 1 beserta paragraf penjelasnya | Ganti "data gabungan Google Places API, hasil observasi, mitra" dengan istilah baru |
+| 32 | **Tabel 3.4 baris 7** | Hapus baris "Data Lapangan Eksternal: Google Places API" (atau ganti jadi data hasil verifikasi manual); sekaligus hapus baris Firebase Storage (lihat #8) |
+| 33 | **Bab 3.3.2 poin 4 (Sequence Diagram) + Gambar 3.8** | Hapus Google Places API sebagai partisipan yang "dipanggil" — **gambar harus digambar ulang**. Periksa juga isi gambar 3.2 dan 3.5 (teks di dalam gambar tidak terbaca saat review) |
+| 34 | Tabel 3.9 (elemen halaman Profile), baris Menu Pengaturan | Hapus "Bahasa" — multi-bahasa di luar ruang lingkup (§2.2) |
+
+Catatan dari diskusi sebelumnya yang belum tercatat di tabel atas:
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 35 | Tabel 3.10 (ERD) | Gabung entitas `Users` dan `PemilikLapangan` jadi satu entitas `Users` dengan atribut `role` (keputusan 15 September 2026: kode tidak dipecah, dokumen yang disesuaikan). Sesuai Catatan pemetaan ke ERD di §6 |
+| 36 | Bab 3.3.2 poin 5 + Tabel 3.6 | Halaman Map ditambahkan sebagai halaman tersendiri berlabel **"Cari Lapangan"**, berbeda dari Detail Lapangan (gabungan dengan #1) |
+| 37 | Bab 3 use case / Activity Diagram | Daftar aktivitas Cari Rekan pada Detail Lapangan (T-53, masih backlog) — butuh persetujuan Pak Gintoro soal diagram sebelum dikerjakan |
+
+**Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):**
+
+> Google Maps adalah layanan pemetaan dari Google yang memuat informasi tempat, antara lain nama, alamat, koordinat geografis, nomor telepon, jam operasional, foto, serta rating dan ulasan dari pengguna. Pada penelitian ini, Google Maps tidak diakses melalui Application Programming Interface (API) dan tidak dipanggil oleh aplikasi, melainkan digunakan secara manual oleh peneliti sebagai acuan verifikasi data lapangan. Pemilihan Google Maps didasarkan pada kebiasaan pengguna sasaran: berdasarkan kuesioner penelitian ini, 39,6% dari 101 responden menggunakan Google Maps untuk mencari lapangan olahraga.
+>
+> Data lapangan non-mitra dikumpulkan dari sumber daring publik, kemudian diverifikasi satu per satu oleh peneliti melalui Google Maps, yaitu koordinat lokasi, nomor telepon, dan tautan lokasi. Atribut yang tidak tersedia pada Google Maps, seperti harga sewa dan fasilitas, dilengkapi melalui observasi langsung peneliti [dan konfirmasi telepon ke pengelola lapangan — hapus bagian ini kalau teleponnya belum dilakukan]. Seluruh data kemudian dimuat ke Firebase Firestore melalui proses akuisisi data awal (*seeding*), sehingga saat aplikasi berjalan tidak ada ketergantungan pada layanan pihak ketiga.
+
+Nilai string `sumberData: "places_api"` di kode sengaja belum diganti (menghindari reseed Firestore); kalau kelak diganti, usulan namanya `"google_maps_manual"`.
