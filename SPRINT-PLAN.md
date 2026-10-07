@@ -275,7 +275,7 @@ Belum urgent, tunggu keputusan user sebelum dikerjakan.
 
 | ID | Tugas | Siapa | Tenggat | Selesai jika |
 |---|---|---|---|---|
-| **T-39** | Revisi Bab 1–3 sesuai **PRD §14** (7 butir, termasuk navigasi 3 tab → 4 tab) | Bertiga + Pak Gintoro | **Sebelum Bab 4 ditulis** | Bab 3 cocok dengan aplikasi yang dibangun |
+| **T-39** | Revisi Bab 1–3 sesuai **PRD §14** (7 butir, termasuk navigasi 3 tab → 4 tab) | Bertiga + Pak Gintoro | **Sebelum Bab 4 ditulis** | Bab 3 cocok dengan aplikasi yang dibangun — **teks selesai 7 Oktober 2026** (`SportSpace_Bab1-3_Revisi_Highlight_2.docx`); sisa pekerjaan manual (gambar ulang, Daftar Isi, konsultasi Pak Gintoro) di PRD §14 "Putaran revisi 2" M1–M13 |
 | T-40 | Putuskan PRD §12b (Firebase Storage): Opsi A atau B | Bertiga + Pak Gintoro | Sebelum Sprint 4 | Keputusan tercatat di PRD |
 
 > **T-39 jangan ditunda sampai Bab 4.** Kalau tangkapan layar di Bab 4 menampilkan 4 tab sementara Bab 3 menuliskan 3 tab, itu jenis ketidakcocokan yang paling gampang ditemukan penguji karena tidak perlu membaca kode sama sekali.
@@ -333,7 +333,7 @@ Minggu 8     [x] T-15  [x] T-16  [x] T-17
 Minggu 9     [x] T-18  [x] T-19  [x] T-20
 Minggu 10    [x] T-21  [x] T-22  [x] T-23  [x] T-36
 Minggu 11    [x] T-24  [x] T-25  [x] T-26  [x] T-27  [x] T-35  [x] T-37  [x] T-38
-Minggu 12    [ ] T-28  [ ] T-29                          [ ] T-39 (revisi Bab 1–3)
+Minggu 12    [ ] T-28  [ ] T-29                          [~] T-39 (revisi Bab 1–3 — teks selesai 7 Okt, gambar masih manual)
 Minggu 13    [ ] T-30  [ ] T-31
 Minggu 14    [ ] T-32  [ ] T-33  [ ] T-34
 ```

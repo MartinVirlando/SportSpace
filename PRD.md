@@ -992,7 +992,7 @@ Catat rating antar-pengguna di **Bab 5 sebagai saran pengembangan lanjutan**. Ka
 | Bagian PRD | Sumber di skripsi |
 |---|---|
 | Masalah & tujuan | Bab 1.1, 1.2, 1.4 |
-| Batasan | Bab 1.3 Ruang Lingkup ⚠️ **perlu revisi: klaim sumber data "Google Places API" → "verifikasi manual Google Maps + konfirmasi telepon"** |
+| Batasan | Bab 1.3 Ruang Lingkup ✅ direvisi di `Highlight_2` (7 Oktober 2026): direktori daring + verifikasi manual Google Maps, tanpa observasi/telepon — lihat §14 "Putaran revisi 2" |
 | Haversine | Bab 2.3 |
 | OSM & flutter_map | Bab 2.4 |
 | Firebase | Bab 2.9 |
@@ -1000,7 +1000,7 @@ Catat rating antar-pengguna di **Bab 5 sebagai saran pengembangan lanjutan**. Ka
 | Aktor & fungsi | Bab 3.3.1, Tabel 3.3 |
 | Teknologi | Tabel 3.4 |
 | Model data | Bab 3.3.2 poin 6, Tabel 3.10 |
-| Layar | Bab 3.3.2 poin 5 ⚠️ **perlu revisi: 3 tab → 4 tab** |
+| Layar | Bab 3.3.2 poin 5 ✅ direvisi di `Highlight_2` (4 tab, subbab Map/Login/Registrasi/Dashboard Mitra) — gambar masih harus dibuat tim, lihat §14 M1–M9 |
 
 ---
 
@@ -1080,10 +1080,59 @@ Catatan dari diskusi sebelumnya yang belum tercatat di tabel atas:
 | 36 | Bab 3.3.2 poin 5 + Tabel 3.6 | Halaman Map ditambahkan sebagai halaman tersendiri berlabel **"Cari Lapangan"**, berbeda dari Detail Lapangan (gabungan dengan #1) |
 | 37 | Bab 3 use case / Activity Diagram | Daftar aktivitas Cari Rekan pada Detail Lapangan (T-53, masih backlog) — butuh persetujuan Pak Gintoro soal diagram sebelum dikerjakan |
 
-**Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):**
+**Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
 
 > Google Maps adalah layanan pemetaan dari Google yang memuat informasi tempat, antara lain nama, alamat, koordinat geografis, nomor telepon, jam operasional, foto, serta rating dan ulasan dari pengguna. Pada penelitian ini, Google Maps tidak diakses melalui Application Programming Interface (API) dan tidak dipanggil oleh aplikasi, melainkan digunakan secara manual oleh peneliti sebagai acuan verifikasi data lapangan. Pemilihan Google Maps didasarkan pada kebiasaan pengguna sasaran: berdasarkan kuesioner penelitian ini, 39,6% dari 101 responden menggunakan Google Maps untuk mencari lapangan olahraga.
 >
 > Data lapangan non-mitra dikumpulkan dari sumber daring publik, kemudian diverifikasi satu per satu oleh peneliti melalui Google Maps, yaitu koordinat lokasi, nomor telepon, dan tautan lokasi. Atribut yang tidak tersedia pada Google Maps, seperti harga sewa dan fasilitas, dilengkapi melalui observasi langsung peneliti [dan konfirmasi telepon ke pengelola lapangan — hapus bagian ini kalau teleponnya belum dilakukan]. Seluruh data kemudian dimuat ke Firebase Firestore melalui proses akuisisi data awal (*seeding*), sehingga saat aplikasi berjalan tidak ada ketergantungan pada layanan pihak ketiga.
 
 Nilai string `sumberData: "places_api"` di kode sengaja belum diganti (menghindari reseed Firestore); kalau kelak diganti, usulan namanya `"google_maps_manual"`.
+
+---
+
+### Putaran revisi 2 — SELESAI dibuat drafnya (7 Oktober 2026)
+
+Hasilnya: **`SportSpace_Bab1-3_Revisi_Highlight_2.docx`** (di folder Downloads pemilik proyek, di luar repo). Sekarang ini **file skripsi terbaru**; `Highlight_1` disimpan sebagai arsip, tidak diubah. Stabilo putaran 1 sudah dibersihkan, dan **semua perubahan putaran 2 diberi stabilo kuning** supaya Pak Gintoro langsung melihat bagian yang berubah.
+
+**Keputusan yang dipakai (menggantikan catatan lama di atas kalau bertentangan):**
+
+| Topik | Keputusan | Menggantikan |
+|---|---|---|
+| Sumber data lapangan | **Dua sumber**: (1) sekunder = direktori pemesanan lapangan daring publik, diverifikasi manual melalui Google Maps; (2) primer = lapangan mitra. Harga/jam/fasilitas lapangan non-mitra ditulis sebagai **estimasi**. Klaim "Google Places API" **dan** "observasi langsung peneliti" dihapus seluruhnya, karena T-00e (survei) tidak pernah dilakukan. Frasa "konfirmasi telepon" **tidak** dipakai (telepon belum dilakukan) | Draf Bab 2.5 di atas (masih menyebut observasi); catatan #30 ("tiga sumber") |
+| Favorit | Favorit, olahraga favorit, dan lokasi default **tidak disebut sama sekali di Bab 3** (ERD, use case, tabel UI), karena tidak terkait rumusan masalah | #3, #4, #5, #11 — dibatalkan |
+| Label tab | Mengikuti aplikasi: **Home · Map · Teman · Profil**, tanpa rename "Cari Lapangan" | Label di #36 |
+| Gambar | Gambar lama tidak diedit; diberi **kotak kuning bergaris putus-putus** berisi instruksi gambar ulang | — |
+
+**Rangkuman perubahan yang sudah masuk ke docx:**
+
+| Bab | Perubahan |
+|---|---|
+| Bab 1 | 1.3: sumber data jadi dua sumber + kalimat estimasi untuk lapangan non-mitra; baris "Google Places API" dihapus dari daftar teknologi. 1.5: "Tabel 1.1" → "Tabel 2.6"; pengumpulan data tanpa observasi dan Places API |
+| Bab 2 | Daftar Isi + judul/isi 2.5 → "Google Maps sebagai Sumber Verifikasi Data Lapangan" (2 paragraf). 2.9: Firebase Storage dihapus, diganti foto profil Base64 di Firestore + foto lapangan URL eksternal (paket Spark) |
+| Bab 3.1–3.2 | Tabel 3.1 Sprint 3; paragraf multi-sumber; ringkasan "Pengumpulan Data"; 3.2.2 (tanpa "observasi lapangan"; ketersediaan slot hanya lapangan mitra; pembatalan pemesanan); 3.2.3 Usulan Solusi 1 dan narasi Gambar 3.2 |
+| Bab 3.3.1 | Tabel 3.3 fungsi 1/3/5 (sumber data + fitur pembatalan); narasi fungsi pencarian; Tabel 3.4: hapus Firebase Storage dan Google Places API, tambah baris "Paket Pendukung Flutter" (geolocator, url_launcher, image_picker), Firestore menyimpan foto profil Base64 |
+| Bab 3.3.2 diagram | Narasi Use Case (pembatalan + mitra = Users ber-role mitra); narasi Class Diagram (+PermintaanGabungModel, NotifikasiModel); narasi Sequence Diagram (partisipan View/ViewModel/Repository/LocationService, Haversine dihitung di ViewModel, ChangeNotifier) |
+| Bab 3.3.2 UI | Pembuka: 6 halaman utama + 3 halaman pendukung, navigasi 4 tab. Splash pakai tombol "Mulai Sekarang". Tabel Home (hapus Logo, tambah Ikon Notifikasi, chip "Semua", 4 tab). **Subbab baru**: c. Map, g. Login, h. Registrasi, i. Dashboard Mitra (masing-masing narasi + tabel elemen). Tabel Detail Lapangan dan Profil ditulis ulang sesuai aplikasi; Tabel Cari Rekan disesuaikan istilah "aktivitas" |
+| Bab 3.3.2 ERD | Tabel ERD jadi **8 entitas**: Users (gabungan Users + PemilikLapangan, atribut `role`, `nomorTelepon`, `fotoProfilBase64`), Lapangan (+`alamat`, `jenisOlahraga[]`, `nomorTelepon`, `tautanMaps`, `pemilikId`), AktivitasBermain, **PermintaanGabung**, Rating, Booking, **SlotBooking**, **Notifikasi**; paragraf penjelasan ikut diperbarui |
+| Penomoran | Subbab UI jadi a–i. Gambar 3.12 (Map) baru, Detail/Cari Rekan/Profil → 3.13/3.14/3.15, Login/Registrasi/Dashboard → 3.16/3.17/3.18, ERD → 3.19. Tabel 3.7 (Map) baru, Detail/Cari Rekan/Profil → 3.8/3.9/3.10, Login/Registrasi/Dashboard → 3.11/3.12/3.13, ERD → 3.14 |
+| Tata letak (bukan isi) | 10 gambar Bab 3 yang semula "mengambang" (diikat ke posisi halaman) dijadikan sejajar teks, rata tengah, tepat di atas caption-nya, supaya tidak terlepas dari caption saat teks bergeser. Judul tabel diberi *keep with next* |
+
+**Yang masih harus dikerjakan MANUAL oleh tim** (Claude tidak bisa/tidak boleh mengerjakan):
+
+| # | Pekerjaan | Keterangan |
+|---|---|---|
+| M1 | **Buat ERD sungguhan — Gambar 3.19** | **Paling penting.** Gambar 3.15 lama ternyata salinan Class Diagram, jadi skripsi belum punya ERD. Isi dan notasinya ada di kotak kuning |
+| M2 | Gambar ulang Gambar 3.5 (Activity Pencarian Lapangan) | Gambar lama berisi alur cari rekan, salah isi |
+| M3 | Gambar ulang Gambar 3.7 (Class Diagram) | Ikuti narasi + kode (Model/ViewModel/Repository), hapus "User extends LBSService" |
+| M4 | Perbarui Gambar 3.8 (Sequence Pencarian Lapangan) | Hapus partisipan Google Places API |
+| M5 | Perbarui Gambar 3.1 (Kerangka Berpikir) | "Google Places API" → direktori daring + Google Maps; "OSMDroid" → "flutter_map" |
+| M6 | Perbarui Gambar 3.4 (Use Case) | Tambah Batalkan booking / Batalkan aktivitas / Batalkan keikutsertaan |
+| M7 | Buat rancangan Figma: Map (3.12), Login (3.16), Registrasi (3.17), Dashboard Mitra (3.18) | Elemen sesuai tabel masing-masing |
+| M8 | Perbaikan kecil: Gambar 3.2 ("Harvesine"), 3.9 ("notif push", "Buka Halaman Kerja"), 3.11 (hapus peta di Home), 3.13 (hapus "Pilih Slot", tombol "Ajukan Reservasi"), 3.15 (hapus "4.9★ Rating", menu Profil) | Instruksi rinci di tiap kotak kuning |
+| M9 | Hapus 15 kotak kuning setelah gambarnya diganti | — |
+| M10 | Perbarui nomor halaman **Daftar Isi** secara manual | Daftar Isi diketik manual (bukan field Word), jadi tidak bisa di-*Update Field* |
+| M11 | Tambah sitasi untuk Bab 2.5 (Google Maps) kalau diminta pembimbing | Sengaja dibiarkan tanpa sitasi, jangan mengarang referensi |
+| M12 | Konsultasikan seluruh revisi dengan Pak Gintoro, lalu hapus stabilo kuning setelah disetujui | — |
+| M13 | Bab 4: tulis bahwa 5 lapangan mitra di data uji adalah **simulasi** (akun mitra uji); Bab 4/5: butir #6, #7, #15, #17, #19, #23, #24 di atas | Belum ada Bab 4–5 di file ini |
+
+**Tindak lanjut di kode (belum dikerjakan, tunggu permintaan eksplisit):** makna badge "🏅 Terverifikasi" (`sumberData == "observasi"`, AB-11/BB-33) tidak lagi benar setelah klaim observasi dihapus. Badge dan nilai `sumberData` perlu disesuaikan, sekaligus definisi di §6.2/§10 dan AB-11.
