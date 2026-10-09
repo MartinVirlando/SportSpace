@@ -12,11 +12,13 @@ import 'repositories/aktivitas_repository.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/booking_repository.dart';
 import 'repositories/favorit_repository.dart';
+import 'repositories/forum_repository.dart';
 import 'repositories/lapangan_repository.dart';
 import 'repositories/notifikasi_repository.dart';
 import 'repositories/rating_repository.dart';
 import 'routes/splash_screen.dart';
 import 'firebase_options.dart';
+
 
 Future<void> main() async {
   // Wajib dipanggil sebelum memakai plugin apa pun sebelum runApp().
@@ -52,6 +54,9 @@ class SportSpaceApp extends StatelessWidget {
         Provider<RatingRepository>(create: (_) => RatingRepository()),
         Provider<BookingRepository>(create: (_) => BookingRepository()),
         Provider<FavoritRepository>(create: (_) => FavoritRepository()),
+
+        Provider<FavoritRepository>(create: (_) => FavoritRepository()),
+        Provider<ForumRepository>(create: (_) => ForumRepository()),
 
         // Status autentikasi lintas layar (CLAUDE.md aturan 6) — dipasang
         // sekali di sini, bukan dibuat ulang tiap layar seperti

@@ -91,5 +91,33 @@ service cloud.firestore {
       allow update: if login() && resource.data.untukUserId == request.auth.uid;
       allow delete: if login() && resource.data.untukUserId == request.auth.uid;
     }
+
+    // Forum — post dan komentar.
+    match /forum_posts/{postId} {
+      allow read: if login();
+
+      // Hanya boleh memposting atas nama diri sendiri, dan post baru
+      // harus mulai dari 0 komentar.
+      allow create: if login()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.jumlahKomentar == 0;
+
+      // Update HANYA boleh mengubah jumlahKomentar (dipakai batch di
+      // ForumRepository.tambahKomentar), dan hanya naik 1 per tulisan.
+      allow update: if login()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['jumlahKomentar'])
+        && request.resource.data.jumlahKomentar
+             == resource.data.jumlahKomentar + 1;
+
+      allow delete: if false;
+
+      match /komentar/{komentarId} {
+        allow read: if login();
+        allow create: if login()
+          && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
   }
 }
