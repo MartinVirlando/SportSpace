@@ -110,7 +110,7 @@ class LapanganModel {
       tautanMaps: data['tautanMaps'] as String? ?? '',
       isMitra: data['isMitra'] as bool? ?? false,
       pemilikId: data['pemilikId'] as String?,
-      sumberData: data['sumberData'] as String? ?? 'places_api',
+      sumberData: data['sumberData'] as String? ?? 'direktori_daring',
       ratingTotal: (data['ratingTotal'] as num?)?.toInt() ?? 0,
       jumlahRating: (data['jumlahRating'] as num?)?.toInt() ?? 0,
       ratingRata2: (data['ratingRata2'] as num?)?.toDouble() ?? 0.0,
