@@ -41,11 +41,15 @@ Jangan lewati bagian ini. Belajar Flutter *sambil* mengerjakan skripsi adalah ca
 | T-00a | Install Flutter SDK, Android Studio, siapkan emulator + perangkat fisik | Bertiga | `flutter doctor` bersih |
 | T-00b | Ikuti codelab Flutter dasar; buat satu app CRUD sederhana (catatan/todo) | Bertiga, masing-masing | Paham `StatelessWidget`, `StatefulWidget`, `setState`, `ListView`, navigasi |
 | T-00c | Buat project Firebase, aktifkan Firestore + Authentication (Email/Password) | 1 orang | Console Firebase siap |
-| T-00d | Upgrade ke paket Blaze **dan pasang budget alert** di Google Cloud Console | 1 orang | Budget alert aktif di angka kecil |
-| T-00e | Survei manual lapangan: konfirmasi harga, jam, dan fasilitas untuk 8 lapangan bertanda `observasi` di `SEED-DATA.md` | Bertiga | Data di `seed_lapangan.dart` diperbarui |
+| T-00d | ~~Upgrade ke paket Blaze **dan pasang budget alert** di Google Cloud Console~~ — **diganti 8 Oktober 2026: tetap di paket Spark (gratis)** | 1 orang | Keputusan tercatat (lihat catatan di bawah) |
+| T-00e | ~~Survei manual lapangan: konfirmasi harga, jam, dan fasilitas untuk 8 lapangan bertanda `observasi` di `SEED-DATA.md`~~ — **dibatalkan 8 Oktober 2026** | Bertiga | — |
 | **T-00f** | **Verifikasi koordinat 25 lapangan lewat Google Maps** (klik kanan pin → salin koordinat) | Bertiga | Seluruh entri `seed_lapangan.dart` punya koordinat asli |
 
-> **T-00d penting.** Dengan pemakaian skripsi, tagihan realistis Rp 0 karena kuota gratis tidak akan tersentuh. Tapi tanpa budget alert, satu bug perulangan tak terbatas bisa jadi masalah.
+> **T-00d penting** *(catatan awal — digantikan keputusan 8 Oktober 2026 di bawah)*. Dengan pemakaian skripsi, tagihan realistis Rp 0 karena kuota gratis tidak akan tersentuh. Tapi tanpa budget alert, satu bug perulangan tak terbatas bisa jadi masalah.
+>
+> **Keputusan T-00d (8 Oktober 2026): project tetap di paket Spark, tidak upgrade ke Blaze.** Seluruh layanan yang dipakai (Firestore termasuk composite index, Authentication Email/Password) jalan penuh di Spark. Cloud Functions, Cloud Messaging, dan Storage yang butuh Blaze memang sengaja tidak dipakai (lihat CLAUDE.md dan PRD §12b). Di Spark tidak ada tagihan sama sekali: kalau kuota harian habis, layanan berhenti sampai kuota pulih, bukan menagih. Jadi budget alert tidak diperlukan. Ini juga sudah sejalan dengan Bab 2.9 `Highlight_2` yang menyebut paket Spark.
+>
+> **T-00e dibatalkan (8 Oktober 2026).** Survei lapangan tidak dilakukan. Klaim "observasi langsung peneliti" sudah dicabut dari skripsi (PRD §14 "Putaran revisi 2"), dan harga/jam/fasilitas lapangan non-mitra ditulis sebagai **estimasi**. Badge "🏅 Terverifikasi" yang bergantung pada survei ini juga sudah dihapus.
 >
 > **T-00f adalah blocker BB-13.** 25 dari 30 lapangan koordinatnya masih perkiraan tingkat kelurahan. Haversine tidak bisa dibuktikan benar di atas data yang salah, dan penguji berhak menanyakan asal koordinatnya. Sekitar 10 menit kalau dibagi bertiga — kerjakan ini **sebelum** T-10.
 
@@ -83,7 +87,7 @@ Mulai sini pakai satu cabang git per fitur.
 | T-07 | `auth_repository.dart` + AuthViewModel + layar Login & Register (L-02, L-03) | A | T-03 | BB-01…BB-04 lulus |
 | T-08 | Splash + routing + cek status login + **shell navigasi 4 tab** (L-01) | A | T-07 | Buka app langsung ke layar yang tepat, 4 tab bisa berpindah |
 | T-09 | `location_service.dart` — izin lokasi, ambil koordinat, tangani penolakan | B | T-05 | AB-03 terpenuhi, BB-06 lulus |
-| T-10 | `AdminSeedScreen` + masukkan 30 lapangan ke Firestore | C | T-03, T-00e, **T-00f** | Data tampil di Firebase Console |
+| T-10 | `AdminSeedScreen` + masukkan 30 lapangan ke Firestore | C | T-03, ~~T-00e~~ (dibatalkan), **T-00f** | Data tampil di Firebase Console |
 | T-11 | `lapangan_repository.dart` — ambil semua lapangan, hitung Haversine, urutkan jarak | B | T-04, T-10 | Daftar terurut benar |
 | T-12 | Home: **daftar vertikal** kartu lapangan, search bar, filter chip, ikon lonceng (L-04) | B | T-11 | BB-05, BB-07, BB-08 lulus |
 | T-13 | Halaman Detail Lapangan (L-06) — tanpa tombol rating & reservasi dulu | C | T-11 | BB-11, BB-12 lulus |
@@ -117,7 +121,7 @@ Mulai sini pakai satu cabang git per fitur.
 | T-26 | Form Tambah/Edit Lapangan untuk mitra (L-15) | A | T-25 | BB-29 lulus |
 | T-27 | Tab Profil: riwayat booking, aktivitas saya, menu statis, logout (L-13) | A | T-23 | BB-28, BB-30 lulus |
 | **T-35** | `favorit_repository.dart` + FavoritViewModel + ikon ♡ di L-04 dan L-06 — **AB-10** | C | T-13 | BB-31, BB-32, BB-37 lulus |
-| **T-36** | Badge status "Mitra Terdaftar" dan "Terverifikasi" di L-06 — **AB-11** | C | T-13 | BB-33, BB-34 lulus |
+| **T-36** | Badge status "Mitra Terdaftar" dan "Terverifikasi" di L-06 — **AB-11** *(badge "Terverifikasi" dihapus 7 Oktober 2026, BB-33/BB-34 diubah — lihat PRD AB-11)* | C | T-13 | BB-33, BB-34 lulus |
 | **T-37** | Olahraga favorit + lokasi default di Profil, dan cadangan lokasi di AB-03 | A | T-27, T-09 | BB-35 lulus |
 | **T-38** | Statistik profil (Booking · Aktivitas · Favorit) dengan `count()` — **AB-12** | A | T-27, T-35 | BB-36 lulus |
 
@@ -183,7 +187,7 @@ Awalnya empat saran dari audit kode setelah v1.2 selesai (T-46...T-49); T-49 (fi
 
 > **T-51 SELESAI (21 September 2026).** User cek manual satu-per-satu 30 lapangan ke Google Maps (di luar sesi ini, hasilnya diserahkan sebagai daftar link + nomor telepon + catatan revisi). Temuan: 3 koordinat meleset (MS Sport Arena, Arsa Sport Mini Soccer, Mad Padel Club BSD) — dikoreksi; Raw Futsal ternyata multi-olahraga (futsal & badminton) sama seperti Taruna Futsal yang sudah ada — `jenisOlahraga` ditambah, kedua nama diganti jadi "... & Badminton" supaya kelihatan dari daftar tanpa buka detail. Field baru `tautanMaps` ditambahkan ke `LapanganModel`/skema, package `url_launcher` ditambah (izin diberikan user), tombol "Buka di Google Maps" ditambahkan di L-06 berdampingan dengan "Lihat di peta" yang sudah ada (internal, ke tab Map — beda tujuan). Data didorong ke Firestore produksi lewat hapus-koleksi-lalu-reseed dari akun `mitra.uji` (bukan `.update()` — `firestore.rules` tidak mengizinkan untuk 25/30 lapangan non-mitra), dengan konsekuensi rating/favorit lama ter-reset (disetujui, data uji bukan data sidang). Diverifikasi di emulator: urutan jarak Home cocok hitungan ulang, "Raw Futsal & Badminton" muncul benar di pencarian, tombol Maps membuka aplikasi Google Maps asli (dicoba di Sabnani Football), Kontak tampil benar. `flutter analyze` bersih, aturan lapisan MVVM bersih, `flutter test` hijau. `PRD.md` §4/§6.2/§8 L-06/"Koreksi teknis" dan `docs/SEED-DATA.md` diperbarui mengikuti. **Belum diverifikasi di perangkat Android nyata** sesuai Definisi Selesai PRD §12 poin 1, dan baru 5/30 lapangan yang benar-benar dilihat ulang tampilannya di emulator pasca-reseed (sisanya diasumsikan benar dari data yang sama, belum dicek visual satu-satu).
 
-### Ide masa depan (belum diputuskan): harga/jam per jenis olahraga — 21 September 2026
+### Ide masa depan (masih riset): harga/jam per jenis olahraga — 21 September 2026
 
 Ditemukan saat verifikasi manual data lapangan (T-51 di atas): **Raw Futsal** di Google Maps ternyata juga menyediakan badminton (bukan cuma futsal), sama seperti pola **Taruna Futsal** (`['futsal', 'badminton']`, satu-satunya lapangan multi-olahraga yang sudah ada sebelum T-51). Skema `jenisOlahraga: List<String>` sudah mendukung satu lapangan dengan >1 jenis olahraga — itu bukan masalah. **Yang belum didukung:** `harga`/`hargaSlot`/`jamBuka`/`jamTutup` itu satu set nilai per dokumen lapangan, berlaku rata untuk semua jenis olahraga di venue itu — padahal di dunia nyata futsal dan badminton di venue yang sama bisa beda harga dan beda jam.
 
@@ -196,7 +200,9 @@ Ditemukan saat verifikasi manual data lapangan (T-51 di atas): **Raw Futsal** di
 
 Hanya berdampak ke 2 dari 30 lapangan saat ini (Taruna Futsal, Raw Futsal). Tidak urgent, belum masuk PRD, tunggu keputusan eksplisit user sebelum dikerjakan.
 
-### Backlog belum dikerjakan: banyak foto per lapangan — diusulkan 22 September 2026
+> **Status 8 Oktober 2026: masih riset.** Tim sedang mencari tahu apakah harga/jam per jenis olahraga perlu dibuat. Belum diputuskan, belum dikoding.
+
+### DIBATALKAN: banyak foto per lapangan (T-52) — diusulkan 22 September 2026
 
 Muncul saat isi coba `fotoURL` pertama kali (T-40 lanjutan, pakai link eksternal Google Drive — PostImages/ImgBB/Imgur ternyata diblokir ISP Indonesia, lihat catatan di bawah). Home card dan Detail Lapangan **sudah otomatis menampilkan foto** begitu `fotoURL` terisi (`kartu_lapangan.dart`, `detail_lapangan_screen.dart` sudah `CachedNetworkImage` dari `fotoURL.first`, tidak perlu perubahan kode). Yang belum ada: dukungan **lebih dari satu** foto per lapangan.
 
@@ -208,9 +214,11 @@ Muncul saat isi coba `fotoURL` pertama kali (T-40 lanjutan, pakai link eksternal
 
 **Catatan penting — pilihan host foto:** jangan sarankan PostImages/ImgBB/Imgur ke mitra. Ketiganya diverifikasi **diblokir ISP Indonesia** (TLS reset/sertifikat palsu di dua jaringan berbeda; normal begitu lewat VPN). **Google Drive** (`https://drive.google.com/uc?export=view&id=FILE_ID`, dari link share file "Anyone with the link") terverifikasi jalan tanpa VPN — pakai ini sebagai rekomendasi ke mitra selama belum didokumentasikan ulang di tempat lain.
 
-Belum urgent, tunggu keputusan user sebelum dikerjakan.
+> **T-52 dibatalkan (8 Oktober 2026).** Satu foto per lapangan (`fotoURL.first`) dianggap cukup. Tidak akan dikerjakan; bagian ini disimpan sebagai riwayat saja.
 
-### Backlog belum dikerjakan: aktivitas cari rekan tampil di Detail Lapangan — diusulkan 22 September 2026
+### DIBATALKAN: aktivitas cari rekan tampil di Detail Lapangan (T-53) — diusulkan 22 September 2026
+
+> **T-53 dibatalkan (8 Oktober 2026).** Tidak pernah dikoding, tidak akan dikerjakan. Bab 3 juga tidak perlu use case/diagram baru untuk ini (PRD §14 #37 ikut gugur). Bagian di bawah disimpan sebagai riwayat saja.
 
 Ide dari user: saat ini "cari lapangan" (Home/Map) dan "cari rekan main" (tab Teman) dua silo terpisah — padahal `AktivitasBermainModel` **sudah** punya field `lapanganId`, jadi setiap aktivitas sebenarnya sudah terikat ke lapangan tertentu, cuma belum ditampilkan di situ. Usulan: tampilkan section kecil di Detail Lapangan berisi aktivitas yang masih buka di lapangan itu (mis. "Jam 19:00 · kurang 2 orang"), supaya orang yang lihat lapangan langsung tahu ada yang bisa digabung tanpa pindah tab.
 
@@ -245,7 +253,7 @@ Ditemukan saat diskusi soal akurasi data seed (`docs/SEED-DATA.md`): 25 dari 30 
 
 Detail lengkap ada di memory `project_skripsi_bab1-3_revisi` (item #7) dan `project_sumberdata_places_api`. Sama seperti item lain di atas: **akhir pekan saja**, jangan dikejar hari kerja.
 
-Belum urgent, tunggu keputusan user sebelum dikerjakan.
+> **Update 8 Oktober 2026.** Skripsi (`Highlight_2`) sudah tidak menyebut Google Places API maupun konfirmasi telepon. Sumber datanya: direktori pemesanan daring yang diverifikasi manual lewat Google Maps, harga/jam lapangan non-mitra ditulis sebagai **estimasi**. Butir 1 di atas selesai. Butir 3 (telepon) dibatalkan. **Butir 2 selesai 19 Oktober 2026:** `'places_api'` dan `'observasi'` digabung jadi `'direktori_daring'` di kode; 25 dokumen produksi diubah manual lewat Firebase Console.
 
 ---
 
@@ -324,7 +332,7 @@ Perintah ketiga harus tidak mengeluarkan apa pun. Kalau ada, berarti ada View at
 Salin ke Notion/Trello/spreadsheet dan perbarui tiap minggu.
 
 ```
-Minggu 1–2   [ ] T-00a  [ ] T-00b  [ ] T-00c  [ ] T-00d  [ ] T-00e  [x] T-00f
+Minggu 1–2   [x] T-00a  [x] T-00b  [x] T-00c  [x] T-00d (tetap Spark)  [-] T-00e (dibatalkan)  [x] T-00f
 Minggu 3     [x] T-01  [x] T-02  [x] T-03  [x] T-04  [x] T-05  [x] T-06
 Minggu 4     [x] T-07  [x] T-08  [x] T-09  [x] T-10
 Minggu 5–6   [x] T-11  [x] T-12  [x] T-13
@@ -333,18 +341,30 @@ Minggu 8     [x] T-15  [x] T-16  [x] T-17
 Minggu 9     [x] T-18  [x] T-19  [x] T-20
 Minggu 10    [x] T-21  [x] T-22  [x] T-23  [x] T-36
 Minggu 11    [x] T-24  [x] T-25  [x] T-26  [x] T-27  [x] T-35  [x] T-37  [x] T-38
-Minggu 12    [ ] T-28  [ ] T-29                          [~] T-39 (revisi Bab 1–3 — teks selesai 7 Okt, gambar masih manual)
-Minggu 13    [ ] T-30  [ ] T-31
-Minggu 14    [ ] T-32  [ ] T-33  [ ] T-34
+Minggu 12    [x] T-28  [x] T-29 (diuji di HP Android, 19 Okt)  [~] T-39 (revisi Bab 1–3 — teks selesai 7 Okt, gambar masih manual)
+Minggu 13    [x] T-30 (41/41 emulator + HP Android, 19 Okt)  [ ] T-31
+Minggu 14    [ ] T-32 (kalkulator SUS siap)  [ ] T-33  [ ] T-34
+Dibatalkan   [-] T-00e  [-] T-49  [-] T-52  [-] T-53
 ```
+
+> **Sisa pekerjaan per 19 Oktober 2026** (ringkasan terbaru — catatan bertanggal di bawahnya adalah riwayat):
+>
+> 1. ~~**Uji di HP Android fisik** — T-28, T-29, T-30~~ — **selesai**, dikonfirmasi tim 19 Oktober 2026 (aplikasi sudah dicoba dan aman di HP Android). Catat merek/tipe HP dan hasil per kasus BB untuk tabel Bab 4.
+> 2. **T-31** sebar APK + kuesioner SUS ke 20–30 responden → **T-32** hitung skor (kalkulator `Kalkulator_SUS_SportSpace.xlsx` sudah siap, di folder Downloads, di luar repo).
+> 3. **T-33 / T-34** tulis Bab 4 dan Bab 5. Bab 4 wajib menyebut 5 lapangan mitra sebagai simulasi (PRD §14 M13).
+> 4. **T-39 pekerjaan manual tim** — PRD §14 "Putaran revisi 2" M1–M13 (gambar ERD dan diagram ulang, mockup Figma, Daftar Isi, konsultasi Pak Gintoro).
+> 5. **Ubah manual 25 dokumen `lapangan` di Firebase Console**: field `sumberData` → `direktori_daring` (kode sudah diganti 19 Oktober 2026 — lihat PRD §10).
+> 6. **Keputusan terbuka:** harga/jam per jenis olahraga — masih riset.
+>
+> **Keputusan 8 Oktober 2026:** T-00a–T-00c dicentang selesai; T-00d diganti jadi "tetap paket Spark"; T-00e, T-52, T-53 dibatalkan (T-49 sudah dibatalkan sejak 15 September).
 
 > **Catatan status per 26 Agustus 2026:** Seluruh alur reservasi + dashboard mitra (T-23–T-27), keputusan T-40 (Opsi A, tanpa Firebase Storage — lihat PRD §12b), dan seluruh empat tugas v1.1 (T-35 favorit, T-36 badge, T-37 olahraga favorit + lokasi default, T-38 statistik profil) sudah selesai. **Sprint 3 dan 4 lengkap secara kode, T-10 (seeding) sudah dijalankan di project Firestore produksi, dan T-06 (index + rules) sudah terverifikasi Enabled dan ter-deploy.** T-28 (audit kode + perbaikan bug) sudah jalan signifikan — lihat catatan di bawah. Sisa pekerjaan: T-00a–T-00e (proses tim, sedang berjalan paralel), lalu T-29/T-30 dan seterusnya (build APK, Black Box di perangkat nyata, SUS, penulisan Bab 4–5).
 >
 > **T-06 SELESAI (26 Agustus 2026).** `firebase firestore:indexes` mengonfirmasi 11 index di server cocok persis dengan `firestore.indexes.json`/`FIRESTORE-INDEXES.md`, dan cek manual di Firebase Console → Firestore → Indexes menunjukkan seluruh 11 baris berstatus **Enabled** (bukan Building). Kriteria "Selesai jika" T-06 terpenuhi.
 >
-> T-00a–T-00e juga belum ditandai — tugas persiapan tim (instalasi, survei manual) yang tidak bisa diverifikasi lewat kode, dan sedang dikerjakan.
+> T-00a–T-00e juga belum ditandai — tugas persiapan tim (instalasi, survei manual) yang tidak bisa diverifikasi lewat kode, dan sedang dikerjakan. *(8 Oktober 2026: T-00a–T-00d selesai/diputuskan, T-00e dibatalkan.)*
 >
-> **Catatan sampingan dari cek T-06:** tangkapan layar Firebase Console menunjukkan project masih di paket **Spark** (gratis), bukan **Blaze** seperti disebut T-00d. Ini kemungkinan bukan masalah — Firestore (termasuk composite index) dan Authentication jalan penuh di Spark, dan proyek ini sengaja tidak memakai Cloud Functions/Storage yang butuh Blaze. Tapi karena T-00d eksplisit meminta upgrade ke Blaze + budget alert, sebaiknya dipastikan lagi saat T-00d benar-benar dikerjakan: kalau ternyata tetap di Spark, catat alasannya (semua fitur yang dipakai gratis) supaya tidak jadi pertanyaan penguji soal kesesuaian dengan dokumen.
+> **Catatan sampingan dari cek T-06:** tangkapan layar Firebase Console menunjukkan project masih di paket **Spark** (gratis), bukan **Blaze** seperti disebut T-00d. Ini kemungkinan bukan masalah — Firestore (termasuk composite index) dan Authentication jalan penuh di Spark, dan proyek ini sengaja tidak memakai Cloud Functions/Storage yang butuh Blaze. Tapi karena T-00d eksplisit meminta upgrade ke Blaze + budget alert, sebaiknya dipastikan lagi saat T-00d benar-benar dikerjakan: kalau ternyata tetap di Spark, catat alasannya (semua fitur yang dipakai gratis) supaya tidak jadi pertanyaan penguji soal kesesuaian dengan dokumen. *(Diputuskan 8 Oktober 2026: tetap Spark — lihat catatan T-00d di Minggu 0.)*
 >
 > **T-28 SEBAGIAN JALAN (26 Agustus 2026) — audit kode menyeluruh, 18 bug ditemukan & diperbaiki.** Sebelum testing sungguhan di perangkat (T-30) dimulai, dilakukan audit sistematis ke seluruh lapisan kode (dibantu Claude, bukan Black Box formal) untuk menutup bug sebanyak mungkin lebih awal. Belum dicentang selesai karena Definisi Selesai PRD §12 poin 1 ("seluruh kasus BB lulus di **perangkat Android nyata**") baru bisa dipastikan lewat T-30 — ini pondasi sebelum itu. Ringkasan per area (detail lengkap ada di riwayat commit hari ini):
 >
@@ -362,7 +382,7 @@ Minggu 14    [ ] T-32  [ ] T-33  [ ] T-34
 >
 > **T-10 SELESAI (21 Agustus 2026).** `lapangan_repository.dart` punya `seedSemuaLapangan()` — menulis seluruh 30 lapangan dari `seed_lapangan.dart` (termasuk 5 mitra, bukan 3) dalam satu batch, `pemilikId` otomatis diisi ke akun yang sedang login untuk entri mitra. `admin_seed_screen.dart` (tile di menu Profil) memanggil method ini; method lama `seedPrototipe()` (bridge 7 lapangan) sudah dihapus. Seed **sudah dijalankan** di project Firestore produksi (`app-skripsi-f8340`) dan diverifikasi dua arah: 30 dokumen tampil di Firebase Console, dan Home menampilkan ke-30 lapangan terurut jarak di dua akun uji berbeda. Data lama sisa testing (7 dokumen prototipe + 2 data uji manual "Lapangan Uji Non-Mitra"/"Mitra") dihapus lebih dulu dari koleksi `lapangan` supaya tidak dobel.
 >
-> **Catatan kualitas data yang masih menunggu T-00e:** koordinat sudah benar untuk semua 30 lapangan, tapi harga/jam/fasilitas 8 lapangan `sumberData: 'observasi'` masih perkiraan pasaran, bukan hasil survei langsung — belum layak jadi bahan skripsi sampai T-00e selesai. Kalau datanya diperbarui nanti: hapus seluruh dokumen `lapangan` di Firebase Console, lalu jalankan ulang tombol "Isi Data Awal". Tile dan file `admin_seed_screen.dart` tetap WAJIB dihapus setelah dipakai di project produksi — jangan sampai ikut ke APK yang dibagikan ke responden SUS (T-31).
+> **Catatan kualitas data yang masih menunggu T-00e** *(8 Oktober 2026: T-00e dibatalkan — harga/jam/fasilitas resmi ditulis sebagai estimasi di skripsi, tidak perlu reseed)*: koordinat sudah benar untuk semua 30 lapangan, tapi harga/jam/fasilitas 8 lapangan `sumberData: 'observasi'` masih perkiraan pasaran, bukan hasil survei langsung — belum layak jadi bahan skripsi sampai T-00e selesai. Kalau datanya diperbarui nanti: hapus seluruh dokumen `lapangan` di Firebase Console, lalu jalankan ulang tombol "Isi Data Awal". Tile dan file `admin_seed_screen.dart` tetap WAJIB dihapus setelah dipakai di project produksi — jangan sampai ikut ke APK yang dibagikan ke responden SUS (T-31).
 >
 > **Testing manual pertama (20 Agustus 2026):** dijalankan di emulator Android sungguhan lewat jembatan lama (`seedPrototipe`, 7 lapangan). Home, Detail Lapangan (badge T-36, rating, favorit ♡), pencarian, dan alur reservasi dicoba langsung. Ketemu satu bug nyata — dicatat di `PRD.md` "Koreksi teknis" #8: lapangan yang tutup jam `00:00` (tengah malam) tidak pernah punya jam tersedia di form Ajukan Reservasi (L-10), karena jam tutup dibaca literal sebagai `0` alih-alih tengah malam. Sudah diperbaiki dan diverifikasi ulang (submit reservasi berhasil, notifikasi masuk ke mitra).
 >
@@ -394,3 +414,7 @@ Minggu 14    [ ] T-32  [ ] T-33  [ ] T-34
 > **T-29: APK release dibangun ulang (1 Oktober 2026).** `app-release.apk` sebelumnya (13 dan 21 September) belum memuat perbaikan tinggi kartu Home dari commit `ff8e38d` (23 September, `kartu_lapangan.dart`), padahal 30 foto lapangan di Firestore sudah terisi sehingga bug rasio aspek itu paling kelihatan di APK lama. Perubahan sesudahnya (`3c01043`, `5cbbdd2`) hanya dokumen, jadi tidak perlu build lagi. `flutter analyze` bersih (No issues found), `flutter build apk --release` berhasil: `build/app/outputs/flutter-apk/app-release.apk`, 56,7MB, ditandatangani debug key seperti sebelumnya. Tile "Seed Data Awal" masih disembunyikan (di-comment di `profil_screen.dart`). **Belum dipasang/diuji ulang di perangkat atau emulator pada build ini**, dan syarat T-29 "minimal 3 perangkat Android berbeda" tetap belum terpenuhi. APK-nya tidak ikut ke git (`build/` di-ignore) — bagikan lewat salinan berkas langsung.
 
 > **T-30: BB-38 sampai BB-41 lulus di emulator (1 Oktober 2026)**, memakai `app-release.apk` yang baru dibangun hari itu dan akun uji tetap. **BB-38** (batalkan booking): status MENUNGGU → DIBATALKAN lewat dialog konfirmasi, slot terbuka lagi (diverifikasi dengan mengajukan ulang slot yang sama dan diterima), mitra menerima notifikasi "Reservasi baru" dan "Reservasi dibatalkan". **BB-39** (pembuat batalkan aktivitas): peserta yang sudah diterima mendapat notifikasi "Aktivitas dibatalkan", aktivitas hilang dari Cari Rekan. **BB-40** (zoom): berhenti tepat di batas bawah (tampilan dunia) dan batas atas (tingkat bangunan), tanpa error. **BB-41** (Buka di Google Maps): membuka aplikasi Google Maps ke halaman lapangan; sisi negatif (tombol hilang kalau `tautanMaps` kosong) hanya diverifikasi lewat kode karena ke-30 lapangan seed sudah punya tautan. Seluruh 41 kasus BB kini sudah dijalankan di emulator; **yang tersisa hanya putaran di perangkat Android fisik** (syarat PRD §12 poin 1). Catatan: emulator butuh Cloudflare WARP dimatikan agar jaringannya jalan.
+
+> **Uji regresi sebelum merge (19 Oktober 2026)** — setelah badge "Terverifikasi" dihapus dan `sumberData` diganti jadi `direktori_daring`. `flutter analyze` bersih, `flutter test` 7/7 hijau, cek aturan lapisan bersih, `flutter build apk --debug` (Gradle `assembleDebug`) berhasil. Diuji di emulator dengan akun `pengguna.uji`: splash → Home (30 lapangan terurut jarak, foto tampil), Detail Lapangan non-mitra tanpa badge (BB-34, termasuk Stadiums Futsal yang dulu `observasi`), lapangan mitra dengan "✅ Mitra Terdaftar" (BB-33), tab Map/Teman/Profil, filter Badminton, favorit ♡→♥→♡ dan angka Favorit di Profil ikut berubah (BB-31/32/36), ajukan reservasi Hey Beach 30 Okt 10:00 (estimasi Rp 220.000 = tarif pagi `hargaSlot`, benar) → Batalkan → status Dibatalkan dan slot 10:00 terbuka lagi (BB-38). **Tidak ada bug baru, tidak ada error di logcat.** Catatan infrastruktur: kali ini WARP sudah terputus tapi DNS emulator tetap gagal; solusinya cold-boot dengan `emulator -avd sport_space_avd -no-snapshot-load -dns-server 8.8.8.8,1.1.1.1`. Temuan kecil yang sudah ada sebelumnya (bukan regresi): dialog pilih tanggal masih berbahasa Inggris ("Select date", "Cancel", "OK"). *(Diperbaiki hari yang sama — lihat catatan di bawah.)*
+
+> **Perbaikan Definisi Selesai (19 Oktober 2026)** — dua kekurangan dari pencocokan kode dengan PRD §12 dan CLAUDE.md, keduanya disetujui user: (1) `flutter_localizations` ditambahkan dan `MaterialApp` dikunci ke bahasa Indonesia, sehingga dialog tanggal/jam di Buat Aktivitas, Ajukan Reservasi, dan Form Lapangan kini tampil "Pilih tanggal", "Batal", "OKE" (`intl` ikut naik ke 0.20.3); jam yang dipilih tetap ditampilkan "HH:mm" lewat `Formatter.jamDariPilihan()`; (2) sekitar 65 teks yang ditulis langsung di widget/ViewModel/`validators.dart` dipindah ke `AppStrings`. Diverifikasi `flutter analyze` bersih, `flutter test` hijau, lapisan bersih, build Gradle berhasil, dan dicek di emulator. Detail: PRD "Koreksi teknis (7–19 Oktober 2026)".
