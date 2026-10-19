@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/constants/app_sports.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
 
@@ -56,10 +57,10 @@ class AktivitasViewModel extends ChangeNotifier {
     required String namaUser,
   }) async {
     if (aktivitas.pembuatId == userId) {
-      return 'Tidak bisa gabung ke aktivitas buatan sendiri.';
+      return AppStrings.errGabungAktivitasSendiri;
     }
     if (aktivitas.peserta.contains(userId)) {
-      return 'Kamu sudah jadi peserta aktivitas ini.';
+      return AppStrings.errSudahPeserta;
     }
 
     _sedangDiproses.add(aktivitas.aktivitasId);

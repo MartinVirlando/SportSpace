@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:intl/intl.dart';
 
 /// Format rupiah, tanggal, dan jam.
@@ -32,6 +33,13 @@ class Formatter {
 
   /// DateTime → "19:00"
   static String jam(DateTime waktu) => DateFormat('HH:mm').format(waktu);
+
+  /// TimeOfDay (hasil dialog pilih jam) → "19:00". Sengaja tidak memakai
+  /// `TimeOfDay.format(context)`: dengan bahasa Indonesia hasilnya "19.00"
+  /// (titik), padahal seluruh aplikasi dan data Firestore memakai titik dua.
+  static String jamDariPilihan(TimeOfDay jam) =>
+      '${jam.hour.toString().padLeft(2, '0')}:'
+      '${jam.minute.toString().padLeft(2, '0')}';
 
   /// DateTime → "Sen, 17 Agu · 19:00"
   static String tanggalDanJam(DateTime waktu) =>

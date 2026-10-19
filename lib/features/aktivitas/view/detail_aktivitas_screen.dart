@@ -166,7 +166,7 @@ class _Isi extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${aktivitas.jumlahPemainSaatIni}/'
-            '${aktivitas.jumlahPemainDibutuhkan} pemain',
+            '${aktivitas.jumlahPemainDibutuhkan} ${AppStrings.satuanPemain}',
             style: AppTextStyles.metaLapangan,
           ),
           const Divider(height: 32),
@@ -401,7 +401,7 @@ class _BarisPermintaanState extends State<_BarisPermintaan> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          error ?? '${widget.permintaan.namaUser} diterima bergabung.',
+          error ?? AppStrings.diterimaBergabung(widget.permintaan.namaUser),
         ),
       ),
     );
@@ -420,7 +420,7 @@ class _BarisPermintaanState extends State<_BarisPermintaan> {
     setState(() => _sedangProses = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(error ?? 'Permintaan ${widget.permintaan.namaUser} ditolak.'),
+        content: Text(error ?? AppStrings.permintaanDitolak(widget.permintaan.namaUser)),
       ),
     );
   }
@@ -495,7 +495,7 @@ class _AksiGabungState extends State<_AksiGabung> {
         content: Text(
           berhasil
               ? AppStrings.permintaanTerkirim
-              : (vm.pesanError ?? 'Gagal mengirim permintaan.'),
+              : (vm.pesanError ?? AppStrings.errGagalKirimPermintaan),
         ),
       ),
     );

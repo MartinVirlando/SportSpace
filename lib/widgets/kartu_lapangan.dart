@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_sports.dart';
+import '../core/constants/app_strings.dart';
 import '../core/utils/formatter.dart';
 import '../models/lapangan_model.dart';
 
@@ -81,7 +82,7 @@ class KartuLapangan extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         // Figma menulis "Rp 120k/jam" — versi ringkas.
-                        '${Formatter.rupiahRingkas(lapangan.harga)}/jam',
+                        '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
                         style: AppTextStyles.harga,
                       ),
                     ],
@@ -106,7 +107,7 @@ class KartuLapangan extends StatelessWidget {
         '⭐ ${lapangan.ratingRata2.toStringAsFixed(1)} (${lapangan.jumlahRating})',
       );
     } else {
-      bagian.add('Belum ada ulasan');
+      bagian.add(AppStrings.belumAdaUlasan);
     }
 
     if (lapangan.jarakKm != null) {

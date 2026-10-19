@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/constants/app_strings.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/permintaan_gabung_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
@@ -58,12 +59,12 @@ class DetailAktivitasViewModel extends ChangeNotifier {
     required String namaUser,
   }) async {
     if (aktivitas.pembuatId == userId) {
-      _pesanError = 'Tidak bisa gabung ke aktivitas buatan sendiri.';
+      _pesanError = AppStrings.errGabungAktivitasSendiri;
       notifyListeners();
       return false;
     }
     if (aktivitas.peserta.contains(userId)) {
-      _pesanError = 'Kamu sudah jadi peserta aktivitas ini.';
+      _pesanError = AppStrings.errSudahPeserta;
       notifyListeners();
       return false;
     }

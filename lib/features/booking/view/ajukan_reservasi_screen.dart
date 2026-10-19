@@ -155,7 +155,7 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.pesanError ?? 'Gagal mengajukan reservasi.')),
+        SnackBar(content: Text(vm.pesanError ?? AppStrings.errGagalAjukanReservasi)),
       );
       // Slot yang barusan dipakai orang lain (BB-25) harus hilang dari
       // pilihan — muat ulang supaya chipnya langsung bertanda "Penuh".
@@ -301,8 +301,8 @@ class _TombolPilihTanggal extends StatelessWidget {
           children: [
             Text(
               tanggal == null
-                  ? 'Pilih tanggal'
-                  : DateFormat('EEE, d MMM yyyy', 'id_ID').format(tanggal!),
+                  ? AppStrings.pilihTanggal
+                  : Formatter.tanggal(tanggal!),
               style: AppTextStyles.namaLapangan,
             ),
             const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),

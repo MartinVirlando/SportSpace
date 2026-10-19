@@ -88,7 +88,7 @@ class _BeriRatingBodyState extends State<_BeriRatingBody> {
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.pesanError ?? 'Gagal mengirim rating.')),
+        SnackBar(content: Text(vm.pesanError ?? AppStrings.errGagalKirimRating)),
       );
     }
   }

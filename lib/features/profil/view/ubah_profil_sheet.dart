@@ -155,7 +155,7 @@ class _UbahProfilBodyState extends State<_UbahProfilBody> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            context.read<AuthViewModel>().pesanError ?? 'Gagal menyimpan profil.',
+            context.read<AuthViewModel>().pesanError ?? AppStrings.errGagalSimpanProfil,
           ),
         ),
       );

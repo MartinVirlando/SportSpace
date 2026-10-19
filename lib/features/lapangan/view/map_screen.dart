@@ -77,7 +77,7 @@ class _Isi extends StatelessWidget {
         return _Pesan(
           ikon: Icons.error_outline,
           judul: AppStrings.errGagalMuat,
-          keterangan: vm.pesanError ?? 'Terjadi kesalahan.',
+          keterangan: vm.pesanError ?? AppStrings.errTerjadiKesalahan,
           labelTombol: AppStrings.cobaLagi,
           onTekan: () => _muatPetaDenganLokasiDefault(context),
         );
@@ -487,7 +487,7 @@ class _KartuRingkas extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${Formatter.rupiahRingkas(lapangan.harga)}/jam',
+                  '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
                   style: AppTextStyles.harga,
                 ),
               ],
@@ -508,7 +508,7 @@ class _KartuRingkas extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppSizes.radiusChip),
               ),
             ),
-            child: const Text('Lihat', style: TextStyle(fontSize: 12)),
+            child: const Text(AppStrings.lihat, style: TextStyle(fontSize: 12)),
           ),
         ],
       ),

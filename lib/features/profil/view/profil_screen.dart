@@ -177,10 +177,10 @@ class _ProfilBody extends StatelessWidget {
             // Firestore produksi sejak 21 Agustus 2026, dan tile ini tidak
             // boleh ikut ke APK yang dibagikan ke responden SUS (T-31).
             // `AdminSeedScreen`/`LapanganRepository.seedSemuaLapangan()`
-            // SENGAJA tidak dihapus — kalau T-00e selesai dan 8 lapangan
-            // `sumberData: observasi` perlu ditulis ulang dengan data survei
-            // asli, tile ini tinggal dimunculkan lagi (uncomment blok di
-            // bawah), tanpa perlu menulis ulang fiturnya dari nol.
+            // SENGAJA tidak dihapus — kalau data lapangan perlu ditulis
+            // ulang, tile ini tinggal dimunculkan lagi (uncomment blok di
+            // bawah), tanpa perlu menulis ulang fiturnya dari nol. Baca dulu
+            // peringatan di `admin_seed_screen.dart` (ID baru, foto hilang).
             //
             // Dimunculkan sekali lagi 21 September 2026 (T-51) untuk reseed
             // 30 lapangan dengan data terkoreksi (koordinat, nomorTelepon,
@@ -570,15 +570,15 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
   String _label(String status) {
     switch (status) {
       case 'DIKONFIRMASI':
-        return 'Dikonfirmasi';
+        return AppStrings.statusDikonfirmasi;
       case 'DITOLAK':
-        return 'Ditolak';
+        return AppStrings.statusDitolak;
       case 'SELESAI':
-        return 'Selesai';
+        return AppStrings.statusSelesai;
       case 'DIBATALKAN':
-        return 'Dibatalkan';
+        return AppStrings.statusDibatalkan;
       default:
-        return 'Menunggu';
+        return AppStrings.statusMenunggu;
     }
   }
 

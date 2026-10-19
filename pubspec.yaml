@@ -12,6 +12,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations: # bawaan Flutter SDK — dialog tanggal/jam berbahasa Indonesia (PRD §12 poin 4)
+    sdk: flutter
 
   # --- Firebase (PRD Bagian 4) ---
   firebase_core: ^3.6.0 # inisialisasi Firebase
@@ -29,7 +31,7 @@ dependencies:
   provider: ^6.1.2 # sudah dikunci — jangan ganti Riverpod/BLoC/GetX
 
   # --- Utilitas ---
-  intl: ^0.19.0 # format tanggal dan rupiah
+  intl: ^0.20.2 # format tanggal dan rupiah (naik dari 0.19 karena flutter_localizations menguncinya)
   cached_network_image: ^3.4.1 # foto lapangan
   image_picker: ^1.1.2 # T-43 lanjutan — pilih JPG galeri untuk foto profil
   # (disimpan sebagai Base64 di dokumen Firestore, BUKAN Firebase Storage

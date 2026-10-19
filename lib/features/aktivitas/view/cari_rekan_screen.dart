@@ -256,7 +256,7 @@ class _KartuAktivitas extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${aktivitas.jumlahPemainSaatIni}/'
-                        '${aktivitas.jumlahPemainDibutuhkan} pemain',
+                        '${aktivitas.jumlahPemainDibutuhkan} ${AppStrings.satuanPemain}',
                         style: AppTextStyles.metaLapangan,
                       ),
                     ],

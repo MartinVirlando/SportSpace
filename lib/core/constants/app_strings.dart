@@ -31,6 +31,15 @@ class AppStrings {
   static const simpan = 'Simpan';
   static const kirim = 'Kirim';
   static const memuat = 'Memuat...';
+  static const lihat = 'Lihat';
+  static const satuanPemain = 'pemain';
+  static const satuanUlasan = 'ulasan';
+  static const pilihTanggal = 'Pilih tanggal';
+  static const pilihJam = 'Pilih jam';
+  static const jam = 'Jam';
+  static const olahraga = 'Olahraga';
+  static const lapangan = 'Lapangan';
+  static const pilihLapangan = 'Pilih lapangan';
 
   // ---------- Auth (L-02, L-03) ----------
   static const masuk = 'Masuk';
@@ -48,9 +57,17 @@ class AppStrings {
   static const errKredensialSalah = 'Surel atau kata sandi salah.';
   static const errSurelTerpakai = 'Surel ini sudah terdaftar.';
   static const errKataSandiBeda = 'Konfirmasi kata sandi tidak cocok.';
+  static const belumPunyaAkun = 'Belum punya akun? Daftar';
+  static const errGagalDaftar = 'Gagal mendaftar.';
 
   // ---------- Home (L-04) ----------
   static const sapaan = 'Halo';
+  // Label wilayah tetap di bawah sapaan Home — wilayah penelitian (Bab 1.3),
+  // bukan hasil membaca alamat dari GPS.
+  static const wilayahPenelitian = 'Tangerang Selatan';
+  static const judulKosongLapangan = 'Belum ada lapangan';
+  static const judulTidakAdaHasil = 'Tidak ada hasil';
+  static const judulKosongFavorit = 'Belum ada favorit';
   static const cariLapangan = 'Cari lapangan olahraga...';
   static const kosongLapangan = 'Belum ada lapangan di sekitar kamu.';
   static const kosongHasilFilter =
@@ -82,12 +99,13 @@ class AppStrings {
   static const ulasanPengguna = 'Ulasan Pengguna';
   static const belumAdaUlasan = 'Belum ada ulasan';
   static const badgeMitra = '✅ Mitra Terdaftar';
-  static const badgeTerverifikasi = '🏅 Terverifikasi';
+  static const lihatDiPeta = 'Lihat di peta';
 
   // ---------- Beri Rating (L-11) ----------
   static const ulasanOpsional = 'Ulasan (opsional)';
   static const errPilihBintang = 'Pilih rating bintang dulu.';
   static const ratingTerkirim = 'Terima kasih atas ratingmu!';
+  static const errGagalKirimRating = 'Gagal mengirim rating.';
 
   // ---------- Cari Rekan (L-07) ----------
   static const cariRekan = 'Cari Rekan Bermain';
@@ -97,6 +115,15 @@ class AppStrings {
   static const tolak = 'Tolak';
   static const errSlotPenuh = 'Slot penuh';
   static const kosongAktivitas = 'Belum ada aktivitas untuk filter ini.';
+
+  // ---------- Buat Aktivitas (L-08) ----------
+  static const jumlahPemainDibutuhkan = 'Jumlah Pemain Dibutuhkan';
+  static const hintJumlahPemain = '2 – 30';
+  static const catatanOpsional = 'Catatan (opsional)';
+  static const errLapanganWajib = 'Lapangan wajib dipilih.';
+  static const errGagalBuatAktivitas = 'Gagal membuat aktivitas.';
+  static const errGagalMuatDaftarLapangan = 'Gagal memuat daftar lapangan.';
+  static const kosongDaftarLapangan = 'Belum ada lapangan terdaftar.';
 
   // ---------- Detail Aktivitas (L-09) ----------
   static const detailAktivitas = 'Detail Aktivitas';
@@ -111,6 +138,12 @@ class AppStrings {
   static const konfirmasiBatalKeikutsertaan =
       'Batalkan keikutsertaanmu di aktivitas ini?';
   static const keikutsertaanDibatalkan = 'Kamu keluar dari aktivitas ini.';
+  static const errGagalKirimPermintaan = 'Gagal mengirim permintaan.';
+  static const errGabungAktivitasSendiri =
+      'Tidak bisa gabung ke aktivitas buatan sendiri.';
+  static const errSudahPeserta = 'Kamu sudah jadi peserta aktivitas ini.';
+  static String diterimaBergabung(String nama) => '$nama diterima bergabung.';
+  static String permintaanDitolak(String nama) => 'Permintaan $nama ditolak.';
 
   // ---------- Batalkan Aktivitas (T-47) ----------
   static const batalkanAktivitas = 'Batalkan Aktivitas';
@@ -137,6 +170,14 @@ class AppStrings {
   static const errPilihTanggalDulu = 'Pilih tanggal dulu.';
   static const errPilihJamMulai = 'Pilih jam mulai.';
   static const kosongJamTersedia = 'Tidak ada jam tersedia di tanggal ini.';
+  static const errGagalAjukanReservasi = 'Gagal mengajukan reservasi.';
+
+  // ---------- Label status booking (L-13, L-14) ----------
+  static const statusMenunggu = 'Menunggu';
+  static const statusDikonfirmasi = 'Dikonfirmasi';
+  static const statusDitolak = 'Ditolak';
+  static const statusSelesai = 'Selesai';
+  static const statusDibatalkan = 'Dibatalkan';
 
   // ---------- Batalkan Booking (T-46) ----------
   static const batalkanBooking = 'Batalkan';
@@ -162,6 +203,9 @@ class AppStrings {
   static const errMasukDuluFavorit = 'Masuk dulu untuk menyimpan favorit.';
   static const namaLokasi = 'Nama Lokasi';
   static const contohNamaLokasi = 'Rumah, Kantor, dll';
+  static const errGagalSimpanLokasi = 'Gagal menyimpan lokasi default.';
+  static const errGagalSimpanOlahraga = 'Gagal menyimpan olahraga favorit.';
+  static const errGagalSimpanProfil = 'Gagal menyimpan profil.';
 
   // ---------- Dashboard Mitra (L-14) ----------
   static const lapanganSaya = 'Lapangan Saya';
@@ -188,10 +232,37 @@ class AppStrings {
   static const errPilihOlahraga = 'Pilih minimal satu jenis olahraga.';
   static const errGagalAmbilLokasi =
       'Gagal mengambil lokasi. Isi koordinat manual.';
+  static const hintHarga = 'Rupiah per jam';
+  static const errJamWajib = 'Jam buka dan tutup wajib diisi.';
+  static const errJamSama = 'Jam tutup tidak boleh sama dengan jam buka.';
+  static const errGagalSimpanLapangan = 'Gagal menyimpan lapangan.';
 
   // ---------- Kesalahan umum ----------
   static const errGagalMuat = 'Gagal memuat';
   static const errTanpaKoneksi = 'Tidak ada koneksi internet. Coba lagi.';
+  static const errTerjadiKesalahan = 'Terjadi kesalahan.';
+
+  // ---------- Validasi form (core/utils/validators.dart) ----------
+  static String errWajibDiisi(String namaField) => '$namaField wajib diisi.';
+  static String errHarusAngka(String namaField) =>
+      '$namaField harus berupa angka.';
+  static String errRentang(String namaField, num min, num max) =>
+      '$namaField harus antara $min dan $max.';
+  static const errSurelWajib = 'Surel wajib diisi.';
+  static const errFormatSurel = 'Format surel tidak valid.';
+  static const errKataSandiWajib = 'Kata sandi wajib diisi.';
+  static const errKataSandiPendek = 'Kata sandi minimal 6 karakter.';
+  static const errNomorTelepon = 'Nomor telepon tidak valid.';
+  static const errJumlahPemainWajib = 'Jumlah pemain wajib diisi.';
+  static const errJumlahPemainAngka = 'Jumlah pemain harus berupa angka.';
+  static const errJumlahPemainRentang = 'Jumlah pemain antara 2 dan 30.';
+  static const errWaktuWajib = 'Waktu wajib diisi.';
+  static const errWaktuLampau = 'Waktu harus di masa depan.';
+  static const errUlasanPanjang = 'Ulasan maksimal 500 karakter.';
+  static const errHargaWajib = 'Harga wajib diisi.';
+  static const errHargaAngka = 'Harga harus berupa angka.';
+  static const errHargaNol = 'Harga harus lebih dari 0.';
+  static const errUrlFoto = 'URL foto tidak valid.';
 
   // ---------- Profil (L-13) lanjutan ----------
   static const segeraHadir = 'Segera hadir.';
@@ -235,6 +306,7 @@ class AppStrings {
   static const adminSeedTombol = 'Isi Data Awal';
   static const adminSeedBerhasil = 'lapangan berhasil ditambahkan.';
   static const adminSeedPerluLogin = 'Masuk dulu untuk menjalankan seed data.';
+  static const adminSeedGagal = 'Gagal menjalankan seed.';
 
   static const isiTentang =
       'Sport Space v1.1\n\n'

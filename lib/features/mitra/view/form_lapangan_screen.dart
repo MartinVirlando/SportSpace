@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/utils/formatter.dart';
 import '../../../core/utils/validators.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/lapangan_repository.dart';
@@ -99,9 +100,6 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
     return TimeOfDay(hour: int.parse(bagian[0]), minute: int.parse(bagian[1]));
   }
 
-  String _formatJam(TimeOfDay jam) =>
-      '${jam.hour.toString().padLeft(2, '0')}:${jam.minute.toString().padLeft(2, '0')}';
-
   @override
   void dispose() {
     _namaCtrl.dispose();
@@ -162,9 +160,9 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
       // lapangan seed justru tutup tengah malam. Satu-satunya kombinasi
       // yang benar-benar tidak bermakna adalah jam buka == jam tutup.
       _errJam = (_jamBuka == null || _jamTutup == null)
-          ? 'Jam buka dan tutup wajib diisi.'
+          ? AppStrings.errJamWajib
           : (_jamBuka! == _jamTutup!)
-              ? 'Jam tutup tidak boleh sama dengan jam buka.'
+              ? AppStrings.errJamSama
               : null;
     });
 
@@ -186,8 +184,8 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             longitude: double.parse(_lonCtrl.text.trim()),
             jenisOlahraga: _jenisOlahraga.toList(),
             harga: int.parse(_hargaCtrl.text.trim()),
-            jamBuka: _formatJam(_jamBuka!),
-            jamTutup: _formatJam(_jamTutup!),
+            jamBuka: Formatter.jamDariPilihan(_jamBuka!),
+            jamTutup: Formatter.jamDariPilihan(_jamTutup!),
             fasilitas: _fasilitas.toList(),
             fotoURL: fotoURL,
             nomorTelepon: _kontakCtrl.text.trim(),
@@ -199,8 +197,8 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             longitude: double.parse(_lonCtrl.text.trim()),
             jenisOlahraga: _jenisOlahraga.toList(),
             harga: int.parse(_hargaCtrl.text.trim()),
-            jamBuka: _formatJam(_jamBuka!),
-            jamTutup: _formatJam(_jamTutup!),
+            jamBuka: Formatter.jamDariPilihan(_jamBuka!),
+            jamTutup: Formatter.jamDariPilihan(_jamTutup!),
             fasilitas: _fasilitas.toList(),
             fotoURL: fotoURL,
             nomorTelepon: _kontakCtrl.text.trim(),
@@ -216,7 +214,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.pesanError ?? 'Gagal menyimpan lapangan.')),
+        SnackBar(content: Text(vm.pesanError ?? AppStrings.errGagalSimpanLapangan)),
       );
     }
   }
@@ -378,7 +376,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: AppStrings.harga,
-                    hintText: 'Rupiah per jam',
+                    hintText: AppStrings.hintHarga,
                   ),
                   validator: Validators.harga,
                 ),
@@ -389,8 +387,8 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                       child: _TombolPilihJam(
                         label: AppStrings.jamBuka,
                         nilai: _jamBuka == null
-                            ? 'Pilih jam'
-                            : _jamBuka!.format(context),
+                            ? AppStrings.pilihJam
+                            : Formatter.jamDariPilihan(_jamBuka!),
                         onTap: _pilihJamBuka,
                       ),
                     ),
@@ -399,8 +397,8 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                       child: _TombolPilihJam(
                         label: AppStrings.jamTutup,
                         nilai: _jamTutup == null
-                            ? 'Pilih jam'
-                            : _jamTutup!.format(context),
+                            ? AppStrings.pilihJam
+                            : Formatter.jamDariPilihan(_jamTutup!),
                         onTap: _pilihJamTutup,
                       ),
                     ),

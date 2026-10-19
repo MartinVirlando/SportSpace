@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/constants/app_strings.dart';
 import '../core/services/location_service.dart';
 import '../features/aktivitas/view/cari_rekan_screen.dart';
 import '../features/aktivitas/viewmodel/aktivitas_viewmodel.dart';
@@ -130,15 +131,15 @@ class ShellNavigasiState extends State<ShellNavigasi> {
         selectedIndex: _indeks,
         onDestinationSelected: (i) => setState(() => _indeks = i),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Map'),
+          NavigationDestination(icon: Icon(Icons.home_outlined), label: AppStrings.tabHome),
+          NavigationDestination(icon: Icon(Icons.map_outlined), label: AppStrings.tabMap),
           NavigationDestination(
             icon: Icon(Icons.people_outline),
-            label: 'Teman',
+            label: AppStrings.tabTeman,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
-            label: 'Profil',
+            label: AppStrings.tabProfil,
           ),
         ],
       ),

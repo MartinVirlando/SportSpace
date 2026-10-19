@@ -65,7 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.pesanError ?? 'Gagal mendaftar.')),
+        SnackBar(content: Text(vm.pesanError ?? AppStrings.errGagalDaftar)),
       );
     }
   }

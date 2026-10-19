@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
@@ -77,6 +78,19 @@ class SportSpaceApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
           scaffoldBackgroundColor: AppColors.background,
         ),
+        // Bahasa antarmuka bawaan Flutter (dialog pilih tanggal/jam, tombol
+        // "Batal"/"OK", nama hari & bulan di kalender) dikunci ke bahasa
+        // Indonesia. Tanpa ini, widget bawaan seperti showDatePicker()
+        // memakai bahasa Inggris ("Select date", "Cancel") — melanggar
+        // PRD §12 poin 4. Ini BUKAN fitur multi-bahasa: hanya satu bahasa
+        // yang didukung.
+        locale: const Locale('id', 'ID'),
+        supportedLocales: const [Locale('id', 'ID')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: const SplashScreen(),
       ),
     );
