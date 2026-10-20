@@ -7,8 +7,9 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../../models/forum_post_model.dart';
 import '../../../repositories/forum_repository.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/buat_post_viewmodel.dart';
 
 /// Batas ukuran gambar MENTAH (sebelum Base64) — sama persis dengan pola
@@ -18,12 +19,19 @@ const _batasUkuranGambarBytes = 500 * 1024;
 
 /// Layar "Buat Post" forum — input teks + gambar opsional.
 ///
+/// Juga dipakai untuk mode EDIT: kalau [postLama] diisi, form terisi data
+/// lama dan tombol Simpan memanggil `simpanEdit`. Kalau `null`, perilaku
+/// sama persis seperti sebelumnya (buat post baru).
+///
+/// Mode edit menutup layar dengan mengembalikan [ForumPostModel] terbaru
+/// (lewat `Navigator.pop`) supaya layar Detail bisa langsung menampilkan
+/// hasil editnya.
+///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
-/// Sama seperti `ubah_profil_sheet.dart`: `ImagePicker` dan konversi
-/// Base64 dikerjakan di View (butuh `BuildContext` untuk SnackBar),
-/// `BuatPostViewModel` hanya menerima String Base64 yang sudah jadi.
 class BuatPostScreen extends StatelessWidget {
-  const BuatPostScreen({super.key});
+  final ForumPostModel? postLama;
+
+  const BuatPostScreen({super.key, this.postLama});
 
   @override
   Widget build(BuildContext context) {
@@ -31,21 +39,26 @@ class BuatPostScreen extends StatelessWidget {
       create: (context) => BuatPostViewModel(
         repository: context.read<ForumRepository>(),
       ),
-      child: const _BuatPostBody(),
+      child: _BuatPostBody(postLama: postLama),
     );
   }
 }
 
 class _BuatPostBody extends StatefulWidget {
-  const _BuatPostBody();
+  final ForumPostModel? postLama;
+
+  const _BuatPostBody({required this.postLama});
 
   @override
   State<_BuatPostBody> createState() => _BuatPostBodyState();
 }
 
 class _BuatPostBodyState extends State<_BuatPostBody> {
-  final _controllerTeks = TextEditingController();
-  String? _gambarBase64;
+  late final _controllerTeks =
+      TextEditingController(text: widget.postLama?.teks ?? '');
+  late String? _gambarBase64 = widget.postLama?.gambarBase64;
+
+  bool get _modeEdit => widget.postLama != null;
 
   Uint8List? get _gambarBytes {
     final b64 = _gambarBase64;
@@ -63,8 +76,6 @@ class _BuatPostBodyState extends State<_BuatPostBody> {
     super.dispose();
   }
 
-  /// Sama persis pola `_pilihFoto` di `ubah_profil_sheet.dart`: ambil dari
-  /// galeri, kompres di titik pengambilan, cek batas ukuran, encode Base64.
   Future<void> _pilihGambar() async {
     try {
       final berkas = await ImagePicker().pickImage(
@@ -104,25 +115,55 @@ class _BuatPostBodyState extends State<_BuatPostBody> {
       return;
     }
 
-    final user = context.read<AuthViewModel>().user;
-    if (user == null) return; // pengaman, seharusnya tidak pernah terjadi
+    final vm = context.read<BuatPostViewModel>();
+    final postLama = widget.postLama;
 
-    final error = await context.read<BuatPostViewModel>().kirimPost(
-          userId: user.userId,
-          namaUser: user.nama,
-          teks: teks,
-          gambarBase64: _gambarBase64,
-        );
-
-    if (!mounted) return;
-
-    if (error == null) {
-      Navigator.of(context).pop();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
+    String? error;
+    if (postLama != null) {
+      // ---- Mode edit ----
+      error = await vm.simpanEdit(
+        postId: postLama.id,
+        teks: teks,
+        gambarBase64: _gambarBase64,
       );
+      if (!mounted) return;
+      if (error == null) {
+        // Kembalikan versi terbaru ke layar Detail.
+        Navigator.of(context).pop(
+          ForumPostModel(
+            id: postLama.id,
+            userId: postLama.userId,
+            namaUser: postLama.namaUser,
+            teks: teks,
+            gambarBase64: _gambarBase64,
+            jumlahKomentar: postLama.jumlahKomentar,
+            createdAt: postLama.createdAt,
+            dieditPada: DateTime.now(),
+          ),
+        );
+        return;
+      }
+    } else {
+      // ---- Mode buat ----
+      final user = context.read<AuthViewModel>().user;
+      if (user == null) return; // pengaman, seharusnya tidak pernah terjadi
+
+      error = await vm.kirimPost(
+        userId: user.userId,
+        namaUser: user.nama,
+        teks: teks,
+        gambarBase64: _gambarBase64,
+      );
+      if (!mounted) return;
+      if (error == null) {
+        Navigator.of(context).pop();
+        return;
+      }
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error)),
+    );
   }
 
   @override
@@ -135,7 +176,10 @@ class _BuatPostBodyState extends State<_BuatPostBody> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: const Text(AppStrings.buatPost, style: AppTextStyles.judulSeksi),
+        title: Text(
+          _modeEdit ? AppStrings.editPost : AppStrings.buatPost,
+          style: AppTextStyles.judulSeksi,
+        ),
         actions: [
           TextButton(
             onPressed: sedangMengirim ? null : _kirim,
@@ -145,7 +189,7 @@ class _BuatPostBodyState extends State<_BuatPostBody> {
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text(AppStrings.kirim),
+                : Text(_modeEdit ? AppStrings.simpan : AppStrings.kirim),
           ),
         ],
       ),

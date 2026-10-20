@@ -1,5 +1,3 @@
-
-
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -14,12 +12,13 @@ import '../../../models/forum_post_model.dart';
 import '../../../repositories/forum_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/detail_post_viewmodel.dart';
+import 'buat_post_screen.dart';
 
 /// Layar Detail Post forum — isi post lengkap + komentar.
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
-/// Objek [post] dioper dari daftar forum, jadi tidak perlu dibaca ulang
-/// dari Firestore. Hanya komentar yang di-stream.
+/// Objek [post] dioper dari daftar forum. Setelah diedit, versi terbaru
+/// dikembalikan oleh `BuatPostScreen` dan disimpan di state layar ini.
 class DetailPostScreen extends StatelessWidget {
   final ForumPostModel post;
 
@@ -48,6 +47,10 @@ class _DetailPostBody extends StatefulWidget {
 
 class _DetailPostBodyState extends State<_DetailPostBody> {
   final _controllerKomentar = TextEditingController();
+
+  /// Salinan post yang ditampilkan. Awalnya sama dengan `widget.post`,
+  /// diganti setelah pemilik mengedit.
+  late ForumPostModel _post = widget.post;
 
   @override
   void dispose() {
@@ -80,9 +83,60 @@ class _DetailPostBodyState extends State<_DetailPostBody> {
     }
   }
 
+  Future<void> _edit() async {
+    final hasil = await Navigator.of(context).push<ForumPostModel>(
+      MaterialPageRoute(builder: (_) => BuatPostScreen(postLama: _post)),
+    );
+    if (hasil != null && mounted) {
+      setState(() => _post = hasil);
+    }
+  }
+
+  Future<void> _hapus() async {
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(AppStrings.hapusPost),
+        content: const Text(AppStrings.konfirmasiHapusPost),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(AppStrings.batal),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              AppStrings.hapusPost,
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (konfirmasi != true || !mounted) return;
+
+    // Disimpan sebelum `await`, karena setelah layar ditutup `context`
+    // layar ini tidak boleh dipakai lagi.
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    final error = await context.read<DetailPostViewModel>().hapusPost();
+
+    if (error == null) {
+      navigator.pop(); // kembali ke daftar forum
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppStrings.postDihapus)),
+      );
+    } else {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<DetailPostViewModel>();
+    final user = context.watch<AuthViewModel>().user;
+    final apakahPemilik = user != null && user.userId == _post.userId;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -93,6 +147,37 @@ class _DetailPostBodyState extends State<_DetailPostBody> {
           AppStrings.detailPost,
           style: AppTextStyles.judulSeksi,
         ),
+        actions: [
+          if (apakahPemilik)
+            vm.sedangMenghapus
+                ? const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : PopupMenuButton<String>(
+                    onSelected: (nilai) {
+                      if (nilai == 'edit') _edit();
+                      if (nilai == 'hapus') _hapus();
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text(AppStrings.editPost),
+                      ),
+                      PopupMenuItem(
+                        value: 'hapus',
+                        child: Text(
+                          AppStrings.hapusPost,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -101,7 +186,7 @@ class _DetailPostBodyState extends State<_DetailPostBody> {
               child: ListView(
                 padding: const EdgeInsets.all(AppSizes.marginLayar),
                 children: [
-                  _IsiPost(post: widget.post),
+                  _IsiPost(post: _post),
                   const Divider(height: 32),
                   _SeksiKomentar(stream: vm.streamKomentar),
                 ],
@@ -145,7 +230,9 @@ class _IsiPost extends StatelessWidget {
         Text(post.namaUser, style: AppTextStyles.namaLapangan),
         const SizedBox(height: 2),
         Text(
-          Formatter.tanggalDanJam(post.createdAt),
+          post.dieditPada == null
+              ? Formatter.tanggalDanJam(post.createdAt)
+              : '${Formatter.tanggalDanJam(post.createdAt)} ${AppStrings.tandaDiedit}',
           style: AppTextStyles.metaLapangan,
         ),
         if (post.teks.isNotEmpty) ...[

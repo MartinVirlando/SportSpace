@@ -205,6 +205,12 @@ class AppStrings {
   static const String kosongKomentar = 'Belum ada komentar. Jadilah yang pertama!';
   static const String hintKomentar = 'Tulis komentar...';
 
+  static const String editPost = 'Edit Post';
+  static const String hapusPost = 'Hapus Post';
+  static const String konfirmasiHapusPost =
+      'Post dan semua komentarnya akan dihapus permanen. Lanjutkan?';
+  static const String postDihapus = 'Post dihapus.';
+  static const String tandaDiedit = '(diedit)';
   // ---------- Kesalahan umum ----------
   static const errGagalMuat = 'Gagal memuat';
   static const errTanpaKoneksi = 'Tidak ada koneksi internet. Coba lagi.';

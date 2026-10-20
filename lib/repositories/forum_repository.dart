@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/forum_post_model.dart';
 import '../models/forum_komentar_model.dart';
 
+/// Satu-satunya lapisan yang boleh menyentuh Firestore untuk data forum.
+///
+/// ATURAN LAPISAN (CLAUDE.md): View dan ViewModel TIDAK BOLEH
+/// `import cloud_firestore`. Semua akses data lewat kelas ini.
 class ForumRepository {
   final FirebaseFirestore _db;
 
@@ -10,7 +14,9 @@ class ForumRepository {
       : _db = firestore ?? FirebaseFirestore.instance;
 
   /// Stream semua post forum, terbaru dulu.
-
+  ///
+  /// Limit 20 mengikuti pola di `RatingRepository.streamUlasan`
+  /// (hindari menarik seluruh koleksi sekaligus).
   Stream<List<ForumPostModel>> streamPosts() {
     return _db
         .collection('forum_posts')
@@ -30,7 +36,7 @@ class ForumRepository {
     });
   }
 
-  ///  post baru di forum.
+  /// Buat post baru di forum.
   Future<void> buatPost({
     required String userId,
     required String namaUser,
@@ -58,6 +64,69 @@ class ForumRepository {
     }
   }
 
+  /// Edit teks dan gambar sebuah post, lalu catat waktu editnya.
+  ///
+  /// Hanya tiga field yang disentuh: `teks`, `gambarBase64`, `dieditPada`.
+  /// `userId`, `createdAt`, dan `jumlahKomentar` sengaja tidak diubah.
+  /// Menghapus gambar = kirim `gambarBase64: null`.
+  Future<void> editPost({
+    required String postId,
+    required String teks,
+    String? gambarBase64,
+  }) async {
+    if (teks.trim().isEmpty && gambarBase64 == null) {
+      throw Exception('Post tidak boleh kosong.');
+    }
+
+    try {
+      await _db.collection('forum_posts').doc(postId).update({
+        'teks': teks,
+        'gambarBase64': gambarBase64,
+        'dieditPada': Timestamp.fromDate(DateTime.now()),
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin mengedit post ini.');
+      }
+      if (e.code == 'not-found') {
+        throw Exception('Post sudah tidak ada.');
+      }
+      throw Exception('Gagal menyimpan perubahan. Coba lagi.');
+    }
+  }
+
+  /// Hapus sebuah post BESERTA semua komentarnya.
+  ///
+  /// Firestore tidak menghapus subkoleksi otomatis saat dokumen induk
+  /// dihapus, jadi komentar dihapus dulu, baru postnya. Urutan ini
+  /// penting: post dihapus TERAKHIR supaya aturan keamanan masih bisa
+  /// memeriksa siapa pemilik post saat komentar dihapus.
+  Future<void> hapusPost(String postId) async {
+    final postRef = _db.collection('forum_posts').doc(postId);
+
+    try {
+      final komentarSnap = await postRef.collection('komentar').get();
+      final daftarDoc = komentarSnap.docs;
+
+      // WriteBatch maksimal 500 operasi, jadi dipecah per 400.
+      const batasBatch = 400;
+      for (var i = 0; i < daftarDoc.length; i += batasBatch) {
+        final batch = _db.batch();
+        for (final doc in daftarDoc.skip(i).take(batasBatch)) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+      }
+
+      await postRef.delete();
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin menghapus post ini.');
+      }
+      throw Exception('Gagal menghapus post. Coba lagi.');
+    }
+  }
+
   /// Stream semua komentar dari satu post, terlama dulu (urutan chat).
   Stream<List<ForumKomentarModel>> streamKomentar(String postId) {
     return _db
@@ -79,6 +148,9 @@ class ForumRepository {
     });
   }
 
+  /// Tambah komentar ke satu post, dan naikkan `jumlahKomentar` di post
+  /// itu bersamaan lewat WriteBatch (dua tulisan, satu kali kirim,
+  /// supaya jumlahnya tidak pernah tertinggal di belakang).
   Future<void> tambahKomentar({
     required String postId,
     required String userId,

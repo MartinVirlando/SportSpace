@@ -102,21 +102,42 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.jumlahKomentar == 0;
 
-      // Update HANYA boleh mengubah jumlahKomentar (dipakai batch di
-      // ForumRepository.tambahKomentar), dan hanya naik 1 per tulisan.
-      allow update: if login()
-        && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['jumlahKomentar'])
-        && request.resource.data.jumlahKomentar
-             == resource.data.jumlahKomentar + 1;
+      allow update: if login() && (
+        // Jalur 1 — siapa pun yang login: hanya menaikkan jumlahKomentar
+        // tepat 1 (dipakai batch di ForumRepository.tambahKomentar).
+        (
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['jumlahKomentar'])
+          && request.resource.data.jumlahKomentar
+               == resource.data.jumlahKomentar + 1
+        )
+        // Jalur 2 — hanya PEMILIK post: edit teks, gambar, dan penanda
+        // waktu edit. Field lain (userId, createdAt, jumlahKomentar)
+        // tidak boleh berubah.
+        || (
+          resource.data.userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['teks', 'gambarBase64', 'dieditPada'])
+        )
+      );
 
-      allow delete: if false;
+      // Hanya pemilik yang boleh menghapus post.
+      allow delete: if login() && resource.data.userId == request.auth.uid;
 
       match /komentar/{komentarId} {
         allow read: if login();
         allow create: if login()
           && request.resource.data.userId == request.auth.uid;
-        allow update, delete: if false;
+        allow update: if false;
+
+        // Komentar boleh dihapus oleh penulis komentarnya, ATAU oleh
+        // pemilik post (dipakai saat ForumRepository.hapusPost membersihkan
+        // seluruh komentar sebelum menghapus postnya).
+        allow delete: if login() && (
+          resource.data.userId == request.auth.uid
+          || get(/databases/$(database)/documents/forum_posts/$(postId))
+               .data.userId == request.auth.uid
+        );
       }
     }
   }
