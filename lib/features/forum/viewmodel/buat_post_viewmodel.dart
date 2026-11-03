@@ -33,6 +33,7 @@ class BuatPostViewModel extends ChangeNotifier {
 
     try {
       await _repository.buatPost(
+        
         userId: userId,
         namaUser: namaUser,
         teks: teks,
