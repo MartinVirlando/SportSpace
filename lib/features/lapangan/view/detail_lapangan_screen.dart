@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
@@ -301,8 +302,7 @@ class _Isi extends StatelessWidget {
   /// Membuka modal Beri Rating (L-11, T-21, AB-05/AB-09) dan memuat
   /// ulang detail lapangan sesudahnya supaya `ratingRata2` yang baru
   /// langsung tampil.
-  Future<void> _bukaFormRating(
-      BuildContext context, LapanganModel lapangan) async {
+  Future<void> _bukaFormRating(BuildContext context, LapanganModel lapangan) async {
     final user = context.read<AuthViewModel>().user;
     if (user == null) return; // AB-09: hanya pengguna yang sudah login
 
@@ -314,8 +314,8 @@ class _Isi extends StatelessWidget {
     );
 
     if (berhasil == true && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppStrings.ratingTerkirim)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text(AppStrings.ratingTerkirim)));
       context.read<DetailLapanganViewModel>().muatDetail(lapangan.lapanganId);
     }
   }
@@ -627,7 +627,6 @@ class _TombolFavorit extends StatelessWidget {
               color: AppColors.surface,
               shape: BoxShape.circle,
             ),
-            
             child: Icon(
               difavoritkan ? Icons.favorite : Icons.favorite_border,
               size: 18,
@@ -644,6 +643,21 @@ class _BarisAlamat extends StatelessWidget {
   final LapanganModel lapangan;
 
   const _BarisAlamat({required this.lapangan});
+
+  /// Buka [LapanganModel.tautanMaps] di aplikasi/browser Google Maps
+  /// eksternal (T-51) — beda dari "Lihat di peta" yang pindah ke tab Map
+  /// bawaan aplikasi (flutter_map/OSM, internal, tidak pernah keluar app).
+  Future<void> _bukaGoogleMaps(BuildContext context) async {
+    final uri = Uri.tryParse(lapangan.tautanMaps);
+    final berhasil = uri != null &&
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    if (!berhasil && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.gagalBukaTautan)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
