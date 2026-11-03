@@ -14,11 +14,13 @@ import '../repositories/lapangan_repository.dart';
 ///
 /// **Koordinat sudah terverifikasi untuk seluruh 30 entri** (T-00f selesai,
 /// 21 Agustus 2026 — lihat tanda `// KOORDINAT TERVERIFIKASI` di
-/// `seed_lapangan.dart`). Yang MASIH perlu diselesaikan: T-00e, survei
-/// harga/jam/fasilitas asli untuk 8 lapangan `sumberData: 'observasi'` —
-/// datanya sekarang masih perkiraan pasaran. Kalau datanya diperbarui,
-/// hapus seluruh dokumen `lapangan` di Firebase Console lalu jalankan ulang
-/// seed ini.
+/// `seed_lapangan.dart`). Survei harga/jam/fasilitas (T-00e) dibatalkan
+/// 8 Oktober 2026 — datanya ditulis sebagai estimasi di skripsi.
+///
+/// **Jangan jalankan ulang di produksi tanpa sadar akibatnya:** seed
+/// membuat ID dokumen baru (rating/booking/favorit/aktivitas lama putus)
+/// dan `fotoURL` di `seed_lapangan.dart` masih kosong (30 foto yang diisi
+/// lewat Firebase Console ikut hilang).
 ///
 /// Tombol masuknya sengaja hanya lewat menu Profil (lihat
 /// `profil_screen.dart`), bukan navigasi utama — sesuai PRD: "halaman
@@ -58,7 +60,7 @@ class _AdminSeedBody extends StatelessWidget {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.pesanError ?? 'Gagal menjalankan seed.')),
+        SnackBar(content: Text(vm.pesanError ?? AppStrings.adminSeedGagal)),
       );
     }
   }

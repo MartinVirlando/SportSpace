@@ -89,6 +89,8 @@ Cek di Firebase Console → Firestore → Indexes. **Tunggu semua berstatus *Ena
 
 ## Langkah 5 · Perbaiki koordinat (T-00f) — **jangan dilewati**
 
+> **Sudah selesai (21 Agustus 2026, diulang 21 September 2026 lewat T-51):** ke-30 lapangan sudah terverifikasi. Langkah ini disimpan sebagai riwayat cara kerjanya.
+
 Buka `lib/core/data/seed_lapangan.dart`. Hanya 5 dari 30 lapangan yang koordinatnya terverifikasi (bertanda `// KOORDINAT TERVERIFIKASI`). Sisanya perkiraan tingkat kelurahan.
 
 Untuk tiap lapangan tanpa tanda itu: Google Maps → cari namanya → klik kanan di pin → salin koordinat → tempel.

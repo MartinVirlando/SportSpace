@@ -19,15 +19,18 @@
 //    Futsal — jenisOlahraga dan nama keduanya disesuaikan.
 //
 // 2. HARGA & FASILITAS. Harga di bawah adalah perkiraan pasaran, bukan harga
-//    resmi. Yang bertanda `sumberData: 'observasi'` adalah 8 lapangan yang
-//    paling dekat kampus — itu yang saya sarankan kamu datangi langsung saat
-//    T-00e, lalu perbarui harga/jam/fasilitasnya di sini dengan data asli.
-//    Sisanya biarkan `sumberData: 'places_api'`.
+//    resmi — di skripsi ditulis sebagai ESTIMASI. Survei lapangan (T-00e)
+//    dibatalkan 8 Oktober 2026. Ke-25 lapangan non-mitra berlabel
+//    `sumberData: 'direktori_daring'` — dikumpulkan dari direktori pemesanan
+//    daring publik, lalu diverifikasi manual lewat Google Maps. (Sampai 19
+//    Oktober 2026 labelnya masih `'places_api'` dan `'observasi'`; keduanya
+//    tidak sesuai skripsi, jadi digabung — lihat PRD §10.)
 //
-// 3. fotoURL sengaja dikosongkan. Jangan pakai URL hotlink dari Google/Instagram
-//    — banyak yang di-blokir dan gambarnya jadi broken pas sidang. Foto sendiri
-//    saat survei lapangan lebih aman, dan sekaligus memperkuat klaim sumber data
-//    "observasi" di Bab 3.
+// 3. fotoURL di file ini masih KOSONG, padahal di Firestore produksi ke-30
+//    lapangan sudah punya foto (Google Drive, diisi langsung lewat Firebase
+//    Console 23 September 2026 — lihat docs/SEED-DATA.md). Artinya kalau seed
+//    dijalankan ulang, SEMUA foto lapangan hilang. Jangan pakai URL hotlink
+//    dari Google/Instagram — banyak yang diblokir dan gambarnya jadi broken.
 //
 // 4. nomorTelepon & tautanMaps (T-51, 21 September 2026) — diisi dari hasil
 //    cek manual satu-satu di Google Maps. `tautanMaps` adalah link
@@ -56,7 +59,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/3XuJ3QStpAhxBSWGA',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -85,7 +88,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/QwGZUNQCvJ6bB7Uv6',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -105,7 +108,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/pZphD41MuFVFmaDu7',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -126,7 +129,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/pewWExCP8wZwGeMu8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -147,7 +150,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/bCpLgk5PUjnuV1Ge9',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -170,7 +173,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/eVGv3R4oCnSiGscE8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -191,7 +194,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/8216vREe5cDfiG3Z7',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -213,7 +216,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/hTxtYmg8oMMu41jn7',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -288,7 +291,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/QZikmEknS7oxM6Nc6',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -308,7 +311,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/qVfgBTqsqSiEPQBc8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -335,7 +338,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/jTYkUXqKZxWZJYkVA',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -382,7 +385,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/Yr6mmR5w5c4FgLT89',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -402,7 +405,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/4fAehr41zFALkq3L8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -422,7 +425,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/kSoVzLKToaDrWqf16',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -443,7 +446,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/TWJ8uaYkwJw5f6wJ8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -464,7 +467,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/hPyFVHzWaKDcbwM77',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -484,7 +487,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/xNPfkvRvdTqq6fp18',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -505,7 +508,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/mC7MQuWvn8GXumM76',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -526,7 +529,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/Gw1CnvPStuvCtN6N7',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -594,7 +597,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/Deq1i8tT2uYZ3eLq7',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -615,7 +618,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/ZrKFAAG5JQdSCV3u8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'observasi',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -635,7 +638,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/Z52jL7UsuUYdYw23A',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -656,7 +659,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/dty21umfsWkxyhwg8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -677,7 +680,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/PzTMsUiVGxufTndR8',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,
@@ -697,7 +700,7 @@ const List<Map<String, dynamic>> seedLapangan = [
     'tautanMaps': 'https://maps.app.goo.gl/pATPVAZJCrvKhrj79',
     'isMitra': false,
     'pemilikId': null,
-    'sumberData': 'places_api',
+    'sumberData': 'direktori_daring',
     'ratingTotal': 0,
     'jumlahRating': 0,
     'ratingRata2': 0.0,

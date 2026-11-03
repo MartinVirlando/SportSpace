@@ -130,9 +130,9 @@ class _Isi extends StatelessWidget {
       case KondisiHome.gagal:
         return _Pesan(
           ikon: Icons.error_outline,
-          judul: 'Gagal memuat',
-          keterangan: vm.pesanError ?? 'Terjadi kesalahan.',
-          labelTombol: 'Coba Lagi',
+          judul: AppStrings.errGagalMuat,
+          keterangan: vm.pesanError ?? AppStrings.errTerjadiKesalahan,
+          labelTombol: AppStrings.cobaLagi,
           onTekan: () => _muatLapanganDenganLokasiDefault(context),
         );
 
@@ -141,10 +141,9 @@ class _Isi extends StatelessWidget {
         // jalan keluar berupa tombol coba lagi.
         return _Pesan(
           ikon: Icons.location_off_outlined,
-          judul: 'Lokasi belum aktif',
-          keterangan: 'Aktifkan izin lokasi supaya kami bisa menghitung jarak '
-              'lapangan dari posisimu.',
-          labelTombol: 'Buka Pengaturan',
+          judul: AppStrings.lokasiBelumAktif,
+          keterangan: AppStrings.lokasiKeterangan,
+          labelTombol: AppStrings.bukaPengaturan,
           onTekan: () async {
             await context.read<HomeViewModel>().bukaPengaturanLokasi();
             if (context.mounted) {
@@ -156,8 +155,8 @@ class _Isi extends StatelessWidget {
       case KondisiHome.kosong:
         return const _Pesan(
           ikon: Icons.search_off,
-          judul: 'Belum ada lapangan',
-          keterangan: 'Belum ada lapangan di sekitar kamu.',
+          judul: AppStrings.judulKosongLapangan,
+          keterangan: AppStrings.kosongLapangan,
         );
 
       case KondisiHome.berhasil:
@@ -169,8 +168,8 @@ class _Isi extends StatelessWidget {
         if (hasilFilter.isEmpty) {
           return const _Pesan(
             ikon: Icons.filter_alt_off_outlined,
-            judul: 'Tidak ada hasil',
-            keterangan: 'Coba ubah kata kunci atau pilih olahraga lain.',
+            judul: AppStrings.judulTidakAdaHasil,
+            keterangan: AppStrings.kosongHasilFilter,
           );
         }
 
@@ -195,7 +194,7 @@ class _Isi extends StatelessWidget {
               if (daftar.isEmpty) {
                 return const _Pesan(
                   ikon: Icons.favorite_border,
-                  judul: 'Belum ada favorit',
+                  judul: AppStrings.judulKosongFavorit,
                   keterangan: AppStrings.kosongLapanganFavorit,
                 );
               }
@@ -273,10 +272,10 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Halo, $nama 👋', style: AppTextStyles.sambutan),
+                Text('${AppStrings.sapaan}, $nama 👋', style: AppTextStyles.sambutan),
                 const SizedBox(height: 2),
                 const Text(
-                  '📍 Tangerang Selatan',
+                  '📍 ${AppStrings.wilayahPenelitian}',
                   style: AppTextStyles.lokasi,
                 ),
               ],
@@ -379,7 +378,7 @@ class _KolomPencarian extends StatelessWidget {
                 onChanged: onBerubah,
                 style: const TextStyle(fontSize: 13),
                 decoration: const InputDecoration(
-                  hintText: 'Cari lapangan olahraga...',
+                  hintText: AppStrings.cariLapangan,
                   hintStyle: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
@@ -433,7 +432,7 @@ class _SpandukLokasiDefault extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: const Text(
-        'Memakai lokasi default. Aktifkan GPS untuk hasil lebih akurat.',
+        AppStrings.spandukLokasiDefault,
         style: AppTextStyles.metaLapangan,
       ),
     );

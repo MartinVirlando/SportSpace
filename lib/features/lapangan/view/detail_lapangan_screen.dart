@@ -23,9 +23,8 @@ import '../viewmodel/detail_lapangan_viewmodel.dart';
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 ///
-/// Badge status "Mitra Terdaftar"/"Terverifikasi" (T-36, AB-11) diturunkan
-/// langsung dari `isMitra`/`sumberData` yang sudah ada di `LapanganModel`
-/// — tanpa field baru.
+/// Badge status "Mitra Terdaftar" (T-36, AB-11) diturunkan langsung dari
+/// `isMitra` yang sudah ada di `LapanganModel` — tanpa field baru.
 ///
 /// Daftar ulasan (T-22) sudah ada — lewat `StreamBuilder` yang membaca
 /// `RatingRepository.streamUlasan()`, mengikuti pola CLAUDE.md aturan 6
@@ -82,7 +81,7 @@ class _DetailLapanganBody extends StatelessWidget {
       body: switch (vm.kondisi) {
         KondisiDetail.memuat => const _Pemuatan(),
         KondisiDetail.gagal => _Kesalahan(
-            pesan: vm.pesanError ?? 'Terjadi kesalahan.',
+            pesan: vm.pesanError ?? AppStrings.errTerjadiKesalahan,
             onCobaLagi: () =>
                 context.read<DetailLapanganViewModel>().muatUlang(),
           ),
@@ -211,7 +210,7 @@ class _Isi extends StatelessWidget {
                 _BarisInfo(
                   ikon: '💰',
                   label: AppStrings.harga,
-                  nilai: '${Formatter.rupiah(lapangan.harga)} / jam',
+                  nilai: '${Formatter.rupiah(lapangan.harga)} / ${AppStrings.satuanJam}',
                 ),
                 const SizedBox(height: 16),
                 _BarisInfo(
@@ -296,7 +295,7 @@ class _Isi extends StatelessWidget {
 
   String _barisRating(LapanganModel l) {
     if (l.jumlahRating == 0) return AppStrings.belumAdaUlasan;
-    return '⭐ ${l.ratingRata2.toStringAsFixed(1)} (${l.jumlahRating} ulasan)';
+    return '⭐ ${l.ratingRata2.toStringAsFixed(1)} (${l.jumlahRating} ${AppStrings.satuanUlasan})';
   }
 
   /// Membuka modal Beri Rating (L-11, T-21, AB-05/AB-09) dan memuat
@@ -533,9 +532,12 @@ class _TombolBulat extends StatelessWidget {
 }
 
 /// Badge status lapangan (L-06, T-36, AB-11). Tidak ada field baru —
-/// "✅ Mitra Terdaftar" dari `isMitra`, "🏅 Terverifikasi" dari
-/// `sumberData == "observasi"`. Kalau tidak ada satu pun yang terpenuhi
-/// (`sumberData == "places_api"`), tidak menggambar apa pun.
+/// "✅ Mitra Terdaftar" dari `isMitra`. Lapangan non-mitra tidak
+/// menggambar apa pun.
+///
+/// Badge "🏅 Terverifikasi" (dulu dari `sumberData == "observasi"`) dihapus
+/// 7 Oktober 2026: survei lapangan tidak pernah dilakukan dan klaim
+/// observasi sudah dicabut dari skripsi (PRD §14 "Putaran revisi 2").
 class _BarisBadge extends StatelessWidget {
   final LapanganModel lapangan;
 
@@ -545,7 +547,6 @@ class _BarisBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final badge = <String>[
       if (lapangan.isMitra) AppStrings.badgeMitra,
-      if (lapangan.sumberData == 'observasi') AppStrings.badgeTerverifikasi,
     ];
 
     if (badge.isEmpty) return const SizedBox.shrink();
@@ -646,31 +647,61 @@ class _BarisAlamat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('📍', style: TextStyle(fontSize: 14)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('📍', style: TextStyle(fontSize: 14)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
+            ),
+            TextButton(
+              onPressed: () {
+                // Detail Lapangan selalu di-push DI ATAS ShellNavigasi (lihat
+                // komentar di atas build()), yang selalu jadi rute root
+                // tunggal (dibuat lewat pushReplacement/pushAndRemoveUntil) —
+                // jadi popUntil(isFirst) sudah pasti kembali ke ShellNavigasi,
+                // seberapa pun dalam layar ini dibuka (Home/Map/Favorit).
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                AppRoutes.kunciShell.currentState?.pindahKeMapDenganFokus(
+                  lapangan.latitude,
+                  lapangan.longitude,
+                );
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 0),
+              ),
+              child: const Text(
+                AppStrings.lihatDiPeta,
+                style: AppTextStyles.metaLapangan,
+              ),
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () {
-            // Detail Lapangan selalu di-push DI ATAS ShellNavigasi (lihat
-            // komentar di atas build()), yang selalu jadi rute root
-            // tunggal (dibuat lewat pushReplacement/pushAndRemoveUntil) —
-            // jadi popUntil(isFirst) sudah pasti kembali ke ShellNavigasi,
-            // seberapa pun dalam layar ini dibuka (Home/Map/Favorit).
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            AppRoutes.kunciShell.currentState
-                ?.pindahKeMapDenganFokus(lapangan.latitude, lapangan.longitude);
-          },
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 0),
+        // T-51: tombol eksternal — cuma tampil kalau tautanMaps terisi,
+        // pola sama seperti baris kontak (nomorTelepon) di bawah.
+        if (lapangan.tautanMaps.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => _bukaGoogleMaps(context),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 0),
+              ),
+              icon: const Icon(Icons.map_outlined, size: 14),
+              label: const Text(
+                AppStrings.bukaGoogleMaps,
+                style: AppTextStyles.metaLapangan,
+              ),
+            ),
           ),
-          child: const Text('Lihat di peta', style: AppTextStyles.metaLapangan),
-        ),
+        ],
       ],
     );
   }

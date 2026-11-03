@@ -132,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               builder: (_) => const RegisterScreen(),
                             ),
                           ),
-                  child: const Text('Belum punya akun? Daftar'),
+                  child: const Text(AppStrings.belumPunyaAkun),
                 ),
                 const SizedBox(height: 24),
               ],

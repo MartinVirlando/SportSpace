@@ -211,7 +211,7 @@ class _KartuLapanganMitra extends StatelessWidget {
               ),
             ),
             Text(
-              '${Formatter.rupiahRingkas(lapangan.harga)}/jam',
+              '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
               style: AppTextStyles.harga,
             ),
             const SizedBox(width: 4),
@@ -271,15 +271,15 @@ class _BarisBookingState extends State<_BarisBooking> {
         context.read<DashboardMitraViewModel>().statusTampilan(widget.booking);
     switch (status) {
       case 'DIKONFIRMASI':
-        return 'Dikonfirmasi';
+        return AppStrings.statusDikonfirmasi;
       case 'DITOLAK':
-        return 'Ditolak';
+        return AppStrings.statusDitolak;
       case 'SELESAI':
-        return 'Selesai';
+        return AppStrings.statusSelesai;
       case 'DIBATALKAN':
-        return 'Dibatalkan';
+        return AppStrings.statusDibatalkan;
       default:
-        return 'Menunggu';
+        return AppStrings.statusMenunggu;
     }
   }
 

@@ -112,6 +112,19 @@ Dipicu cek manual satu-per-satu 30 data seed lapangan terhadap Google Maps (buka
 
 Diverifikasi langsung di emulator (`sport_space_avd`) via `adb`/`uiautomator` terhadap Firestore produksi sungguhan: (1) urutan jarak di Home sekarang cocok persis dengan hitungan ulang manual (The Good Padel Club 0,95 km → Hey Beach Padel Club 1,89 km → Sabnani Football 3,69 km → KM7 Mini Soccer 3,77 km → Stadiums Futsal 3,92 km); (2) pencarian "Raw" menampilkan "Raw Futsal & Badminton" dengan jarak yang sudah memakai koordinat terkoreksi; (3) tombol "Buka di Google Maps" ditekan pada Sabnani Football dan berhasil membuka **aplikasi Google Maps asli** (bukan browser) tepat ke lokasinya; (4) baris Kontak tampil dengan nomor telepon yang benar. `flutter analyze` bersih, pemeriksaan lapisan MVVM bersih, `flutter test` hijau. **Belum diverifikasi di perangkat Android nyata** sesuai Definisi Selesai §12 poin 1 — juga belum dicek manual satu-per-satu ke-27 lapangan lain yang tidak diubah datanya (hanya ditambah `nomorTelepon`/`tautanMaps`) di luar 5 yang sudah dilihat langsung di atas.
 
+
+### Koreksi teknis (7–19 Oktober 2026) — penyelarasan dengan skripsi `Highlight_2` + Definisi Selesai
+
+| # | Perubahan | Bagian yang terdampak |
+|---|---|---|
+| 1 | **Badge "🏅 Terverifikasi" dihapus** dari Detail Lapangan (7 Oktober). Survei lapangan (T-00e) tidak pernah dilakukan dan klaim observasi sudah dicabut dari skripsi. Konstanta `AppStrings.badgeTerverifikasi` ikut dihapus | AB-11, L-06, BB-33/BB-34 |
+| 2 | **`sumberData` `"places_api"` dan `"observasi"` digabung jadi `"direktori_daring"`** (19 Oktober) di `seed_lapangan.dart` dan default `LapanganModel.fromFirestore()`. Tidak ada efek fungsional — tidak ada layar yang membaca field ini. 25 dokumen produksi diubah manual lewat Firebase Console, **bukan reseed** | §6.2, §10, BB-34 |
+| 3 | **Dialog bawaan Flutter berbahasa Indonesia** — `flutter_localizations` (bawaan Flutter SDK) ditambahkan dan `MaterialApp` dikunci ke `Locale('id', 'ID')`. Sebelumnya dialog pilih tanggal/jam di L-08, L-10, L-15 tampil "Select date", "Cancel", "OK" — melanggar §12 poin 4. `intl` ikut naik dari 0.19 ke 0.20 karena versinya dikunci oleh `flutter_localizations`. Efek samping yang disengaja: dialog jam jadi format 24 jam | §4, §12 poin 4 |
+| 4 | **Jam hasil dialog ditampilkan lewat `Formatter.jamDariPilihan()`** ("19:00"). Dengan bahasa Indonesia, `TimeOfDay.format(context)` menghasilkan "19.00" (titik) — tidak cocok dengan tampilan lain dan data Firestore. Dua tampilan tanggal di widget (L-08, L-10) yang memakai `DateFormat` langsung juga dipindah ke `Formatter.tanggal()` | L-08, L-10, L-15 |
+| 5 | **~65 teks antarmuka yang tertulis langsung di widget, ViewModel, dan `validators.dart` dipindah ke `AppStrings`** — termasuk label tab bawah, label status booking (dulu ditulis dua kali di Profil dan Dashboard Mitra), dan seluruh pesan validasi form. Teks yang tampil tidak berubah. Pesan `Exception` di Repository sengaja tidak dipindah (konvensi CLAUDE.md: Repository melempar pesan siap tampil) | §2.3 |
+
+Diverifikasi 19 Oktober 2026: `flutter analyze` bersih, `flutter test` 7/7 hijau, cek aturan lapisan bersih, build Gradle berhasil, dan diuji di emulator (Home, Detail Lapangan mitra/non-mitra, Map, Teman, Profil, favorit, reservasi + batalkan, dialog tanggal/jam berbahasa Indonesia, pesan validasi form Buat Aktivitas).
+
 ---
 
 ## 1. Ringkasan Produk
@@ -138,7 +151,7 @@ Ini bukan preferensi. Ini keputusan terkunci yang sudah tertulis di skripsi dan 
 |---|---|
 | **Firebase Cloud Functions** | Butuh paket Blaze berbayar. Semua logika server dipindah ke Firestore Transaction di klien |
 | **Firebase Cloud Messaging (FCM)** | Mengirim notifikasi antar pengguna butuh server. Diganti notifikasi in-app berbasis Firestore listener |
-| **Firebase Storage** | Butuh paket Blaze. Foto lapangan pakai URL eksternal dari hasil seeding; foto profil pakai avatar inisial |
+| **Firebase Storage** | Butuh paket Blaze. Foto lapangan pakai URL eksternal (Google Drive, lihat §12b); foto profil disimpan Base64 langsung di dokumen `users` (v1.2, T-43), jatuh balik ke avatar inisial |
 | **Riverpod, BLoC, GetX** | State management sudah dikunci: **Provider** |
 | **Google Maps SDK** | Sudah dikunci: **OpenStreetMap + flutter_map** |
 | **Payment gateway apa pun** | Di luar ruang lingkup penelitian. Pembayaran dilakukan di lokasi |
@@ -164,7 +177,7 @@ Fitur di bawah ini terdengar masuk akal tapi **di luar ruang lingkup**. Jangan b
 
 - Haversine ditulis manual di `lib/core/utils/haversine.dart`
 - Arsitektur MVVM terlihat jelas dari struktur folder
-- Semua teks antarmuka berbahasa Indonesia
+- Semua teks antarmuka berbahasa Indonesia — termasuk dialog bawaan Flutter (lewat `flutter_localizations`, sejak 19 Oktober 2026), dan seluruhnya ditaruh di `core/constants/app_strings.dart`
 - Pencegahan double booking secara atomik
 - Notifikasi in-app untuk permintaan gabung dan booking
 
@@ -201,7 +214,8 @@ dependencies:
   flutter_map: ^7.x          # peta OpenStreetMap
   latlong2: ^0.9.x           # HANYA untuk tipe LatLng milik flutter_map
   provider: ^6.x             # state management
-  intl: ^0.19.x              # format tanggal dan rupiah
+  intl: ^0.20.x              # format tanggal dan rupiah (naik dari 0.19 pada 19 Oktober 2026 — dikunci flutter_localizations)
+  flutter_localizations: sdk # 19 Oktober 2026 — bawaan Flutter SDK; dialog tanggal/jam bawaan berbahasa Indonesia (§12 poin 4). BUKAN fitur multi-bahasa: hanya Locale('id', 'ID')
   cached_network_image: ^3.x # foto lapangan
   image_picker: ^1.x         # v1.2 — pilih foto profil dari galeri (disimpan Base64, BUKAN Storage)
   url_launcher: ^6.x         # v1.2 (T-51) — tombol "Buka di Google Maps" (L-06), buka aplikasi/browser eksternal
@@ -324,14 +338,14 @@ Nama atribut mengikuti ERD Bab 3 **persis**. Jangan diterjemahkan ke bahasa Ingg
 | `tautanMaps` | String | | **v1.2 (T-51)** — link Google Maps asli hasil verifikasi manual (bukan dibangkitkan dari `latitude`/`longitude`), opsional, boleh kosong |
 | `isMitra` | bool | ✓ | menentukan apakah tombol reservasi muncul |
 | `pemilikId` | String? | | hanya terisi jika `isMitra == true` |
-| `sumberData` | String | ✓ | `"places_api"` \| `"observasi"` \| `"mitra"` |
+| `sumberData` | String | ✓ | `"direktori_daring"` \| `"mitra"` *(sebelum 19 Oktober 2026: `"places_api"` \| `"observasi"` \| `"mitra"`)* |
 | `ratingTotal` | int | ✓ | jumlah seluruh nilai rating, awal `0` |
 | `jumlahRating` | int | ✓ | banyak rating, awal `0` |
 | `ratingRata2` | double | ✓ | atribut turunan, awal `0.0` |
 
 > **`slotTersedia[]` TIDAK disimpan.** Di ERD ia atribut turunan, dihitung dari koleksi `slotBooking`. Jangan bikin fieldnya.
 >
-> **Badge "Verified" TIDAK menambah field.** Lihat AB-11 — badge diturunkan dari `sumberData`.
+> **Badge status TIDAK menambah field.** Lihat AB-11 — sejak 7 Oktober 2026 hanya tersisa badge "✅ Mitra Terdaftar" yang diturunkan dari `isMitra`. `sumberData` sekarang tidak dibaca oleh layar mana pun; ia hanya catatan asal data.
 
 ### 6.3 `aktivitasBermain/{aktivitasId}`
 
@@ -599,13 +613,11 @@ Badge di L-06 diturunkan dari data yang **sudah ada**, tanpa field baru:
 | Badge | Syarat | Arti |
 |---|---|---|
 | ✅ Mitra Terdaftar | `isMitra == true` | Bisa direservasi lewat aplikasi |
-| 🏅 Terverifikasi | `sumberData == "observasi"` | Data dikonfirmasi langsung oleh peneliti di lokasi |
+| ~~🏅 Terverifikasi~~ | ~~`sumberData == "observasi"`~~ | **Dihapus 7 Oktober 2026** — lihat catatan di bawah |
 
-Kalau keduanya terpenuhi, tampilkan dua-duanya. Kalau tidak ada yang terpenuhi (`sumberData == "places_api"`), jangan tampilkan badge apa pun.
+Lapangan non-mitra tidak menampilkan badge apa pun.
 
-> Pemetaan ini disengaja: model tiga sumber data di Bab 3 jadi **terlihat di antarmuka**, bukan cuma tertulis di dokumen. Ini bahan jawaban yang bagus kalau penguji bertanya soal validitas data.
->
-> Label memakai "Terverifikasi", bukan "Verified", karena §2.3 mewajibkan seluruh teks antarmuka berbahasa Indonesia.
+> **Badge "🏅 Terverifikasi" dihapus (7 Oktober 2026).** Artinya dulu "data dikonfirmasi langsung oleh peneliti di lokasi", tapi survei lapangan (T-00e) tidak pernah dilakukan dan klaim observasi sudah dicabut dari skripsi (§14 "Putaran revisi 2"). Nilai `sumberData: "observasi"` tetap ada di data (tidak di-reseed), hanya tidak lagi ditampilkan sebagai badge.
 
 ### AB-12 · Statistik profil — **v1.1, diperbarui 12 September 2026**
 
@@ -821,11 +833,14 @@ Sumber data dan atribut `sumberData`:
 
 | Sumber | `sumberData` | `isMitra` | Kelengkapan |
 |---|---|---|---|
-| Verifikasi manual via Google Maps + konfirmasi telepon (bukan panggilan Google Places API) | `"places_api"` | `false` | nama, alamat, koordinat, jam, foto |
-| Observasi langsung peneliti | `"observasi"` | `false` | lengkap termasuk harga & fasilitas |
+| Direktori pemesanan lapangan daring publik, diverifikasi manual lewat Google Maps (bukan panggilan Google Places API) | `"direktori_daring"` | `false` | nama, alamat, koordinat, jam, foto, nomor telepon, tautan Maps; harga/jam/fasilitas = **estimasi** |
 | Pendaftaran mitra lewat aplikasi | `"mitra"` | `true` | lengkap + bisa direservasi |
 
 > **Catatan 27 September 2026:** nilai string `sumberData` tetap `"places_api"` di kode (tidak diganti, supaya tidak perlu reseed ulang Firestore) — yang diperbaiki hanya deskripsi metodenya di sini, karena datanya ternyata dikumpulkan lewat cek manual satu-per-satu ke Google Maps (T-51) plus rencana konfirmasi telepon untuk harga/jam, bukan lewat pemanggilan Google Places API sungguhan. Lihat `SPRINT-PLAN.md` bagian "sumberData 'places_api'" untuk detail dan revisi Bab 1.3/Bab 3 yang masih menyusul di dokumen skripsi.
+>
+> **Update 8 Oktober 2026:** skripsi (`Highlight_2`) sudah menulis sumber data sebagai direktori daring + verifikasi manual Google Maps, tanpa Places API, observasi, maupun konfirmasi telepon (telepon tidak dilakukan, survei T-00e dibatalkan). Artinya **nilai `"places_api"` dan `"observasi"` sama-sama label lama yang tidak sesuai skripsi.**
+>
+> **Diputuskan dan dikerjakan 19 Oktober 2026:** keduanya digabung jadi **`"direktori_daring"`** di `seed_lapangan.dart` (25 entri) dan default `LapanganModel.fromFirestore()`. Tidak ada efek fungsional (tidak ada layar yang membaca `sumberData`). **25 dokumen di Firestore produksi diubah manual lewat Firebase Console** (field `sumberData` → `direktori_daring`) — **bukan reseed**, karena seed membuat ID dokumen baru (rating/booking/favorit/aktivitas putus) dan `fotoURL` di file seed masih kosong (30 foto hilang).
 
 Format satu entri seed:
 
@@ -844,7 +859,7 @@ Format satu entri seed:
   'fotoURL': ['https://...'],
   'isMitra': false,
   'pemilikId': null,
-  'sumberData': 'observasi',
+  'sumberData': 'direktori_daring',
   'ratingTotal': 0,
   'jumlahRating': 0,
   'ratingRata2': 0.0,
@@ -906,8 +921,8 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | BB-30 | Logout | Kembali ke Login, sesi terhapus |
 | **BB-31** | **Tekan ♡ pada lapangan** | **Dokumen `users/{uid}/favorit/{lapanganId}` dibuat, ikon jadi ♥** |
 | **BB-32** | **Tekan ♥ pada lapangan yang sudah difavoritkan** | **Dokumen terhapus, ikon kembali jadi ♡, hilang dari daftar favorit di Profil** |
-| **BB-33** | **Buka detail lapangan `sumberData == "observasi"`** | **Badge "🏅 Terverifikasi" muncul** |
-| **BB-34** | **Buka detail lapangan `sumberData == "places_api"`** | **Tidak ada badge status yang muncul** |
+| **BB-33** | **Buka detail lapangan mitra (`isMitra == true`)** — *diubah 7 Oktober 2026, semula menguji badge "Terverifikasi" yang sudah dihapus* | **Badge "✅ Mitra Terdaftar" muncul** |
+| **BB-34** | **Buka detail lapangan non-mitra (`sumberData == "direktori_daring"`)** | **Tidak ada badge status yang muncul** |
 | **BB-35** | **Buka Home dengan izin lokasi ditolak, tapi punya `lokasiDefault`** | **Daftar tetap tampil terurut dari lokasi default, muncul spanduk pemberitahuan** |
 | **BB-36** | **Buka Profil** | **Angka Booking, Aktivitas, dan Favorit cocok dengan isi Firestore** |
 | **BB-37** | **Pengguna A mencoba membaca favorit pengguna B** | **Ditolak Security Rules** |
@@ -922,10 +937,10 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 
 Satu fitur dianggap selesai jika:
 
-1. Seluruh kasus BB yang terkait lulus di perangkat Android nyata (bukan hanya emulator).
+1. Seluruh kasus BB yang terkait lulus di perangkat Android nyata (bukan hanya emulator). — *19 Oktober 2026: dikonfirmasi tim sudah diuji dan aman di HP Android fisik.*
 2. Tidak melanggar aturan lapisan MVVM di Bagian 5.
 3. Tidak ada `print()` yang tersisa di kode produksi.
-4. Semua teks antarmuka berbahasa Indonesia.
+4. Semua teks antarmuka berbahasa Indonesia. — *19 Oktober 2026: dialog tanggal/jam bawaan Flutter yang tadinya berbahasa Inggris sudah diperbaiki (lihat "Koreksi teknis 7–19 Oktober 2026").*
 5. Kondisi kosong, memuat, dan kesalahan sudah ditangani (tidak ada layar putih polos).
 6. `flutter analyze` bersih tanpa error.
 
@@ -992,7 +1007,7 @@ Catat rating antar-pengguna di **Bab 5 sebagai saran pengembangan lanjutan**. Ka
 | Bagian PRD | Sumber di skripsi |
 |---|---|
 | Masalah & tujuan | Bab 1.1, 1.2, 1.4 |
-| Batasan | Bab 1.3 Ruang Lingkup ⚠️ **perlu revisi: klaim sumber data "Google Places API" → "verifikasi manual Google Maps + konfirmasi telepon"** |
+| Batasan | Bab 1.3 Ruang Lingkup ✅ direvisi di `Highlight_2` (7 Oktober 2026): direktori daring + verifikasi manual Google Maps, tanpa observasi/telepon — lihat §14 "Putaran revisi 2" |
 | Haversine | Bab 2.3 |
 | OSM & flutter_map | Bab 2.4 |
 | Firebase | Bab 2.9 |
@@ -1000,7 +1015,7 @@ Catat rating antar-pengguna di **Bab 5 sebagai saran pengembangan lanjutan**. Ka
 | Aktor & fungsi | Bab 3.3.1, Tabel 3.3 |
 | Teknologi | Tabel 3.4 |
 | Model data | Bab 3.3.2 poin 6, Tabel 3.10 |
-| Layar | Bab 3.3.2 poin 5 ⚠️ **perlu revisi: 3 tab → 4 tab** |
+| Layar | Bab 3.3.2 poin 5 ✅ direvisi di `Highlight_2` (4 tab, subbab Map/Login/Registrasi/Dashboard Mitra) — gambar masih harus dibuat tim, lihat §14 M1–M9 |
 
 ---
 
@@ -1078,12 +1093,61 @@ Catatan dari diskusi sebelumnya yang belum tercatat di tabel atas:
 |---|---|---|
 | 35 | Tabel 3.10 (ERD) | Gabung entitas `Users` dan `PemilikLapangan` jadi satu entitas `Users` dengan atribut `role` (keputusan 15 September 2026: kode tidak dipecah, dokumen yang disesuaikan). Sesuai Catatan pemetaan ke ERD di §6 |
 | 36 | Bab 3.3.2 poin 5 + Tabel 3.6 | Halaman Map ditambahkan sebagai halaman tersendiri berlabel **"Cari Lapangan"**, berbeda dari Detail Lapangan (gabungan dengan #1) |
-| 37 | Bab 3 use case / Activity Diagram | Daftar aktivitas Cari Rekan pada Detail Lapangan (T-53, masih backlog) — butuh persetujuan Pak Gintoro soal diagram sebelum dikerjakan |
+| ~~37~~ | ~~Bab 3 use case / Activity Diagram~~ | ~~Daftar aktivitas Cari Rekan pada Detail Lapangan (T-53)~~ — **gugur 8 Oktober 2026: T-53 dibatalkan**, tidak perlu diagram baru |
 
-**Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):**
+**Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
 
 > Google Maps adalah layanan pemetaan dari Google yang memuat informasi tempat, antara lain nama, alamat, koordinat geografis, nomor telepon, jam operasional, foto, serta rating dan ulasan dari pengguna. Pada penelitian ini, Google Maps tidak diakses melalui Application Programming Interface (API) dan tidak dipanggil oleh aplikasi, melainkan digunakan secara manual oleh peneliti sebagai acuan verifikasi data lapangan. Pemilihan Google Maps didasarkan pada kebiasaan pengguna sasaran: berdasarkan kuesioner penelitian ini, 39,6% dari 101 responden menggunakan Google Maps untuk mencari lapangan olahraga.
 >
 > Data lapangan non-mitra dikumpulkan dari sumber daring publik, kemudian diverifikasi satu per satu oleh peneliti melalui Google Maps, yaitu koordinat lokasi, nomor telepon, dan tautan lokasi. Atribut yang tidak tersedia pada Google Maps, seperti harga sewa dan fasilitas, dilengkapi melalui observasi langsung peneliti [dan konfirmasi telepon ke pengelola lapangan — hapus bagian ini kalau teleponnya belum dilakukan]. Seluruh data kemudian dimuat ke Firebase Firestore melalui proses akuisisi data awal (*seeding*), sehingga saat aplikasi berjalan tidak ada ketergantungan pada layanan pihak ketiga.
 
-Nilai string `sumberData: "places_api"` di kode sengaja belum diganti (menghindari reseed Firestore); kalau kelak diganti, usulan namanya `"google_maps_manual"`.
+Nilai string `sumberData: "places_api"` di kode sengaja belum diganti (menghindari reseed Firestore); kalau kelak diganti, usulan namanya `"google_maps_manual"`. — *Diperbarui 19 Oktober 2026: sudah diganti jadi `"direktori_daring"` (menggantikan `"places_api"` **dan** `"observasi"` sekaligus) — lihat catatan di §10.*
+
+---
+
+### Putaran revisi 2 — SELESAI dibuat drafnya (7 Oktober 2026)
+
+Hasilnya: **`SportSpace_Bab1-3_Revisi_Highlight_2.docx`** (di folder Downloads pemilik proyek, di luar repo). Sekarang ini **file skripsi terbaru**; `Highlight_1` disimpan sebagai arsip, tidak diubah. Stabilo putaran 1 sudah dibersihkan, dan **semua perubahan putaran 2 diberi stabilo kuning** supaya Pak Gintoro langsung melihat bagian yang berubah.
+
+**Keputusan yang dipakai (menggantikan catatan lama di atas kalau bertentangan):**
+
+| Topik | Keputusan | Menggantikan |
+|---|---|---|
+| Sumber data lapangan | **Dua sumber**: (1) sekunder = direktori pemesanan lapangan daring publik, diverifikasi manual melalui Google Maps; (2) primer = lapangan mitra. Harga/jam/fasilitas lapangan non-mitra ditulis sebagai **estimasi**. Klaim "Google Places API" **dan** "observasi langsung peneliti" dihapus seluruhnya, karena T-00e (survei) tidak pernah dilakukan. Frasa "konfirmasi telepon" **tidak** dipakai (telepon belum dilakukan) | Draf Bab 2.5 di atas (masih menyebut observasi); catatan #30 ("tiga sumber") |
+| Favorit | Favorit, olahraga favorit, dan lokasi default **tidak disebut sama sekali di Bab 3** (ERD, use case, tabel UI), karena tidak terkait rumusan masalah | #3, #4, #5, #11 — dibatalkan |
+| Label tab | Mengikuti aplikasi: **Home · Map · Teman · Profil**, tanpa rename "Cari Lapangan" | Label di #36 |
+| Gambar | Gambar lama tidak diedit; diberi **kotak kuning bergaris putus-putus** berisi instruksi gambar ulang | — |
+
+**Rangkuman perubahan yang sudah masuk ke docx:**
+
+| Bab | Perubahan |
+|---|---|
+| Bab 1 | 1.3: sumber data jadi dua sumber + kalimat estimasi untuk lapangan non-mitra; baris "Google Places API" dihapus dari daftar teknologi. 1.5: "Tabel 1.1" → "Tabel 2.6"; pengumpulan data tanpa observasi dan Places API |
+| Bab 2 | Daftar Isi + judul/isi 2.5 → "Google Maps sebagai Sumber Verifikasi Data Lapangan" (2 paragraf). 2.9: Firebase Storage dihapus, diganti foto profil Base64 di Firestore + foto lapangan URL eksternal (paket Spark) |
+| Bab 3.1–3.2 | Tabel 3.1 Sprint 3; paragraf multi-sumber; ringkasan "Pengumpulan Data"; 3.2.2 (tanpa "observasi lapangan"; ketersediaan slot hanya lapangan mitra; pembatalan pemesanan); 3.2.3 Usulan Solusi 1 dan narasi Gambar 3.2 |
+| Bab 3.3.1 | Tabel 3.3 fungsi 1/3/5 (sumber data + fitur pembatalan); narasi fungsi pencarian; Tabel 3.4: hapus Firebase Storage dan Google Places API, tambah baris "Paket Pendukung Flutter" (geolocator, url_launcher, image_picker), Firestore menyimpan foto profil Base64 |
+| Bab 3.3.2 diagram | Narasi Use Case (pembatalan + mitra = Users ber-role mitra); narasi Class Diagram (+PermintaanGabungModel, NotifikasiModel); narasi Sequence Diagram (partisipan View/ViewModel/Repository/LocationService, Haversine dihitung di ViewModel, ChangeNotifier) |
+| Bab 3.3.2 UI | Pembuka: 6 halaman utama + 3 halaman pendukung, navigasi 4 tab. Splash pakai tombol "Mulai Sekarang". Tabel Home (hapus Logo, tambah Ikon Notifikasi, chip "Semua", 4 tab). **Subbab baru**: c. Map, g. Login, h. Registrasi, i. Dashboard Mitra (masing-masing narasi + tabel elemen). Tabel Detail Lapangan dan Profil ditulis ulang sesuai aplikasi; Tabel Cari Rekan disesuaikan istilah "aktivitas" |
+| Bab 3.3.2 ERD | Tabel ERD jadi **8 entitas**: Users (gabungan Users + PemilikLapangan, atribut `role`, `nomorTelepon`, `fotoProfilBase64`), Lapangan (+`alamat`, `jenisOlahraga[]`, `nomorTelepon`, `tautanMaps`, `pemilikId`), AktivitasBermain, **PermintaanGabung**, Rating, Booking, **SlotBooking**, **Notifikasi**; paragraf penjelasan ikut diperbarui |
+| Penomoran | Subbab UI jadi a–i. Gambar 3.12 (Map) baru, Detail/Cari Rekan/Profil → 3.13/3.14/3.15, Login/Registrasi/Dashboard → 3.16/3.17/3.18, ERD → 3.19. Tabel 3.7 (Map) baru, Detail/Cari Rekan/Profil → 3.8/3.9/3.10, Login/Registrasi/Dashboard → 3.11/3.12/3.13, ERD → 3.14 |
+| Tata letak (bukan isi) | 10 gambar Bab 3 yang semula "mengambang" (diikat ke posisi halaman) dijadikan sejajar teks, rata tengah, tepat di atas caption-nya, supaya tidak terlepas dari caption saat teks bergeser. Judul tabel diberi *keep with next* |
+
+**Yang masih harus dikerjakan MANUAL oleh tim** (Claude tidak bisa/tidak boleh mengerjakan):
+
+| # | Pekerjaan | Keterangan |
+|---|---|---|
+| M1 | **Buat ERD sungguhan — Gambar 3.19** | **Paling penting.** Gambar 3.15 lama ternyata salinan Class Diagram, jadi skripsi belum punya ERD. Isi dan notasinya ada di kotak kuning |
+| M2 | Gambar ulang Gambar 3.5 (Activity Pencarian Lapangan) | Gambar lama berisi alur cari rekan, salah isi |
+| M3 | Gambar ulang Gambar 3.7 (Class Diagram) | Ikuti narasi + kode (Model/ViewModel/Repository), hapus "User extends LBSService" |
+| M4 | Perbarui Gambar 3.8 (Sequence Pencarian Lapangan) | Hapus partisipan Google Places API |
+| M5 | Perbarui Gambar 3.1 (Kerangka Berpikir) | "Google Places API" → direktori daring + Google Maps; "OSMDroid" → "flutter_map" |
+| M6 | Perbarui Gambar 3.4 (Use Case) | Tambah Batalkan booking / Batalkan aktivitas / Batalkan keikutsertaan |
+| M7 | Buat rancangan Figma: Map (3.12), Login (3.16), Registrasi (3.17), Dashboard Mitra (3.18) | Elemen sesuai tabel masing-masing |
+| M8 | Perbaikan kecil: Gambar 3.2 ("Harvesine"), 3.9 ("notif push", "Buka Halaman Kerja"), 3.11 (hapus peta di Home), 3.13 (hapus "Pilih Slot", tombol "Ajukan Reservasi"), 3.15 (hapus "4.9★ Rating", menu Profil) | Instruksi rinci di tiap kotak kuning |
+| M9 | Hapus 15 kotak kuning setelah gambarnya diganti | — |
+| M10 | Perbarui nomor halaman **Daftar Isi** secara manual | Daftar Isi diketik manual (bukan field Word), jadi tidak bisa di-*Update Field* |
+| M11 | Tambah sitasi untuk Bab 2.5 (Google Maps) kalau diminta pembimbing | Sengaja dibiarkan tanpa sitasi, jangan mengarang referensi |
+| M12 | Konsultasikan seluruh revisi dengan Pak Gintoro, lalu hapus stabilo kuning setelah disetujui | — |
+| M13 | Bab 4: tulis bahwa 5 lapangan mitra di data uji adalah **simulasi** (akun mitra uji); Bab 4/5: butir #6, #7, #15, #17, #19, #23, #24 di atas | Belum ada Bab 4–5 di file ini |
+
+**Tindak lanjut di kode — SELESAI 7 Oktober 2026:** badge "🏅 Terverifikasi" dihapus dari Detail Lapangan (AB-11, BB-33/BB-34 diperbarui). Catatan asal: "🏅 Terverifikasi" (`sumberData == "observasi"`, AB-11/BB-33) tidak lagi benar setelah klaim observasi dihapus. Badge dan nilai `sumberData` perlu disesuaikan, sekaligus definisi di §6.2/§10 dan AB-11.

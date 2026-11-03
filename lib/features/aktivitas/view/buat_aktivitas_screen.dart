@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/utils/formatter.dart';
 import '../../../core/utils/validators.dart';
 import '../../../repositories/aktivitas_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
@@ -96,7 +96,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
             .showSnackBar(SnackBar(content: Text(errWaktu)));
       } else if (_lapanganId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lapangan wajib dipilih.')),
+          const SnackBar(content: Text(AppStrings.errLapanganWajib)),
         );
       }
       return;
@@ -127,7 +127,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.pesanError ?? 'Gagal membuat aktivitas.')),
+        SnackBar(content: Text(vm.pesanError ?? AppStrings.errGagalBuatAktivitas)),
       );
     }
   }
@@ -154,7 +154,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Olahraga', style: AppTextStyles.judulSeksi),
+                const Text(AppStrings.olahraga, style: AppTextStyles.judulSeksi),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -179,7 +179,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                   }).toList(),
                 ),
                 const SizedBox(height: 20),
-                const Text('Lapangan', style: AppTextStyles.judulSeksi),
+                const Text(AppStrings.lapangan, style: AppTextStyles.judulSeksi),
                 const SizedBox(height: 8),
                 _DropdownLapangan(
                   vm: vm,
@@ -191,20 +191,21 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                   children: [
                     Expanded(
                       child: _TombolPilih(
-                        label: 'Tanggal',
+                        label: AppStrings.tanggal,
                         nilai: _tanggal == null
-                            ? 'Pilih tanggal'
-                            : DateFormat('d MMM yyyy', 'id_ID')
-                                .format(_tanggal!),
+                            ? AppStrings.pilihTanggal
+                            : Formatter.tanggal(_tanggal!),
                         onTap: _pilihTanggal,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _TombolPilih(
-                        label: 'Jam',
+                        label: AppStrings.jam,
                         nilai:
-                            _jam == null ? 'Pilih jam' : _jam!.format(context),
+                            _jam == null
+                            ? AppStrings.pilihJam
+                            : Formatter.jamDariPilihan(_jam!),
                         onTap: _pilihJam,
                       ),
                     ),
@@ -215,8 +216,8 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                   controller: _jumlahPemainCtrl,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'Jumlah Pemain Dibutuhkan',
-                    hintText: '2 – 30',
+                    labelText: AppStrings.jumlahPemainDibutuhkan,
+                    hintText: AppStrings.hintJumlahPemain,
                   ),
                   validator: Validators.jumlahPemain,
                 ),
@@ -225,7 +226,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                   controller: _catatanCtrl,
                   maxLines: 3,
                   decoration: const InputDecoration(
-                    labelText: 'Catatan (opsional)',
+                    labelText: AppStrings.catatanOpsional,
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -280,7 +281,7 @@ class _DropdownLapangan extends StatelessWidget {
           children: [
             const Expanded(
               child: Text(
-                'Gagal memuat daftar lapangan.',
+                AppStrings.errGagalMuatDaftarLapangan,
                 style: AppTextStyles.metaLapangan,
               ),
             ),
@@ -294,13 +295,13 @@ class _DropdownLapangan extends StatelessWidget {
       case KondisiDaftarLapangan.berhasil:
         if (vm.daftarLapangan.isEmpty) {
           return const Text(
-            'Belum ada lapangan terdaftar.',
+            AppStrings.kosongDaftarLapangan,
             style: AppTextStyles.metaLapangan,
           );
         }
         return DropdownButtonFormField<String>(
           initialValue: nilai,
-          decoration: const InputDecoration(hintText: 'Pilih lapangan'),
+          decoration: const InputDecoration(hintText: AppStrings.pilihLapangan),
           items: vm.daftarLapangan
               .map(
                 (l) => DropdownMenuItem(

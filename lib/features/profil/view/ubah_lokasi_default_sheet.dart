@@ -105,7 +105,7 @@ class _UbahLokasiDefaultBodyState extends State<_UbahLokasiDefaultBody> {
         SnackBar(
           content: Text(
             context.read<AuthViewModel>().pesanError ??
-                'Gagal menyimpan lokasi default.',
+                AppStrings.errGagalSimpanLokasi,
           ),
         ),
       );

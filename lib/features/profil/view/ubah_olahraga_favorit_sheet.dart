@@ -67,7 +67,7 @@ class _UbahOlahragaFavoritBodyState extends State<_UbahOlahragaFavoritBody> {
         SnackBar(
           content: Text(
             context.read<AuthViewModel>().pesanError ??
-                'Gagal menyimpan olahraga favorit.',
+                AppStrings.errGagalSimpanOlahraga,
           ),
         ),
       );
