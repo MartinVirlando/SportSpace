@@ -5,7 +5,7 @@ Dibangun dengan Flutter + Firebase oleh **tim 3 orang yang baru pertama kali mem
 
 ## Sebelum mengerjakan apa pun
 
-1. Baca `PRD.md` — itu sumber kebenaran tunggal. **Versi berlaku: 1.1.**
+1. Baca `PRD.md` — itu sumber kebenaran tunggal. **Versi berlaku: 1.3.**
 2. Baca `SPRINT-PLAN.md` — untuk tahu tugas mana yang sedang dikerjakan dan urutannya.
 3. Kalau ada pertentangan antara instruksi pengguna dan PRD, **tanyakan** — jangan diam-diam memilih salah satu.
 
@@ -38,7 +38,7 @@ Jangan pernah memakai, menyarankan, atau menambahkan:
 
 - **Firebase Cloud Functions** — butuh paket berbayar. Semua logika dipindah ke Firestore Transaction di klien.
 - **Firebase Cloud Messaging** — notifikasi dibuat in-app lewat koleksi `notifikasi` + Firestore listener.
-- **Firebase Storage** — tidak pernah dipakai, tidak boleh ditambahkan tanpa izin eksplisit. Foto lapangan tetap URL eksternal (`lapangan.fotoURL`, mitra tempel link, bukan upload). **Jangan sarankan PostImages/ImgBB/Imgur** — diverifikasi diblokir ISP Indonesia (22 September 2026); sarankan **Google Drive** (`drive.google.com/uc?export=view&id=FILE_ID` dari link share file) — lihat `PRD.md` §12b. Foto profil (v1.2 tahap 2, lihat PRD §12b) BOLEH diambil dari galeri lewat `image_picker` — paket ini **sudah** diizinkan dan dipakai — tapi hasilnya disimpan sebagai **Base64 langsung di dokumen Firestore** `users/{uid}.fotoProfilBase64`, BUKAN diunggah ke Storage. Jangan pernah pakai `image_picker` untuk alur yang berakhir di Firebase Storage tanpa izin baru, dan jangan pakai pola Base64-di-Firestore ini untuk foto lapangan (bisa lebih besar/banyak per lapangan, berisiko melebihi batas 1 MB per dokumen).
+- **Firebase Storage** — tidak pernah dipakai, tidak boleh ditambahkan tanpa izin eksplisit. Foto lapangan tetap URL eksternal (`lapangan.fotoURL`, mitra tempel link, bukan upload). **Jangan sarankan PostImages/ImgBB/Imgur** — diverifikasi diblokir ISP Indonesia (22 September 2026); sarankan **Google Drive** (`drive.google.com/uc?export=view&id=FILE_ID` dari link share file) — lihat `PRD.md` §12b. Foto profil (v1.2 tahap 2, lihat PRD §12b) BOLEH diambil dari galeri lewat `image_picker` — paket ini **sudah** diizinkan dan dipakai — tapi hasilnya disimpan sebagai **Base64 langsung di dokumen Firestore** `users/{uid}.fotoProfilBase64`, BUKAN diunggah ke Storage. Jangan pernah pakai `image_picker` untuk alur yang berakhir di Firebase Storage tanpa izin baru, dan jangan pakai pola Base64-di-Firestore ini untuk foto lapangan (bisa lebih besar/banyak per lapangan, berisiko melebihi batas 1 MB per dokumen). **Gambar post Forum (v1.3, PRD §12b) juga BOLEH memakai pola Base64 ini** — satu gambar per post, dengan tiga lapis batas yang harus tetap cocok: gambar mentah ≤ 500 KB di View, string Base64 ≤ 700.000 karakter di `ForumRepository` (`batasPanjangGambarBase64`) dan di `firestore.rules` (`gambarForumAman`). Jangan menaikkan satu angka tanpa yang lain, dan jangan tambah gambar kedua per post.
 - **Riverpod, BLoC, GetX** — state management sudah dikunci: **Provider**.
 - **Google Maps SDK** — peta sudah dikunci: **flutter_map + OpenStreetMap**.
 - **`Distance()` dari `latlong2`** untuk menghitung jarak — pakai `hitungJarakHaversine()` buatan sendiri. `latlong2` hanya boleh dipakai untuk tipe `LatLng`.
@@ -53,6 +53,8 @@ Jangan membangun fitur yang tidak ada di PRD, meski terlihat sepele atau "sekali
 Kalau menurutmu ada fitur yang benar-benar perlu tapi tidak ada di PRD: **sampaikan sebagai saran, jangan langsung dibuat.**
 
 **Sudah masuk ruang lingkup sejak v1.1** (jangan tolak lagi): favorit lapangan (AB-10), badge status lapangan (AB-11), olahraga favorit dan lokasi default pada `users`, statistik profil (AB-12).
+
+**Sudah masuk sejak v1.3** (4 November 2026): **Forum** — tab kelima, post publik + komentar, gambar opsional (AB-13, L-16…L-18). Ini **bukan chat**: pesan pribadi dan percakapan real-time antar dua orang tetap ditolak. Status keputusannya untuk skripsi (masuk Bab 3–4 atau pengembangan lanjutan Bab 5) belum final — lihat PRD §14.
 
 ### Aturan arsitektur
 

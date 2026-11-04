@@ -255,6 +255,45 @@ Detail lengkap ada di memory `project_skripsi_bab1-3_revisi` (item #7) dan `proj
 
 > **Update 8 Oktober 2026.** Skripsi (`Highlight_2`) sudah tidak menyebut Google Places API maupun konfirmasi telepon. Sumber datanya: direktori pemesanan daring yang diverifikasi manual lewat Google Maps, harga/jam lapangan non-mitra ditulis sebagai **estimasi**. Butir 1 di atas selesai. Butir 3 (telepon) dibatalkan. **Butir 2 selesai 19 Oktober 2026:** `'places_api'` dan `'observasi'` digabung jadi `'direktori_daring'` di kode; 25 dokumen produksi diubah manual lewat Firebase Console.
 
+### Forum — cabang `secondary` (Martin) di-merge ke `main` — 4 November 2026
+
+Martin menggabungkan PR #1 (`secondary` → `main`, commit `fd8ef3c`): fitur Forum (post, komentar, edit, hapus, gambar), tab kelima "Forum" di `ShellNavigasi`, koleksi `forum_posts` + subkoleksi `komentar`, dan `docs/PENJELASAN-PROJECT.md`. **Forum bukan bagian dari PRD v1.1** — belum tercantum di PRD, dan PRD masih menyebut 4 tab.
+
+**Hasil pengecekan pasca-merge (4 November 2026):** `flutter analyze` tanpa error (1 info trailing comma), `flutter test` 7/7 hijau, pemeriksaan lapisan MVVM bersih (tidak ada View/ViewModel yang mengimpor `cloud_firestore`), `firestore.rules` baru lolos `firebase deploy --only firestore:rules --dry-run`, `pubspec.yaml` dan `firestore.indexes.json` tidak berubah (query forum hanya satu `orderBy`, tanpa composite index). `detail_lapangan_screen.dart` tidak tersentuh, jadi tombol "Buka di Google Maps" (T-51) aman.
+
+**Uji manual di emulator (4 November 2026, `sportspace_pixel`, Android 36, Firestore produksi, akun uji tetap PRD §10, build debug dari cabang `fix/forum-merge-rapikan`):** login Pengguna dan Mitra; Home (30 lapangan, urutan jarak naik benar: 1,0 → 1,9 → 3,5 → 3,6 → 3,9 → 4,3 km dari Alam Sutera) dan filter Futsal; Detail Lapangan lengkap termasuk "Buka di Google Maps" dan "Lihat di peta"; Map (tile OSM, titik lokasi, marker, tombol zoom/recenter); Teman (kondisi kosong); Profil (statistik, riwayat pemesanan); Notifikasi; Dashboard Mitra (5 lapangan, Booking Masuk); keluar akun. **Forum:** daftar post terbaca, buat post, komentar (hitungan 0 → 1), dan hapus post beserta komentarnya semuanya berhasil — post uji sudah dihapus sendiri, data forum kembali seperti semula. Logcat seluruh sesi: tidak ada `permission-denied`, `FirebaseException`, atau exception tak tertangani. **Uji lanjutan forum (setelah PRD v1.3 dan pengaman gambar, build baru):** BB-44 (post kosong ditolak "Post tidak boleh kosong."), BB-45 (gambar kecil tampil di kartu; gambar noise 7,9 MB tetap lolos karena `image_picker` mengompresnya ke 1024 px — jalur "Ukuran foto terlalu besar" tidak bisa dipicu di emulator), BB-47 (edit memunculkan "(diedit)"; menu Edit/Hapus tidak muncul di post milik orang lain), BB-48 (hapus post). Semua post uji sudah dihapus kembali, forum produksi seperti semula, logcat tanpa error. **Belum diuji:** BB-42 (kondisi forum kosong — butuh forum tanpa satu pun post), BB-49 (post orang lain ditolak Security Rules — tidak bisa dipicu lewat UI), batas 700.000 karakter di rules (belum di-deploy), alur tulis di luar forum (booking baru, buat aktivitas, rating — kodenya tidak tersentuh merge), dan HP fisik. Catatan: forum **tidak punya** edit/hapus komentar satuan, jadi tidak ada yang perlu diuji di sana.
+
+**Dirapikan di cabang `fix/forum-merge-rapikan`:** `FavoritRepository` yang terdaftar dua kali di `main.dart`, satu baris kosong berlebih, trailing comma di `buat_post_screen.dart`, dan label tab `'Forum'` yang ditulis langsung (sekarang `AppStrings.forum`). Ditambah: **PRD v1.3** mencatat forum (ringkasan perubahan, §2, §5, §6.10–6.11, AB-13, L-16–L-18, §9, BB-42–BB-49, §12b, §14); `CLAUDE.md` mengizinkan Base64 untuk gambar forum dengan tiga lapis batas; pengaman `batasPanjangGambarBase64` di `ForumRepository` dan `gambarForumAman` di `firestore.rules`; `docs/FIRESTORE-INDEXES.md` mencatat bahwa query forum tidak butuh index.
+
+**Masih terbuka:**
+1. **Rules forum di Firestore produksi: kemungkinan besar sudah ter-deploy, tapi isinya belum dibandingkan dengan `firestore.rules` di repo.** Dugaan awal (4 November 2026) bahwa belum ter-deploy ternyata salah: akun uji Pengguna berhasil membaca post forum asli di emulator, padahal rules sebelum merge tidak punya aturan untuk `forum_posts`. Sebelum `firebase deploy --only firestore` berikutnya, pastikan file di repo sama dengan yang aktif di Firebase Console (Firestore → Rules) supaya tidak menimpa perubahan Martin. **`firestore.rules` di repo sekarang punya `gambarForumAman` yang belum ada di produksi** — batas gambar di rules baru aktif setelah `firebase deploy --only firestore:rules`.
+2. **Forum sudah dicatat di PRD v1.3 (4 November 2026), tapi keputusan untuk skripsi belum diambil:** masuk Bab 3–4 (tab jadi 5, ERD 10 entitas, BB-42–BB-49; PRD §14 #38–#44) atau jadi pengembangan lanjutan di Bab 5. Konsultasikan dengan Pak Gintoro. Teks post juga belum dibatasi panjangnya.
+3. ~~Gambar forum Base64 belum tercatat dan berisiko melewati 1 MB~~ — **selesai:** tercatat di PRD §12b dan `CLAUDE.md`, dijaga tiga lapis (500 KB mentah di View, 700.000 karakter di Repository dan rules). Dugaan awal bahwa gambar bisa melewati 1 MB ternyata tidak tepat: batas 500 KB di View memang sudah ada sejak awal (≈ 683.000 karakter Base64, di bawah 1.048.576 byte); yang kurang hanyalah pencatatannya.
+4. Jalur 1 rules `update` post mengizinkan siapa pun menaikkan `jumlahKomentar` +1 tanpa harus membuat komentar. Tidak berbahaya untuk skripsi, tapi tercatat.
+
+### Backlog v1.3 — usulan dari riset aplikasi AYO — dicatat 4 November 2026
+
+Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 Oktober 2026). **Belum ada satu pun dari 14 usulan yang masuk ke kode `main`** (dicek 4 November 2026 lewat pencarian kode, setelah merge forum). Semuanya di luar PRD v1.1 — sama pola T-40/T-50/T-51: butuh persetujuan Pak Gintoro dan kasus BB baru sebelum dikoding. Hanya T-67 yang butuh package baru (`CLAUDE.md`: minta izin dulu). Nomor tugas di bawah mengikuti nomor usulan di dokumen ide (T-53 + nomor usulan).
+
+| ID | Usulan | Skala | Tahap |
+|---|---|---|---|
+| T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 |
+| T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 |
+| T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 |
+| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 |
+| T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 |
+| T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 |
+| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 |
+| T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 |
+| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 |
+| T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 |
+| T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 |
+| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 |
+| T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 |
+| T-67 | Pengingat jadwal booking, notifikasi lokal *(ide di luar AYO; butuh package baru)* | Sedang | 3 |
+
+**Urutan yang direkomendasikan:** tahap 1 = T-54, T-55, T-56, T-58, T-63, lalu T-61; tahap 2 = T-57, T-59, T-62, T-65; tahap 3 = T-60, T-64, T-66, T-67. Dokumen ide tadinya menahan T-59, T-60, T-61, T-62, T-65 sampai cabang forum di-merge karena konflik di `detail_lapangan_screen.dart`, `booking`/`lapangan`, rules, dan model — forum sudah masuk `main`, jadi blokir itu tidak berlaku lagi. Aturan tetap: satu cabang per fitur dari `main` terbaru, perubahan `models/` hanya oleh integrator. Fitur "venue tersedia hari ini" milik AYO sengaja tidak ditiru (boros pembacaan Firestore).
+
 ---
 
 ## Sprint 5 · Pengujian dan Evaluasi (Minggu 12–14)
@@ -355,6 +394,8 @@ Dibatalkan   [-] T-00e  [-] T-49  [-] T-52  [-] T-53
 > 4. **T-39 pekerjaan manual tim** — PRD §14 "Putaran revisi 2" M1–M13 (gambar ERD dan diagram ulang, mockup Figma, Daftar Isi, konsultasi Pak Gintoro).
 > 5. **Ubah manual 25 dokumen `lapangan` di Firebase Console**: field `sumberData` → `direktori_daring` (kode sudah diganti 19 Oktober 2026 — lihat PRD §10).
 > 6. **Keputusan terbuka:** harga/jam per jenis olahraga — masih riset.
+> 7. **Forum (merge 4 November 2026):** cocokkan rules forum di Firebase Console dengan `firestore.rules` di repo; putuskan dengan Pak Gintoro apakah forum masuk Bab 3–4 (PRD v1.3 sudah mencatatnya, §14 #38–#44) — lihat bagian "Forum" di atas.
+> 8. **Backlog v1.3 dari AYO (T-54…T-67):** belum ada yang dikerjakan; urutan tahap 1 ada di bagian "Backlog v1.3" di atas.
 >
 > **Keputusan 8 Oktober 2026:** T-00a–T-00c dicentang selesai; T-00d diganti jadi "tetap paket Spark"; T-00e, T-52, T-53 dibatalkan (T-49 sudah dibatalkan sejak 15 September).
 

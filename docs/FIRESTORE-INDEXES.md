@@ -236,6 +236,8 @@ Lebih murah, lebih sederhana, dan badge-nya dijamin sinkron dengan daftarnya.
 | Subkoleksi `permintaan` di L-09 | Ambil seluruh subkoleksi, tanpa filter |
 | Profil pengguna `users/{uid}` | Baca dokumen langsung |
 | Kotak statistik "Favorit" di Profil (AB-12): subkoleksi `favorit`, `orderBy dibuatPada` tanpa `where` | Satu field `orderBy` tanpa filter pertidaksamaan — otomatis terindeks Firestore, tidak perlu index komposit |
+| Forum v1.3 (AB-13): `forum_posts` `orderBy createdAt desc`, `limit(20)` | Satu field `orderBy` tanpa `where` — otomatis terindeks (dicek 4 November 2026, `ForumRepository.streamPosts`) |
+| Forum v1.3: `forum_posts/{id}/komentar` `orderBy createdAt asc` | Subkoleksi, satu field `orderBy` tanpa `where` — otomatis terindeks (`ForumRepository.streamKomentar`) |
 
 ---
 

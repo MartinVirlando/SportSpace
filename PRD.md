@@ -2,7 +2,7 @@
 
 **Aplikasi Android pencarian lapangan olahraga dan rekan bermain berbasis lokasi**
 
-Versi 1.2 · 15 September 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
+Versi 1.3 · 4 November 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
 
 > Dokumen ini adalah **sumber kebenaran tunggal** untuk implementasi. Jika ada pertentangan antara dokumen ini dan ingatan/asumsi, dokumen ini yang menang. Jika ada kebutuhan yang tidak tercantum di sini, **jangan dibangun** — tanyakan dulu.
 
@@ -33,6 +33,17 @@ Lima penambahan setelah pemakaian internal tim. Empat di antaranya perluasan dar
 | 3 | **Foto profil bisa diisi langsung dari galeri (opsional)** — pakai `image_picker`, disimpan sebagai Base64 di dokumen Firestore (bukan URL, bukan Firebase Storage — pendekatan ketiga di luar Opsi A/B §12b, lihat penjelasan lengkap di §12b). `null`/kosong tetap jatuh balik ke avatar inisial. | §4, §6.1, §8 L-13, §12b |
 | 4 | **Atribut baru `nomorTelepon` pada entitas `lapangan`** — kontak lapangan, opsional, ditampilkan di L-06 kalau terisi, diedit lewat form mitra L-15. Data untuk 30 lapangan seed diisi manual belakangan (bukan bagian dari perubahan ini). | §6.2, §8 L-06, L-15 |
 | 5 | **Peserta aktivitas bisa membatalkan keikutsertaan** (AB-06 lanjutan) — sebelumnya sekali bergabung tidak ada jalan keluar sama sekali. Slot dan status ikut disesuaikan (transaction), permintaan lama dihapus supaya bisa gabung ulang, pembuat dapat notifikasi. Pembuat aktivitas TIDAK bisa membatalkan keikutsertaannya sendiri lewat jalur ini. | §6.3, §6.4, §7 AB-06, §8 L-09 |
+
+### Perubahan v1.3 (4 November 2026) — Forum
+
+Fitur **Forum** dibangun Martin di cabang `secondary` (1 Oktober–3 November 2026) dan digabung ke `main` lewat PR #1 pada 4 November 2026. Bagian PRD ini **menyusul** — ditulis setelah kodenya ada, mengikuti perilaku aplikasi apa adanya — supaya dokumen dan kode kembali sama.
+
+| # | Perubahan | Bagian yang terdampak |
+|---|---|---|
+| 1 | Tab kelima **Forum**: post publik beserta komentar. Navigasi bawah jadi **5 tab** (Home · Map · Teman · Profil · Forum) | §2.2, §5, §6.10–6.11, §7 AB-13, §8 L-16–L-18, §9, §11 BB-42–BB-49, §14 |
+| 2 | **Gambar post forum** (maksimal 1 per post) disimpan sebagai Base64 di dokumen `forum_posts` — pola yang sama dengan foto profil, dengan batas 500 KB mentah dan pengaman 700.000 karakter di Repository dan Security Rules | §2.1, §2.2, §12b |
+
+> ⚠️ **Keputusan belum final.** Forum tidak menjawab satu pun dari tiga rumusan masalah Bab 1 (pencarian lapangan berbasis lokasi, cari rekan bermain, reservasi) — posisinya sama dengan favorit pada putaran revisi 2. Tim dan Pak Gintoro masih harus memutuskan: **(a)** forum dimasukkan ke Bab 3–4 (tab jadi 5, ERD tambah dua entitas, kasus BB-42–BB-49), atau **(b)** forum tidak dimasukkan ke bab itu dan disebut sebagai pengembangan lanjutan di Bab 5. Kodenya sudah ada di aplikasi, jadi tangkapan layar Bab 4 akan menampilkan 5 tab kecuali tab Forum disembunyikan — lihat §14. Sampai diputuskan, PRD ini menganggap forum **bagian dari aplikasi**.
 
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
@@ -151,7 +162,7 @@ Ini bukan preferensi. Ini keputusan terkunci yang sudah tertulis di skripsi dan 
 |---|---|
 | **Firebase Cloud Functions** | Butuh paket Blaze berbayar. Semua logika server dipindah ke Firestore Transaction di klien |
 | **Firebase Cloud Messaging (FCM)** | Mengirim notifikasi antar pengguna butuh server. Diganti notifikasi in-app berbasis Firestore listener |
-| **Firebase Storage** | Butuh paket Blaze. Foto lapangan pakai URL eksternal (Google Drive, lihat §12b); foto profil disimpan Base64 langsung di dokumen `users` (v1.2, T-43), jatuh balik ke avatar inisial |
+| **Firebase Storage** | Butuh paket Blaze. Foto lapangan pakai URL eksternal (Google Drive, lihat §12b); foto profil disimpan Base64 langsung di dokumen `users` (v1.2, T-43), jatuh balik ke avatar inisial; gambar post forum juga Base64 di dokumen `forum_posts` (v1.3, §12b) |
 | **Riverpod, BLoC, GetX** | State management sudah dikunci: **Provider** |
 | **Google Maps SDK** | Sudah dikunci: **OpenStreetMap + flutter_map** |
 | **Payment gateway apa pun** | Di luar ruang lingkup penelitian. Pembayaran dilakukan di lokasi |
@@ -164,10 +175,10 @@ Ini bukan preferensi. Ini keputusan terkunci yang sudah tertulis di skripsi dan 
 Fitur di bawah ini terdengar masuk akal tapi **di luar ruang lingkup**. Jangan bangun meski terlihat mudah:
 
 - Aplikasi iOS atau web
-- Chat / pesan antar pengguna
+- Chat / pesan antar pengguna — **Forum (v1.3) bukan chat**: isinya post publik dan komentar di bawahnya, tanpa pesan pribadi dan tanpa percakapan real-time antar dua orang
 - Mode gelap, multi-bahasa (i18n), onboarding slider
 - Statistik atau grafik di dashboard mitra
-- Upload foto oleh pengguna
+- Upload foto oleh pengguna ke penyimpanan server (Storage). Dua pengecualian, keduanya disimpan Base64 langsung di dokumen Firestore: foto profil (v1.2) dan gambar post forum (v1.3) — lihat §12b
 - Lupa password / verifikasi email
 - Halaman pengaturan yang fungsional (Bahasa, Kebijakan Privasi, Bantuan, Tentang) — **cukup halaman statis**
 - Laporan keuangan lapangan
@@ -271,6 +282,8 @@ lib/
     booking_model.dart
     notifikasi_model.dart
     favorit_model.dart
+    forum_post_model.dart
+    forum_komentar_model.dart
 
   repositories/
     auth_repository.dart
@@ -280,6 +293,7 @@ lib/
     booking_repository.dart
     notifikasi_repository.dart
     favorit_repository.dart
+    forum_repository.dart
 
   features/
     auth/         { view/, viewmodel/ }
@@ -290,6 +304,7 @@ lib/
     profil/       { view/, viewmodel/ }
     notifikasi/   { view/, viewmodel/ }
     favorit/      { view/, viewmodel/ }
+    forum/        { view/, viewmodel/ }
     mitra/        { view/, viewmodel/ }
 
   widgets/                     # widget yang dipakai lintas fitur
@@ -441,6 +456,33 @@ ID dokumen = `lapanganId`. Pola yang sama dengan `permintaan` (6.4): ID determin
 | `dibuatPada` | Timestamp | |
 
 > **Kenapa subkoleksi, bukan larik di `users`?** Larik tumbuh tanpa batas dan memaksa membaca seluruh dokumen pengguna hanya untuk mengecek satu lapangan. Subkoleksi dengan ID deterministik cukup satu `get()` dokumen. Konsisten juga dengan pola 6.4 yang sudah ada.
+
+### 6.10 `forum_posts/{postId}` — **v1.3**
+
+ID dokumen dibuat otomatis oleh Firestore dan tidak disimpan sebagai field.
+
+| Atribut | Tipe | Keterangan |
+|---|---|---|
+| `userId` | String | pembuat post; harus sama dengan `auth.uid` saat dibuat |
+| `namaUser` | String | nama pembuat, disalin saat post dibuat — dokumen `users` hanya bisa dibaca pemiliknya (§9), jadi daftar forum tidak bisa mengambil nama dari sana |
+| `teks` | String | isi post; boleh kosong kalau ada gambar |
+| `gambarBase64` | String? | gambar opsional, Base64 dari hasil kompresi `image_picker` (§12b); `null` kalau tanpa gambar |
+| `jumlahKomentar` | int | awal `0`; naik 1 tiap komentar baru (denormalisasi, pola sama dengan `ratingTotal` di AB-05) |
+| `createdAt` | Timestamp | |
+| `dieditPada` | Timestamp? | `null` sampai pemilik mengedit |
+
+### 6.11 `forum_posts/{postId}/komentar/{komentarId}` (subkoleksi) — **v1.3**
+
+ID dokumen otomatis.
+
+| Atribut | Tipe | Keterangan |
+|---|---|---|
+| `userId` | String | penulis komentar |
+| `namaUser` | String | disalin saat komentar dibuat |
+| `teks` | String | |
+| `createdAt` | Timestamp | |
+
+> Komentar **tidak bisa diedit** (rules `update: false`) dan tidak ada tombol hapus per komentar di aplikasi — komentar hanya hilang bersama postnya (AB-13).
 
 ---
 
@@ -641,15 +683,26 @@ StreamBuilder<List<BookingModel>>(
 
 Kotak statistik ketiga di Figma berlabel "4.9★ Rating" — itu **diganti** menjadi **jumlah favorit**. Alasannya di §12c.
 
+### AB-13 · Forum — **v1.3**
+
+1. **Siapa boleh apa.** Semua pengguna yang login (peran apa pun) boleh membaca forum, membuat post, dan berkomentar. Hanya **pemilik post** yang boleh mengedit dan menghapus postnya. Komentar tidak bisa diedit atau dihapus satu per satu lewat aplikasi.
+2. **Post tidak boleh kosong:** harus ada teks (setelah `trim`) **atau** gambar. Komentar wajib berisi teks.
+3. **Daftar post:** terbaru dulu, maksimal 20 (`limit(20)`), real-time lewat `StreamBuilder`. Tidak ada paginasi. Satu `orderBy('createdAt')` saja, jadi **tidak butuh composite index**.
+4. **Komentar:** komentar baru dan kenaikan `jumlahKomentar` +1 dikirim dalam **satu `WriteBatch`** (`ForumRepository.tambahKomentar`), supaya angkanya tidak tertinggal. Security Rules hanya mengizinkan non-pemilik mengubah `jumlahKomentar` kalau naik tepat 1.
+5. **Hapus post:** `ForumRepository.hapusPost` menghapus semua komentarnya dulu (batch per 400), baru postnya. Firestore tidak menghapus subkoleksi otomatis, dan post dihapus **terakhir** supaya rules masih bisa memeriksa pemilik post saat komentar dihapus.
+6. **Edit post:** hanya `teks`, `gambarBase64`, dan `dieditPada` yang berubah; `userId`, `createdAt`, `jumlahKomentar` tidak. Post yang pernah diedit menampilkan penanda "(diedit)".
+7. **Gambar:** maksimal satu per post, dipilih dari galeri lewat `image_picker` (`maxWidth`/`maxHeight` 1024, `imageQuality` 70). Tiga lapis batas — lihat §12b.
+8. **Tidak ada notifikasi** untuk komentar atau post baru. Forum tidak menyentuh koleksi `notifikasi`.
+
 ---
 
 ## 8. Spesifikasi Layar
 
-Navigasi bawah punya **4 tab: Home · Map · Teman · Profil** (v1.1, mengikuti prototipe Figma).
+Navigasi bawah punya **5 tab: Home · Map · Teman · Profil · Forum**. Empat tab pertama sejak v1.1 (mengikuti prototipe Figma); tab **Forum** ditambahkan v1.3.
 
-> ⚠️ Bab 3.3.2 poin 5 masih menuliskan 3 tab. **Wajib direvisi** sebelum Bab 4 ditulis.
+> ⚠️ Bab 3.3.2 poin 5 semula menuliskan 3 tab; `Highlight_2` sudah menulis 4 tab. Dengan Forum, aplikasi punya **5 tab** — mana yang ditulis di skripsi bergantung pada keputusan forum di §14.
 
-Tab **Map** langsung membuka L-05. Tab **Teman** membuka L-07.
+Tab **Map** langsung membuka L-05. Tab **Teman** membuka L-07. Tab **Forum** membuka L-16.
 
 ### L-01 · Splash Screen
 Logo asli aplikasi (`assets/images/logo.jpg`, juga dipakai sebagai ikon launcher Android sejak 16 September 2026) + nama "Sport Space" di tengah, tagline di bawah logo, badge fitur utama, latar warna utama. **Tombol "Mulai Sekarang"** (Koreksi teknis 15 September 2026 — sebelumnya auto-pindah ~2 detik tanpa tombol; diubah karena figma memang menampilkan tombol ini dan pemilik produk memutuskan splash menunggu ditekan). Pengecekan status login (`AuthViewModel`/`authStateChanges`) tetap berjalan di latar belakang sejak splash dibuka, tidak menunggu tombol — begitu ditekan: sudah login → Home; belum → Login.
@@ -731,6 +784,15 @@ Daftar lapangan milik mitra + tombol tambah lapangan; daftar booking masuk denga
 ### L-15 · Tambah/Edit Lapangan (form mitra)
 Nama, alamat, koordinat (latitude & longitude diisi manual atau ambil dari lokasi saat ini), jenis olahraga (multi-pilih), harga, jam buka & tutup, fasilitas (multi-pilih), URL foto. Saat disimpan: `isMitra = true`, `pemilikId = uid`, `sumberData = "mitra"`.
 
+### L-16 · Forum (daftar post) — **v1.3**
+Dibuka dari tab **Forum**. Judul "Forum", daftar kartu post: nama pembuat, cuplikan teks, gambar (kalau ada), tanggal & jam, ikon komentar + jumlah komentar. FAB "+" membuka L-17; menekan kartu membuka L-18. Tiga kondisi ditangani: memuat (spinner), kosong ("Belum ada post. Jadi yang pertama!"), dan kesalahan (ikon, judul "Gagal memuat", dan pesan penyebabnya; belum ada tombol coba lagi).
+
+### L-17 · Buat / Edit Post — **v1.3**
+Satu layar untuk dua mode. Kolom teks, tombol **Pilih Foto** (jadi **Ganti Foto** setelah ada gambar), pratinjau gambar dengan tombol ✕ untuk membuangnya, tombol **Kirim**. Mode edit (dibuka dari menu di L-18) memakai layar yang sama, terisi data post lama. Gambar yang melewati 500 KB mentah ditolak dengan pesan "Ukuran foto terlalu besar. Pilih foto lain."
+
+### L-18 · Detail Post — **v1.3**
+Post lengkap (nama, waktu, teks, gambar), judul "Komentar (n)", daftar komentar terlama dulu (nama, teks, waktu), dan kolom tulis komentar dengan tombol kirim di bawah. Menu ⋮ (**Edit Post** / **Hapus Post**) hanya muncul untuk pemilik post; Hapus memakai dialog konfirmasi "Post dan semua komentarnya akan dihapus permanen. Lanjutkan?".
+
 ---
 
 ## 9. Firestore Security Rules
@@ -742,6 +804,12 @@ service cloud.firestore {
 
     function login() { return request.auth != null; }
     function pemilikDok(uid) { return login() && request.auth.uid == uid; }
+
+    // v1.3 — gambar forum Base64 dibatasi 700.000 karakter (§12b).
+    function gambarForumAman(data) {
+      return data.get('gambarBase64', null) == null
+        || data.gambarBase64.size() <= 700000;
+    }
 
     match /users/{userId} {
       allow read: if pemilikDok(userId);
@@ -815,6 +883,42 @@ service cloud.firestore {
       allow update: if login() && resource.data.untukUserId == request.auth.uid;
       allow delete: if login() && resource.data.untukUserId == request.auth.uid;
     }
+
+    // v1.3 — Forum (AB-13)
+    match /forum_posts/{postId} {
+      allow read: if login();
+      allow create: if login()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.jumlahKomentar == 0
+        && gambarForumAman(request.resource.data);
+
+      allow update: if login() && (
+        // Jalur 1 — siapa pun: hanya menaikkan jumlahKomentar tepat 1
+        (request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['jumlahKomentar'])
+          && request.resource.data.jumlahKomentar
+               == resource.data.jumlahKomentar + 1)
+        // Jalur 2 — hanya pemilik: teks, gambar, dan penanda waktu edit
+        || (resource.data.userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['teks', 'gambarBase64', 'dieditPada'])
+          && gambarForumAman(request.resource.data))
+      );
+      allow delete: if login() && resource.data.userId == request.auth.uid;
+
+      match /komentar/{komentarId} {
+        allow read: if login();
+        allow create: if login()
+          && request.resource.data.userId == request.auth.uid;
+        allow update: if false;
+        // Penulis komentar, ATAU pemilik post (saat hapusPost membersihkan komentar)
+        allow delete: if login() && (
+          resource.data.userId == request.auth.uid
+          || get(/databases/$(database)/documents/forum_posts/$(postId))
+               .data.userId == request.auth.uid
+        );
+      }
+    }
   }
 }
 ```
@@ -822,6 +926,8 @@ service cloud.firestore {
 > Aturan ini sengaja longgar di beberapa titik (mis. `update` aktivitas) supaya alur gabung-aktivitas jalan tanpa Cloud Functions. Untuk skripsi ini memadai; sebutkan sebagai keterbatasan di Bab 5.
 >
 > Aturan `favorit` justru **ketat** — hanya pemilik akun yang bisa membaca dan menulis. Ini contoh bagus untuk ditunjukkan ke penguji saat membahas keamanan data pribadi.
+>
+> Aturan `forum_posts` (v1.3) punya satu titik longgar yang disengaja: Jalur 1 mengizinkan siapa pun yang login menaikkan `jumlahKomentar` tepat 1 **tanpa** memeriksa bahwa komentarnya benar-benar dibuat. Penghitung dan komentar dikirim satu `WriteBatch` dari klien. Rules sebenarnya bisa memeriksanya lewat `getAfter()`, tapi itu menambah satu pembacaan dokumen per komentar, dan versi sekarang memilih tidak memakainya. Sebutkan sebagai keterbatasan di Bab 5 kalau forum masuk skripsi.
 
 ---
 
@@ -930,6 +1036,14 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-39** | **Pembuat membatalkan aktivitasnya sendiri** | **Dokumen `aktivitasBermain` terhapus, hilang dari daftar Cari Rekan, seluruh peserta (selain pembuat) dapat notifikasi** |
 | **BB-40** | **Tekan tombol zoom + / − di Map berulang kali sampai batas** | **Peta memperbesar/memperkecil satu level per tekan, berhenti tepat di level 3 (zoom −) dan 18 (zoom +), tidak melewati batas** |
 | **BB-41** | **Buka detail lapangan dengan `tautanMaps` terisi, tekan "Buka di Google Maps"** | **Aplikasi/browser Google Maps eksternal terbuka menuju lokasi lapangan; kalau `tautanMaps` kosong, tombolnya tidak muncul sama sekali** |
+| **BB-42** | **Buka tab Forum** | **Daftar post tampil terbaru dulu (maksimal 20). Kalau belum ada post: "Belum ada post. Jadi yang pertama!"** |
+| **BB-43** | **Buat post berisi teks, tekan Kirim** | **Post muncul paling atas dengan nama pembuat dan jumlah komentar 0** |
+| **BB-44** | **Kirim post tanpa teks dan tanpa gambar** | **Ditolak dengan pesan "Post tidak boleh kosong.", dokumen tidak dibuat** |
+| **BB-45** | **Buat post dengan gambar dari galeri** | **Gambar tampil di kartu daftar dan di Detail Post. Gambar yang melewati 500 KB mentah ditolak: "Ukuran foto terlalu besar. Pilih foto lain."** |
+| **BB-46** | **Tulis komentar di Detail Post, tekan kirim** | **Komentar tampil di daftar komentar, dan angka komentar di kartu post bertambah 1** |
+| **BB-47** | **Pemilik post memilih Edit Post, ubah isi, simpan** | **Isi berubah dan penanda "(diedit)" muncul. Pengguna lain tidak melihat menu Edit/Hapus di post itu** |
+| **BB-48** | **Pemilik post memilih Hapus Post dan mengonfirmasi** | **Post dan seluruh komentarnya terhapus, hilang dari daftar** |
+| **BB-49** | **Pengguna B mencoba mengubah isi atau menghapus post pengguna A** | **Ditolak Security Rules** |
 
 ---
 
@@ -963,8 +1077,18 @@ Keduanya tidak bisa benar sekaligus. Dua opsi yang dipertimbangkan:
 
 - Tetap **tanpa Firebase Storage/Blaze** — keputusan T-40 (Opsi A) soal Storage sendiri tidak berubah.
 - Tapi **upload asli** (bukan tempel URL) — mengatasi masalah nyata Opsi A: kebanyakan pengguna tidak punya foto diri yang sudah ter-hosting di URL manapun untuk ditempel.
-- Bergantung pada **batas 1 MB per dokumen Firestore**, jadi HANYA cocok untuk foto profil yang dikompres kecil (`maxWidth`/`maxHeight`/`imageQuality` bawaan `image_picker` di `ubah_profil_sheet.dart`, tanpa paket kompresi tambahan) — TIDAK dipakai untuk foto lapangan (`lapangan.fotoURL` tetap URL, foto lapangan bisa lebih besar/banyak per lapangan).
+- Bergantung pada **batas 1 MB per dokumen Firestore**, jadi HANYA cocok untuk gambar yang dikompres kecil dan **satu per dokumen**: foto profil (`ubah_profil_sheet.dart`, 512 px) dan — sejak v1.3 — gambar post forum (`buat_post_screen.dart`, 1024 px). Keduanya memakai `maxWidth`/`maxHeight`/`imageQuality` bawaan `image_picker`, tanpa paket kompresi tambahan. TIDAK dipakai untuk foto lapangan (`lapangan.fotoURL` tetap URL, foto lapangan bisa lebih besar/banyak per lapangan).
 - Menambah **satu paket baru** ke PRD Bagian 4: `image_picker`.
+
+**Diperluas v1.3 (4 November 2026) — gambar post forum.** Forum (AB-13) memakai pola Base64 yang sama untuk gambar post. Sebelumnya pola ini tertulis "hanya untuk foto profil"; forum memakainya tanpa tercatat, dan hanya batas di layar yang menjaganya. Sekarang tercatat, dan dijaga **tiga lapis** dengan angka yang saling cocok:
+
+| Lapis | Batas | Di mana |
+|---|---|---|
+| 1. View | gambar mentah ≤ **500 KB** (`512 × 1024` byte), sesudah kompres `image_picker` | `buat_post_screen.dart` (`_batasUkuranGambarBytes`) |
+| 2. Repository | string Base64 ≤ **700.000 karakter** | `ForumRepository` (`batasPanjangGambarBase64`), ditolak sebelum dikirim: "Gambar terlalu besar. Pilih gambar yang lebih kecil." |
+| 3. Security Rules | string Base64 ≤ **700.000 karakter** saat membuat dan saat pemilik mengedit | `firestore.rules` (`gambarForumAman`, §9) |
+
+Hitungannya: 500 KB mentah = 512.000 byte → Base64 ≈ 682.668 karakter (4/3 kali lipat), di bawah 700.000, dan di bawah batas 1.048.576 byte per dokumen dengan sisa ±350 KB untuk `teks` dan field lain. Satu gambar per post, jadi dokumen tidak bisa menumpuk gambar. Batas teks post belum ada (`teks` tidak dibatasi panjangnya) — post yang sangat panjang tetap bisa mendekati 1 MB; dicatat sebagai keterbatasan.
 
 **Sisa pekerjaan dari keputusan ini (dokumen, bukan kode):** revisi Tabel 3.4 (hapus baris Firebase Storage) dan Bab 2.9 (hapus poin yang menyebut Storage) bersama Pak Gintoro — lihat §14 daftar revisi dokumen skripsi.
 
@@ -1094,6 +1218,23 @@ Catatan dari diskusi sebelumnya yang belum tercatat di tabel atas:
 | 35 | Tabel 3.10 (ERD) | Gabung entitas `Users` dan `PemilikLapangan` jadi satu entitas `Users` dengan atribut `role` (keputusan 15 September 2026: kode tidak dipecah, dokumen yang disesuaikan). Sesuai Catatan pemetaan ke ERD di §6 |
 | 36 | Bab 3.3.2 poin 5 + Tabel 3.6 | Halaman Map ditambahkan sebagai halaman tersendiri berlabel **"Cari Lapangan"**, berbeda dari Detail Lapangan (gabungan dengan #1) |
 | ~~37~~ | ~~Bab 3 use case / Activity Diagram~~ | ~~Daftar aktivitas Cari Rekan pada Detail Lapangan (T-53)~~ — **gugur 8 Oktober 2026: T-53 dibatalkan**, tidak perlu diagram baru |
+
+### Tambahan akibat Forum (4 November 2026) — **hanya kalau forum diputuskan masuk skripsi**
+
+Keputusannya belum diambil (lihat "Perubahan v1.3" di atas). Dua jalur:
+
+- **(a) Forum masuk Bab 3–4:** kerjakan #38–#44 di bawah.
+- **(b) Forum tidak masuk Bab 3–4:** #38–#44 tidak dikerjakan. Tulis forum di Bab 5 sebagai pengembangan lanjutan, dan di Bab 4 sebutkan bahwa tab Forum ada di aplikasi tetapi di luar ruang lingkup pengujian. Putaran revisi 2 menuliskan **4 tab** — tangkapan layar Bab 4 akan menunjukkan 5, jadi kalimat itu tetap perlu disesuaikan.
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 38 | Bab 3.3.2 poin 5 + Tabel 3.4 (narasi navigasi) | Navigasi bawah 4 tab → **5 tab** (Home · Map · Teman · Profil · Forum) — menggantikan keputusan label tab putaran revisi 2 |
+| 39 | ERD Bab 3 / Tabel 3.10 | Tambah entitas `ForumPost` (`userId`, `namaUser`, `teks`, `gambarBase64`, `jumlahKomentar`, `createdAt`, `dieditPada`) dan `ForumKomentar` (subkoleksi) — ERD jadi 10 entitas. Sesuai §6.10–6.11 |
+| 40 | Bab 3 use case / Activity Diagram | Tambah use case "Membuat, Mengedit, dan Menghapus Post Forum" dan "Berkomentar di Forum" |
+| 41 | Bab 3.3.2 UI | Tambah subbab rancangan Forum (L-16 daftar, L-17 buat/edit, L-18 detail) beserta tabel elemennya |
+| 42 | Tabel 3.4 / Bab 2.9 | Kalimat "Cloud Firestore ... menyimpan foto profil pengguna dalam format Base64" → tambah "dan gambar post forum" (§12b) |
+| 43 | Bab 4 tabel Black Box | Tambah BB-42 sampai BB-49 |
+| 44 | Bab 5 keterbatasan | Komentar tidak bisa diedit/dihapus satuan; Security Rules forum punya satu titik longgar (penghitung komentar, §9); teks post tidak dibatasi panjangnya; gambar forum Base64 dibatasi 500 KB per post |
 
 **Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
 

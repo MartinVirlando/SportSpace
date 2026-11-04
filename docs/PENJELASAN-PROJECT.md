@@ -408,12 +408,13 @@ Membaca notifikasi secara real-time dan menandai notifikasi sebagai sudah dibaca
 
 ### `app_routes.dart`
 
-Berisi nama rute dan navigasi utama empat tab:
+Berisi nama rute dan navigasi utama lima tab:
 
 1. Home;
 2. Map;
 3. Teman;
-4. Profil.
+4. Profil;
+5. Forum (v1.3, lihat `PRD.md` AB-13).
 
 `ShellNavigasi` menggunakan `StatefulWidget` karena tab yang aktif dapat berubah.
 
