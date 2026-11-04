@@ -3,6 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/forum_post_model.dart';
 import '../models/forum_komentar_model.dart';
 
+/// Batas panjang string `gambarBase64` (PRD §12b). View sudah membatasi
+/// gambar mentah 500 KB (≈ 683.000 karakter Base64); angka ini pengaman
+/// kedua di Repository, dan `firestore.rules` memakai angka yang sama.
+/// Tujuannya menjaga dokumen `forum_posts` tetap di bawah batas 1 MB.
+const batasPanjangGambarBase64 = 700000;
+
 /// Satu-satunya lapisan yang boleh menyentuh Firestore untuk data forum.
 ///
 /// ATURAN LAPISAN (CLAUDE.md): View dan ViewModel TIDAK BOLEH
@@ -12,6 +18,14 @@ class ForumRepository {
 
   ForumRepository({FirebaseFirestore? firestore})
       : _db = firestore ?? FirebaseFirestore.instance;
+
+  /// Tolak gambar yang melewati batas, sebelum dikirim ke Firestore.
+  void _periksaGambar(String? gambarBase64) {
+    if (gambarBase64 != null &&
+        gambarBase64.length > batasPanjangGambarBase64) {
+      throw Exception('Gambar terlalu besar. Pilih gambar yang lebih kecil.');
+    }
+  }
 
   /// Stream semua post forum, terbaru dulu.
   ///
@@ -46,6 +60,7 @@ class ForumRepository {
     if (teks.trim().isEmpty && gambarBase64 == null) {
       throw Exception('Post tidak boleh kosong.');
     }
+    _periksaGambar(gambarBase64);
 
     try {
       await _db.collection('forum_posts').add({
@@ -77,6 +92,7 @@ class ForumRepository {
     if (teks.trim().isEmpty && gambarBase64 == null) {
       throw Exception('Post tidak boleh kosong.');
     }
+    _periksaGambar(gambarBase64);
 
     try {
       await _db.collection('forum_posts').doc(postId).update({

@@ -14,6 +14,14 @@ service cloud.firestore {
     function login() { return request.auth != null; }
     function pemilikDok(uid) { return login() && request.auth.uid == uid; }
 
+    // Gambar forum disimpan Base64 di dokumen (PRD §12b). Batas 700.000
+    // karakter = pengaman kedua di bawah batas 1 MB per dokumen; angka
+    // yang sama dengan `batasPanjangGambarBase64` di ForumRepository.
+    function gambarForumAman(data) {
+      return data.get('gambarBase64', null) == null
+        || data.gambarBase64.size() <= 700000;
+    }
+
     match /users/{userId} {
       // Sebelumnya `if login()` — siapa pun yang login bisa membaca
       // nomorTelepon dan lokasiDefault (koordinat rumah/kantor) SELURUH
@@ -100,7 +108,8 @@ service cloud.firestore {
       // harus mulai dari 0 komentar.
       allow create: if login()
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.jumlahKomentar == 0;
+        && request.resource.data.jumlahKomentar == 0
+        && gambarForumAman(request.resource.data);
 
       allow update: if login() && (
         // Jalur 1 — siapa pun yang login: hanya menaikkan jumlahKomentar
@@ -118,6 +127,7 @@ service cloud.firestore {
           resource.data.userId == request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['teks', 'gambarBase64', 'dieditPada'])
+          && gambarForumAman(request.resource.data)
         )
       );
 

@@ -145,7 +145,7 @@ class ShellNavigasiState extends State<ShellNavigasi> {
           ),
           NavigationDestination(
             icon: Icon(Icons.forum_outlined),
-            label: 'Forum',
+            label: AppStrings.forum,
           ),
         ],
       ),

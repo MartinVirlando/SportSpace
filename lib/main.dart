@@ -20,7 +20,6 @@ import 'repositories/rating_repository.dart';
 import 'routes/splash_screen.dart';
 import 'firebase_options.dart';
 
-
 Future<void> main() async {
   // Wajib dipanggil sebelum memakai plugin apa pun sebelum runApp().
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,8 +53,6 @@ class SportSpaceApp extends StatelessWidget {
         Provider<NotifikasiRepository>(create: (_) => NotifikasiRepository()),
         Provider<RatingRepository>(create: (_) => RatingRepository()),
         Provider<BookingRepository>(create: (_) => BookingRepository()),
-        Provider<FavoritRepository>(create: (_) => FavoritRepository()),
-
         Provider<FavoritRepository>(create: (_) => FavoritRepository()),
         Provider<ForumRepository>(create: (_) => ForumRepository()),
 
