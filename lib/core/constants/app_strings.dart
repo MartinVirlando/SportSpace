@@ -17,7 +17,8 @@ class AppStrings {
   static const splashBadgeLokasi = 'Berbasis Lokasi';
   static const splashBadgeMultiOlahraga = 'Multi-Olahraga';
   static const splashBadgeCariRekan = 'Cari Rekan';
-  static const splashDaftarOlahraga = 'Futsal · Badminton · Padel · Mini Soccer';
+  static const splashDaftarOlahraga =
+      'Futsal · Badminton · Padel · Mini Soccer';
 
   // ---------- Navigasi bawah (4 tab, PRD v1.1) ----------
   static const tabHome = 'Home';
@@ -237,6 +238,27 @@ class AppStrings {
   static const errJamSama = 'Jam tutup tidak boleh sama dengan jam buka.';
   static const errGagalSimpanLapangan = 'Gagal menyimpan lapangan.';
 
+  // ---------- Forum ----------
+  static const String forum = 'Forum';
+  static const String kosongForum = 'Belum ada post. Jadi yang pertama!';
+
+  // ---------- Buat Forum ----------
+  static const String buatPost = 'Buat Post';
+  static const String hintBuatPost = 'Apa yang ingin kamu bagikan?';
+  static const String errPostKosong = 'Post tidak boleh kosong.';
+
+  // ---------- Detail Post Forum ----------
+  static const String detailPost = 'Detail Post';
+  static const String komentar = 'Komentar';
+  static const String kosongKomentar = 'Belum ada komentar. Jadilah yang pertama!';
+  static const String hintKomentar = 'Tulis komentar...';
+
+  static const String editPost = 'Edit Post';
+  static const String hapusPost = 'Hapus Post';
+  static const String konfirmasiHapusPost =
+      'Post dan semua komentarnya akan dihapus permanen. Lanjutkan?';
+  static const String postDihapus = 'Post dihapus.';
+  static const String tandaDiedit = '(diedit)';
   // ---------- Kesalahan umum ----------
   static const errGagalMuat = 'Gagal memuat';
   static const errTanpaKoneksi = 'Tidak ada koneksi internet. Coba lagi.';
@@ -270,7 +292,8 @@ class AppStrings {
   static const belumDiatur = 'Belum diatur';
   static const ubah = 'Ubah';
   static const kosongRiwayatBooking = 'Belum ada riwayat pemesanan.';
-  static const kosongAktivitasSaya = 'Belum ada aktivitas yang kamu buat atau ikuti.';
+  static const kosongAktivitasSaya =
+      'Belum ada aktivitas yang kamu buat atau ikuti.';
   // Dipakai Home (L-04) saat toggle ♥ aktif tapi belum ada favorit — T-41.
   static const kosongLapanganFavorit = 'Belum ada lapangan favorit.';
   static const bantuan = 'Bantuan';
@@ -308,8 +331,7 @@ class AppStrings {
   static const adminSeedPerluLogin = 'Masuk dulu untuk menjalankan seed data.';
   static const adminSeedGagal = 'Gagal menjalankan seed.';
 
-  static const isiTentang =
-      'Sport Space v1.1\n\n'
+  static const isiTentang = 'Sport Space v1.1\n\n'
       'Aplikasi pencarian lapangan olahraga dan rekan bermain berbasis '
       'lokasi, dikembangkan sebagai bagian dari tugas akhir (skripsi).\n\n'
       'Dibangun dengan Flutter dan Firebase. Perhitungan jarak memakai '

@@ -9,6 +9,7 @@ import '../features/lapangan/view/home_screen.dart';
 import '../features/lapangan/view/map_screen.dart';
 import '../features/lapangan/viewmodel/map_viewmodel.dart';
 import '../features/profil/view/profil_screen.dart';
+import '../features/forum/view/forum_screen.dart';
 import '../repositories/aktivitas_repository.dart';
 import '../repositories/lapangan_repository.dart';
 
@@ -121,6 +122,7 @@ class ShellNavigasiState extends State<ShellNavigasi> {
         child: const CariRekanScreen(), // L-07 · T-17
       ),
       const ProfilScreen(), // L-13 · T-27
+      const ForumScreen(), // Forum
     ];
 
     return Scaffold(
@@ -140,6 +142,10 @@ class ShellNavigasiState extends State<ShellNavigasi> {
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             label: AppStrings.tabProfil,
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.forum_outlined),
+            label: 'Forum',
           ),
         ],
       ),
