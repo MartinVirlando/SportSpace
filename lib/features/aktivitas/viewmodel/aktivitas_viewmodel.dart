@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/constants/app_aktivitas.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/utils/saring_aktivitas.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
 
@@ -34,6 +36,23 @@ class AktivitasViewModel extends ChangeNotifier {
     if (_filterOlahraga == kode) return;
     _filterOlahraga = kode;
     notifyListeners();
+  }
+
+  /// Filter jenis aktivitas (T-54) — dijalankan di klien lewat [saring],
+  /// BUKAN di query, jadi mengubahnya tidak membuka listener Firestore baru
+  /// dan tidak butuh index baru.
+  String _filterJenis = AppJenisAktivitas.semua;
+  String get filterJenis => _filterJenis;
+
+  void ubahFilterJenis(String kode) {
+    if (_filterJenis == kode) return;
+    _filterJenis = kode;
+    notifyListeners();
+  }
+
+  /// Terapkan filter klien ke daftar yang datang dari [streamAktivitas].
+  List<AktivitasBermainModel> saring(List<AktivitasBermainModel> daftar) {
+    return saringAktivitas(daftar, jenis: _filterJenis);
   }
 
   /// ID aktivitas yang tombol "Gabung" kartunya sedang memproses —

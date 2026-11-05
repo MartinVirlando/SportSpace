@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../core/constants/app_aktivitas.dart';
 import '../core/constants/app_sports.dart';
 import '../models/aktivitas_bermain_model.dart';
 import '../models/notifikasi_model.dart';
@@ -97,6 +98,7 @@ class AktivitasRepository {
     required String namaLapangan,
     required String pembuatId,
     required String namaPembuat,
+    required String jenisAktivitas,
     String? catatan,
   }) async {
     // Pengaman berlapis — sudah dicek di UI (`buat_aktivitas_screen.dart`
@@ -109,6 +111,9 @@ class AktivitasRepository {
     }
     if (!waktu.isAfter(DateTime.now())) {
       throw Exception('Waktu aktivitas harus di masa depan.');
+    }
+    if (!AppJenisAktivitas.valid(jenisAktivitas)) {
+      throw Exception('Jenis aktivitas tidak valid.');
     }
 
     try {
@@ -127,6 +132,7 @@ class AktivitasRepository {
         peserta: [pembuatId],
         catatan: catatan,
         dibuatPada: DateTime.now(),
+        jenisAktivitas: jenisAktivitas,
       );
 
       await ref.set(aktivitas.toFirestore());

@@ -30,7 +30,7 @@ class BarisChipOlahraga extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final kode = AppSports.daftarFilter[i];
-          return _Chip(
+          return ChipFilter(
             label: '${AppSports.ikonDari(kode)} ${AppSports.labelDari(kode)}',
             aktif: kode == terpilih,
             onTap: () => onPilih(kode),
@@ -41,12 +41,18 @@ class BarisChipOlahraga extends StatelessWidget {
   }
 }
 
-class _Chip extends StatelessWidget {
+/// Satu chip filter — dipakai juga oleh `BarisChipFilter` (v1.4, T-54).
+class ChipFilter extends StatelessWidget {
   final String label;
   final bool aktif;
   final VoidCallback onTap;
 
-  const _Chip({required this.label, required this.aktif, required this.onTap});
+  const ChipFilter({
+    super.key,
+    required this.label,
+    required this.aktif,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

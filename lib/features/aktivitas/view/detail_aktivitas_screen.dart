@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_aktivitas.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
@@ -9,6 +10,7 @@ import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/permintaan_gabung_model.dart';
 import '../../../models/user_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
+import '../../../widgets/label_aktivitas.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/detail_aktivitas_viewmodel.dart';
 
@@ -143,6 +145,12 @@ class _Isi extends StatelessWidget {
                     Text(
                       '🕐 ${Formatter.tanggalDanJam(aktivitas.waktu)}',
                       style: AppTextStyles.metaLapangan,
+                    ),
+                    const SizedBox(height: 6),
+                    LabelAktivitas(
+                      teks: AppJenisAktivitas.labelDari(
+                        aktivitas.jenisAktivitas,
+                      ),
                     ),
                   ],
                 ),

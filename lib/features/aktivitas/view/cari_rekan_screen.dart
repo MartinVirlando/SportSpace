@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_aktivitas.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/aktivitas_bermain_model.dart';
+import '../../../widgets/baris_chip_filter.dart';
 import '../../../widgets/chip_olahraga.dart';
+import '../../../widgets/label_aktivitas.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/aktivitas_viewmodel.dart';
 import 'buat_aktivitas_screen.dart';
@@ -46,6 +49,14 @@ class CariRekanScreen extends StatelessWidget {
               terpilih: vm.filterOlahraga,
               onPilih: context.read<AktivitasViewModel>().ubahFilterOlahraga,
             ),
+            const SizedBox(height: 8),
+            // v1.4 (T-54) — filter jenis aktivitas, disaring di klien.
+            BarisChipFilter(
+              daftarKode: AppJenisAktivitas.daftarFilter,
+              label: AppJenisAktivitas.label,
+              terpilih: vm.filterJenis,
+              onPilih: context.read<AktivitasViewModel>().ubahFilterJenis,
+            ),
             const SizedBox(height: 14),
             Expanded(
               child: StreamBuilder<List<AktivitasBermainModel>>(
@@ -65,11 +76,22 @@ class CariRekanScreen extends StatelessWidget {
                     );
                   }
 
-                  final daftar = snapshot.data ?? const [];
-                  if (daftar.isEmpty) {
+                  final semua = snapshot.data ?? const [];
+                  if (semua.isEmpty) {
                     return const _Pesan(
                       ikon: Icons.people_outline,
                       judul: AppStrings.kosongAktivitas,
+                      keterangan: '',
+                    );
+                  }
+
+                  // Filter klien (T-54): daftar dari Firestore ada isinya,
+                  // tapi bisa jadi tidak ada yang cocok dengan chip jenis.
+                  final daftar = vm.saring(semua);
+                  if (daftar.isEmpty) {
+                    return const _Pesan(
+                      ikon: Icons.filter_alt_off_outlined,
+                      judul: AppStrings.kosongFilterAktivitas,
                       keterangan: '',
                     );
                   }
@@ -205,6 +227,12 @@ class _KartuAktivitas extends StatelessWidget {
                                 Text(
                                   '🕐 ${Formatter.tanggalDanJam(aktivitas.waktu)}',
                                   style: AppTextStyles.metaLapangan,
+                                ),
+                                const SizedBox(height: 6),
+                                LabelAktivitas(
+                                  teks: AppJenisAktivitas.labelDari(
+                                    aktivitas.jenisAktivitas,
+                                  ),
                                 ),
                               ],
                             ),

@@ -277,7 +277,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 
 | ID | Usulan | Skala | Tahap | Status |
 |---|---|---|---|---|
-| T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 13 tes hijau); BB-50–51 belum diuji di perangkat |
 | T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 | Rencana (PRD v1.4) |
 | T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 | Rencana (PRD v1.4) |
 | T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Belum |

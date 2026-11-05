@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_aktivitas.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
@@ -43,6 +44,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
   final _catatanCtrl = TextEditingController();
 
   String _olahraga = AppSports.futsal;
+  String _jenis = AppJenisAktivitas.mainBareng; // v1.4 (T-54), bawaan Main Bareng
   String? _lapanganId;
   DateTime? _tanggal;
   TimeOfDay? _jam;
@@ -117,6 +119,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
       namaLapangan: lapangan.nama,
       pembuatId: user.userId,
       namaPembuat: user.nama,
+      jenisAktivitas: _jenis,
       catatan:
           _catatanCtrl.text.trim().isEmpty ? null : _catatanCtrl.text.trim(),
     );
@@ -171,6 +174,28 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                       ),
                       selected: aktif,
                       onSelected: (_) => setState(() => _olahraga = kode),
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: aktif ? Colors.white : AppColors.textPrimary,
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                // v1.4 (T-54) — Main Bareng atau Sparring.
+                const Text(
+                  AppStrings.jenisAktivitas,
+                  style: AppTextStyles.judulSeksi,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: AppJenisAktivitas.daftarPilihan.map((kode) {
+                    final aktif = kode == _jenis;
+                    return ChoiceChip(
+                      label: Text(AppJenisAktivitas.labelDari(kode)),
+                      selected: aktif,
+                      onSelected: (_) => setState(() => _jenis = kode),
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
                         color: aktif ? Colors.white : AppColors.textPrimary,

@@ -116,6 +116,9 @@ class AppStrings {
   static const tolak = 'Tolak';
   static const errSlotPenuh = 'Slot penuh';
   static const kosongAktivitas = 'Belum ada aktivitas untuk filter ini.';
+  static const kosongFilterAktivitas =
+      'Tidak ada aktivitas yang cocok dengan filter.';
+  static const jenisAktivitas = 'Jenis Aktivitas';
 
   // ---------- Buat Aktivitas (L-08) ----------
   static const jumlahPemainDibutuhkan = 'Jumlah Pemain Dibutuhkan';
