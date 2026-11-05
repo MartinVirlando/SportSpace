@@ -221,7 +221,7 @@ class AppStrings {
   static const terima = 'Terima';
   static const tolak = 'Tolak';
   static const errSlotPenuh = 'Slot penuh';
-  static const kosongAktivitas = 'Belum ada aktivitas untuk filter ini.';
+  static const kosongAktivitas = 'Belum ada aktivitas yang bisa diikuti.';
   static const kosongFilterAktivitas =
       'Tidak ada aktivitas yang cocok dengan filter.';
   static const jenisAktivitas = 'Jenis Aktivitas';
