@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/status_booking.dart';
+import '../../../core/utils/stream_terakhir.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/favorit_model.dart';
@@ -48,23 +49,46 @@ class ProfilViewModel extends ChangeNotifier {
     required FavoritRepository favoritRepository,
     required LapanganRepository lapanganRepository,
     required this.userId,
-  })  : streamRiwayatBooking = bookingRepository.streamRiwayatBooking(userId),
-        streamAktivitasSaya =
-            aktivitasRepository.streamAktivitasSaya(userId),
-        streamDaftarFavorit =
-            favoritRepository.streamDaftarFavorit(userId),
+  })  : _riwayatBooking = StreamTerakhir(
+          bookingRepository.streamRiwayatBooking(userId),
+        ),
+        _aktivitasSaya = StreamTerakhir(
+          aktivitasRepository.streamAktivitasSaya(userId),
+        ),
+        _daftarFavorit = StreamTerakhir(
+          favoritRepository.streamDaftarFavorit(userId),
+        ),
         _bookingRepository = bookingRepository,
         _lapanganRepository = lapanganRepository;
 
   final BookingRepository _bookingRepository;
   final LapanganRepository _lapanganRepository;
 
-  final Stream<List<BookingModel>> streamRiwayatBooking;
-  final Stream<List<AktivitasBermainModel>> streamAktivitasSaya;
+  // Tiga stream di bawah dibungkus [StreamTerakhir]: satu langganan ke
+  // Firestore, dan setiap `StreamBuilder` — termasuk yang baru dibangun
+  // belakangan karena `ListView` membangun bagian layar secara malas —
+  // langsung menerima nilai terakhirnya. Tanpa ini, bagian yang ada jauh di
+  // bawah (mis. Aktivitas Saya) menunggu event yang sudah lewat dan
+  // spinner-nya tidak pernah selesai.
+  final StreamTerakhir<List<BookingModel>> _riwayatBooking;
+  final StreamTerakhir<List<AktivitasBermainModel>> _aktivitasSaya;
+  final StreamTerakhir<List<FavoritModel>> _daftarFavorit;
+
+  Stream<List<BookingModel>> get streamRiwayatBooking => _riwayatBooking.stream;
+  Stream<List<AktivitasBermainModel>> get streamAktivitasSaya =>
+      _aktivitasSaya.stream;
 
   /// Dipakai HANYA untuk kotak statistik "Favorit" (AB-12) — daftar
   /// lengkapnya sendiri sudah pindah ke Home (L-04, T-41).
-  final Stream<List<FavoritModel>> streamDaftarFavorit;
+  Stream<List<FavoritModel>> get streamDaftarFavorit => _daftarFavorit.stream;
+
+  @override
+  void dispose() {
+    _riwayatBooking.dispose();
+    _aktivitasSaya.dispose();
+    _daftarFavorit.dispose();
+    super.dispose();
+  }
 
   /// Status yang DITAMPILKAN untuk satu booking — PRD AB-07, BB-28. Lihat
   /// `core/utils/status_booking.dart` — logika yang sama dipakai
