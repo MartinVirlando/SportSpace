@@ -68,7 +68,7 @@ Pak Gintoro menilai fitur tambahan seperti Forum dan fitur yang terinspirasi apl
 
 ### Perubahan v1.5 (5 November 2026) — Fitur tambahan terinspirasi AYO, tahap 2 dan 3
 
-Tim memutuskan (5 November 2026) melanjutkan sisa usulan terinspirasi AYO yang memang berasal dari AYO: T-57, T-59, T-60, T-62, T-64, dan T-65. **T-66 (mitra membalas ulasan) dan T-67 (pengingat jadwal) tidak dikerjakan**: keduanya ide di luar AYO, dan T-67 butuh package baru yang belum diizinkan. Seperti v1.4, ini fitur pemanis menurut Pak Gintoro, tanpa koleksi baru, tanpa pembayaran, **dan tanpa perubahan Security Rules** (rules yang ada sudah mengizinkan semua tulisan di bawah).
+Tim memutuskan (5 November 2026) melanjutkan sisa usulan terinspirasi AYO yang memang berasal dari AYO: T-57, T-59, T-60, T-62, T-64, dan T-65. **T-66 (mitra membalas ulasan) dan T-67 (pengingat jadwal) tidak ikut dikerjakan**: keduanya ide di luar AYO, dan T-67 butuh package baru yang belum diizinkan. (T-66 kemudian disetujui pemilik produk pada hari yang sama — lihat "Tambahan v1.5 … T-66" di bawah.) Seperti v1.4, ini fitur pemanis menurut Pak Gintoro, tanpa koleksi baru, tanpa pembayaran, **dan tanpa perubahan Security Rules** (rules yang ada sudah mengizinkan semua tulisan di bawah).
 
 | # | Tugas | Perubahan | Bagian yang terdampak |
 |---|---|---|---|
@@ -90,6 +90,23 @@ Urutan pengerjaan yang dipakai (menurut ketergantungan, bukan nomor): T-57, T-59
 - **Diskon hanya untuk sewa lapangan**, bukan produk tambahan.
 
 > ⚠️ **Konsekuensi ke skripsi.** Tiga entitas ERD bertambah atribut lagi (`lapangan`, `booking`, `aktivitasBermain`). Gambar ERD (M1) sebaiknya dibuat **setelah** ini final — lihat §14 "Tambahan akibat v1.5".
+
+### Tambahan v1.5 (5 November 2026, sore) — T-66 Mitra membalas ulasan
+
+Pemilik produk menyetujui T-66 (5 November 2026). Berbeda dari tugas v1.5 di atas, **T-66 mengubah Security Rules** — jadi `firebase deploy --only firestore:rules` harus dijalankan sebelum fitur ini bisa dicoba di perangkat. Rinciannya di §7 AB-22, §6.5, dan §9.
+
+| # | Tugas | Perubahan | Bagian yang terdampak |
+|---|---|---|---|
+| 7 | **T-66** | **Mitra pemilik lapangan membalas ulasan** pengguna. Dua atribut baru di `rating` (`balasanMitra`, `balasanPada`); balasan tampil di bawah ulasan di L-06. Tanpa notifikasi ke pengguna | §6.5, §7 AB-22, §8 L-06, §9, §11 BB-86–90 |
+
+**Dokumen lama tetap terbaca.** `rating` tanpa `balasanMitra` berarti belum dibalas. Tidak perlu migrasi data. Security Rules baru juga **tidak merusak** aplikasi versi lama: menulis ulang rating yang belum punya balasan tetap diizinkan.
+
+**Keputusan yang diambil** (dicatat supaya bisa dijelaskan):
+- **Satu balasan per ulasan, boleh diganti, tidak bisa dihapus** — sejalan dengan aturan `rating` yang tidak pernah bisa dihapus (`delete: false`).
+- **Pengguna mengubah ratingnya → balasan dipertahankan.** Balasan hanya bisa diubah mitra; pengguna tidak boleh menyentuhnya (Security Rules), jadi `beriRating` memakai `update` pada field yang berubah, bukan `set` seluruh dokumen yang akan menghapus balasan.
+- **Tidak ada notifikasi** ke pengguna saat ulasannya dibalas. Balasan hanya terlihat di L-06. Bisa ditambahkan nanti lewat koleksi `notifikasi` yang sudah ada.
+
+> ⚠️ **Konsekuensi ke skripsi.** Entitas `rating` di ERD Bab 3 bertambah dua atribut — lihat §14 #54.
 
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
@@ -464,6 +481,8 @@ ID dokumen = `"{userId}_{lapanganId}"` — satu pengguna hanya punya satu rating
 | `nilaiRating` | int | 1–5 |
 | `ulasanTeks` | String? | opsional |
 | `tanggal` | Timestamp | |
+| `balasanMitra` | String? | **v1.5 (T-66).** Balasan mitra pemilik lapangan, 1–500 karakter. Tidak ada di dokumen baru sampai mitra membalas, dan **tidak boleh** ada saat pengguna membuat ulasan (Security Rules §9). Dokumen lama tanpa field ini dibaca `null` |
+| `balasanPada` | Timestamp? | **v1.5 (T-66).** Waktu balasan terakhir; selalu ikut terisi bersama `balasanMitra` |
 
 ### 6.6 `booking/{bookingId}`
 
@@ -893,6 +912,23 @@ L-09: label "Privat"; kode ditampilkan HANYA kepada pembuat dan peserta;
 - **Keterbatasan yang diakui:** privat hanya menyembunyikan dari daftar. Pengguna login yang tahu `aktivitasId`, atau membaca koleksi langsung, tetap bisa melihat dokumennya karena Security Rules `aktivitasBermain` mengizinkan `read` untuk semua pengguna login (§9). Untuk skripsi ini memadai; sebutkan di Bab 5.
 - Aktivitas yang dibatalkan, penuh, atau sudah lewat tetap bisa dibuka lewat kode (L-09 sudah menangani statusnya).
 
+### AB-22 · Mitra membalas ulasan — **v1.5 (T-66)**
+
+```
+L-06, daftar ulasan: untuk SETIAP ulasan, jika lapangan.pemilikId == uid pengguna yang login,
+   tampil tombol "Balas" (belum dibalas) atau "Ubah balasan" (sudah dibalas).
+Tombol → bottom sheet: kolom teks (terisi balasan lama bila ada), maksimal 500 karakter, tombol Kirim.
+Kirim → RatingRepository.balasUlasan(ratingId, teks):
+        update rating/{ratingId} { balasanMitra: teks yang di-trim, balasanPada: sekarang }
+Ulasan yang sudah dibalas menampilkan blok "Balasan pemilik" + teks + tanggal, untuk SEMUA pengguna.
+```
+
+- **Hanya mitra pemilik lapangan** (`lapangan.pemilikId == request.auth.uid`). Tombol hanya digambar untuk mereka, dan Security Rules menegakkannya (§9) — penyewa yang memanggil `update` langsung tetap ditolak.
+- **Validasi:** balasan wajib diisi (setelah di-trim) dan maksimal 500 karakter — fungsi `Validators.balasan`, diuji otomatis. Batas yang sama diulang di Repository dan Security Rules.
+- **Tanpa query baru:** daftar ulasan tetap `streamUlasan` (index #6); balasan ikut terbawa di dokumen `rating` dan langsung tampil lewat `StreamBuilder`. Balasan tidak memengaruhi `ratingTotal`, `jumlahRating`, atau `ratingRata2`.
+- **Pengguna mengubah ratingnya (AB-05)** tidak menghapus balasan: `beriRating` memakai `update` pada `nilaiRating`, `ulasanTeks`, `namaUser`, dan `tanggal` saja bila dokumennya sudah ada (membuat dokumen baru tetap `set`).
+- **Keterbatasan yang diakui:** balasan tidak bisa dihapus, hanya diganti; pengguna tidak diberi tahu bahwa ulasannya dibalas. Sebutkan di Bab 5 bila perlu.
+
 ---
 
 ## 8. Spesifikasi Layar
@@ -937,6 +973,8 @@ Tile URL: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
 
 ### L-06 · Detail Lapangan — **diperbarui v1.1**
 Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta (internal, tab Map) + **tombol "Buka di Google Maps" (v1.2, T-51, hanya tampil kalau `tautanMaps` terisi, buka aplikasi/browser eksternal lewat `url_launcher`)**, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`. **v1.5 (T-65):** kalau `diskonPersen > 0`, baris harga menampilkan harga asli dicoret, harga setelah diskon, dan badge "Diskon X%" (AB-18). **v1.4:** di samping nomor telepon ada tombol **WhatsApp** (T-61, hanya untuk nomor seluler, AB-15) dan di bagian atas ada tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan lapangan.
+
+**v1.5 (T-66):** ulasan yang sudah dibalas mitra menampilkan blok **"Balasan pemilik"** (teks + tanggal) di bawah ulasannya. Untuk mitra **pemilik lapangan itu**, tiap ulasan punya tombol **"Balas"** / **"Ubah balasan"** yang membuka bottom sheet isian balasan (AB-22). Pengguna lain tidak melihat tombol itu.
 
 > Figma menampilkan pemilihan slot jam langsung di layar ini. Pemilihan slot tetap di **L-10** sesuai PRD, karena butuh pemilihan tanggal dan perhitungan estimasi harga yang tidak muat di layar detail. Tombol "Booking Sekarang" di Figma = tombol "Ajukan Reservasi" yang membuka L-10.
 >
@@ -1080,7 +1118,35 @@ service cloud.firestore {
 
     match /rating/{ratingId} {
       allow read: if true;
-      allow create, update: if login() && request.resource.data.userId == request.auth.uid;
+
+      // Ulasan baru: atas nama sendiri dan TANPA balasan (v1.5, T-66) —
+      // balasan hanya boleh datang dari mitra lewat update.
+      allow create: if login()
+        && request.resource.data.userId == request.auth.uid
+        && !request.resource.data.keys().hasAny(['balasanMitra', 'balasanPada']);
+
+      allow update: if login() && (
+        // Jalur 1 — PEMBUAT ulasan mengubah ulasannya sendiri: userId tetap,
+        // dan field balasan tidak boleh disentuh.
+        (
+          resource.data.userId == request.auth.uid
+          && request.resource.data.userId == request.auth.uid
+          && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['balasanMitra', 'balasanPada'])
+        )
+        // Jalur 2 — MITRA PEMILIK lapangan: hanya field balasan, 1–500 karakter.
+        || (
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['balasanMitra', 'balasanPada'])
+          && request.resource.data.balasanMitra is string
+          && request.resource.data.balasanMitra.size() >= 1
+          && request.resource.data.balasanMitra.size() <= 500
+          && request.resource.data.balasanPada is timestamp
+          && get(/databases/$(database)/documents/lapangan/$(resource.data.lapanganId))
+               .data.pemilikId == request.auth.uid
+        )
+      );
+
       allow delete: if false;
     }
 
@@ -1300,6 +1366,11 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-83** | **Buka "Beri Rating" pada lapangan yang sudah pernah kamu nilai** *(L-11)* | **Judul "Ubah Rating", bintang dan teks terisi nilai lama, ada keterangan bahwa ulasan akan diganti; pada lapangan yang belum pernah dinilai form kosong berjudul "Beri Rating"** |
 | **BB-84** | **Ubah rating dari Detail yang dibuka lewat Home, lalu kembali ke Home tanpa menarik layar** *(L-11, L-04)* | **Kartu lapangan itu langsung menampilkan rata-rata dan jumlah ulasan yang baru; jarak dan urutan Terdekat tidak bergeser** |
 | **BB-85** | **Buka "Beri Rating" saat tidak ada jaringan** *(L-11)* | **Pesan "Gagal memuat ulasanmu sebelumnya. Coba lagi." dengan tombol Coba Lagi, bukan form kosong; setelah jaringan kembali, Coba Lagi membuka form** |
+| **BB-86** | **Mitra pemilik membalas ulasan di lapangannya** *(T-66)* | **Tombol "Balas" ada di setiap ulasan; setelah Kirim, blok "Balasan pemilik" (teks + tanggal) tampil di bawah ulasan itu, dan tombol berubah jadi "Ubah balasan"** |
+| **BB-87** | **Pengguna biasa, dan mitra yang BUKAN pemilik lapangan itu, membuka Detail** *(T-66)* | **Balasan yang sudah ada terlihat, tetapi tombol "Balas" / "Ubah balasan" tidak ada** |
+| **BB-88** | **Kirim balasan kosong atau lebih dari 500 karakter** *(T-66)* | **Ditolak dengan pesan validasi; tidak ada tulisan ke Firestore** |
+| **BB-89** | **Pengguna mengubah rating-nya sendiri pada ulasan yang sudah dibalas** *(T-66, AB-05)* | **Nilai dan teks ulasan berubah, balasan mitra tetap ada; `jumlahRating` tidak bertambah** |
+| **BB-90** | **Penyewa mencoba menulis `balasanMitra` langsung ke dokumen `rating`, atau mitra lain membalas ulasan di lapangan yang bukan miliknya** *(T-66)* | **Ditolak Security Rules** |
 
 ---
 
@@ -1514,8 +1585,9 @@ Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
 | 49 | ERD Bab 3 / Tabel 3.10 | Entitas `Lapangan` +`diskonPersen`, +`produkTambahan` (larik). Entitas `Booking` +`produkTambahan` (larik). Entitas `AktivitasBermain` +`visibilitas`, +`kodeAkses` (selain tiga atribut v1.4). Sesuai §6.2, §6.3, §6.6. **Gambar ERD (M1) setelah semua ini final** |
 | 50 | Bab 3.2 / pembahasan pengurutan hasil pencarian | AB-02 tetap benar: urutan **bawaan** murni jarak. Tambahkan satu kalimat bahwa pengguna boleh memilih urutan rating atau populer, dan itu tidak mengubah rancangan Haversine |
 | 51 | Bab 4 | Tambahkan ke paragraf fitur tambahan (#46): filter dan urut Home, blokir slot, promo, produk tambahan, ubah jadwal, aktivitas privat |
-| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-85 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
-| 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Mitra membalas ulasan dan pengingat jadwal (T-66, T-67) sebagai pengembangan lanjutan |
+| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-90 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Pengingat jadwal (T-67) sebagai pengembangan lanjutan; balasan mitra (T-66, sudah dikerjakan) tidak bisa dihapus dan tidak memberi notifikasi ke pengguna |
+| 54 | Bab 3 ERD dan 3.3.2 (atribut `rating`) | Entitas `rating` bertambah dua atribut: `balasanMitra` dan `balasanPada` (T-66). Gambar ERD sebaiknya dibuat setelah atribut ini final, atau keduanya disebut "tambahan di luar rancangan awal". Security Rules `rating` juga berubah (dua jalur `update`, §9) |
 
 **Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
 

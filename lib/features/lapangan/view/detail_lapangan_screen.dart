@@ -19,6 +19,7 @@ import '../../../routes/app_routes.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../booking/view/ajukan_reservasi_screen.dart';
 import '../../favorit/viewmodel/favorit_viewmodel.dart';
+import '../../rating/view/balas_ulasan_sheet.dart';
 import '../../rating/view/beri_rating_sheet.dart';
 import '../viewmodel/detail_lapangan_viewmodel.dart';
 
@@ -319,7 +320,14 @@ class _Isi extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _DaftarUlasan(lapanganId: lapangan.lapanganId),
+                _DaftarUlasan(
+                  lapanganId: lapangan.lapanganId,
+                  // Hanya mitra PEMILIK lapangan ini (bukan sekadar akun
+                  // dengan peran mitra) yang boleh membalas — AB-22.
+                  bolehMembalas: lapangan.pemilikId != null &&
+                      lapangan.pemilikId ==
+                          context.read<AuthViewModel>().user?.userId,
+                ),
               ],
             ),
           ),
@@ -383,7 +391,15 @@ class _Isi extends StatelessWidget {
 class _DaftarUlasan extends StatelessWidget {
   final String lapanganId;
 
-  const _DaftarUlasan({required this.lapanganId});
+  /// True kalau pengguna yang sedang login adalah mitra PEMILIK lapangan ini
+  /// — hanya dia yang melihat tombol Balas (PRD AB-22, T-66). Security Rules
+  /// tetap penjaga sebenarnya.
+  final bool bolehMembalas;
+
+  const _DaftarUlasan({
+    required this.lapanganId,
+    required this.bolehMembalas,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +433,7 @@ class _DaftarUlasan extends StatelessWidget {
         return Column(
           children: [
             for (final item in ulasan) ...[
-              _KartuUlasan(rating: item),
+              _KartuUlasan(rating: item, bolehMembalas: bolehMembalas),
               const SizedBox(height: 10),
             ],
           ],
@@ -429,11 +445,32 @@ class _DaftarUlasan extends StatelessWidget {
 
 class _KartuUlasan extends StatelessWidget {
   final RatingModel rating;
+  final bool bolehMembalas;
 
-  const _KartuUlasan({required this.rating});
+  const _KartuUlasan({required this.rating, required this.bolehMembalas});
+
+  /// Membuka lembar balasan (AB-22, T-66). Daftar ulasan hidup lewat
+  /// `StreamBuilder`, jadi balasan baru tampil sendiri begitu tersimpan —
+  /// di sini cukup memberi tahu mitra bahwa balasannya terkirim.
+  Future<void> _bukaFormBalasan(BuildContext context) async {
+    final berhasil = await showBalasUlasanSheet(
+      context,
+      ratingId: rating.ratingId,
+      namaPengulas: rating.namaUser,
+      teksAwal: rating.balasanMitra,
+    );
+    if (berhasil == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.balasanTerkirim)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final sudahDibalas =
+        rating.balasanMitra != null && rating.balasanMitra!.isNotEmpty;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -464,6 +501,58 @@ class _KartuUlasan extends StatelessWidget {
             const SizedBox(height: 6),
             Text(rating.ulasanTeks!, style: AppTextStyles.metaLapangan),
           ],
+          if (sudahDibalas) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(AppSizes.radiusChip),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        AppStrings.balasanPemilik,
+                        style: AppTextStyles.metaLapangan.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      if (rating.balasanPada != null)
+                        Text(
+                          Formatter.tanggal(rating.balasanPada!),
+                          style: AppTextStyles.metaLapangan,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    rating.balasanMitra!,
+                    style: AppTextStyles.metaLapangan,
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (bolehMembalas)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => _bukaFormBalasan(context),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 32),
+                ),
+                child: Text(
+                  sudahDibalas ? AppStrings.ubahBalasan : AppStrings.balas,
+                ),
+              ),
+            ),
         ],
       ),
     );

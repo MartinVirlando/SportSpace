@@ -328,6 +328,7 @@ Fitur tahap 2 dan 3 sengaja dirancang tanpa composite index baru. Ringkasan quer
 | T-64 cari lewat kode | `aktivitasBermain` `where kodeAkses ==` + `limit(1)`, satu field `==` | otomatis (single-field), **tidak** perlu composite |
 | T-64 sembunyikan privat | Disaring di klien (`saringAktivitas`), **bukan** `where visibilitas == 'publik'` | — |
 | Perbaikan rating (L-11, 5 Nov 2026) | `RatingRepository.ambilRatingSaya`: `get()` satu dokumen `rating/{userId}_{lapanganId}` — bukan query | — |
+| T-66 balas ulasan (AB-22, 5 Nov 2026) | `RatingRepository.balasUlasan`: `update` satu dokumen `rating/{ratingId}`; daftar ulasan tetap `streamUlasan` (index #6). **Security Rules `rating` berubah** (dua jalur `update`) — perlu `firebase deploy --only firestore:rules` | — |
 | Perbaikan Home (BB-84, 5 Nov 2026) | `HomeViewModel.perbaruiSatuLapangan`: `get()` satu dokumen `lapangan/{id}` lewat `ambilSatuLapangan` — bukan query | — |
 
 **Kenapa privat tidak disaring di query:** Firestore tidak mengembalikan dokumen yang tidak punya field yang difilter. `where visibilitas == 'publik'` akan menyembunyikan seluruh aktivitas lama (sebelum v1.5) yang belum punya field `visibilitas`, dan filter itu juga menuntut composite index baru.

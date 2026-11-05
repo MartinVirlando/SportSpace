@@ -125,6 +125,17 @@ class Validators {
     return null;
   }
 
+  /// Balasan mitra terhadap ulasan — PRD AB-22, v1.5 (T-66), BB-88. Beda
+  /// dari [ulasan]: balasan WAJIB diisi (setelah di-trim) dan maksimal 500
+  /// karakter. Batas yang sama diulang di `RatingRepository.balasUlasan` dan
+  /// Security Rules.
+  static String? balasan(String? nilai) {
+    final bersih = nilai?.trim() ?? '';
+    if (bersih.isEmpty) return AppStrings.errBalasanWajib;
+    if (bersih.length > 500) return AppStrings.errBalasanPanjang;
+    return null;
+  }
+
   /// Harga sewa pada form Tambah/Edit Lapangan — PRD L-15: wajib, angka
   /// bulat positif (rupiah, tanpa desimal — PRD Bagian 6.2).
   static String? harga(String? nilai) {

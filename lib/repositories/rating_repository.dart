@@ -69,19 +69,33 @@ class RatingRepository {
         }
 
         final ratingRata2 = ratingTotal / jumlahRating;
+        final sekarang = DateTime.now();
 
-        transaction.set(
-          ratingRef,
-          RatingModel(
-            ratingId: ratingRef.id,
-            userId: userId,
-            namaUser: namaUser,
-            lapanganId: lapanganId,
-            nilaiRating: nilaiRating,
-            ulasanTeks: ulasanTeks,
-            tanggal: DateTime.now(),
-          ).toFirestore(),
-        );
+        if (ratingSnap.exists) {
+          // PERBARUI, jangan `set` seluruh dokumen: `set` akan menghapus
+          // `balasanMitra`/`balasanPada` yang mungkin sudah ditulis mitra
+          // (v1.5, T-66), dan Security Rules melarang pengguna menyentuh
+          // field balasan. Hanya empat field milik pengguna yang ditulis.
+          transaction.update(ratingRef, {
+            'namaUser': namaUser,
+            'nilaiRating': nilaiRating,
+            'ulasanTeks': ulasanTeks,
+            'tanggal': Timestamp.fromDate(sekarang),
+          });
+        } else {
+          transaction.set(
+            ratingRef,
+            RatingModel(
+              ratingId: ratingRef.id,
+              userId: userId,
+              namaUser: namaUser,
+              lapanganId: lapanganId,
+              nilaiRating: nilaiRating,
+              ulasanTeks: ulasanTeks,
+              tanggal: sekarang,
+            ).toFirestore(),
+          );
+        }
         transaction.update(lapanganRef, {
           'ratingTotal': ratingTotal,
           'jumlahRating': jumlahRating,
@@ -93,6 +107,48 @@ class RatingRepository {
         throw Exception('Tidak punya izin memberi rating.');
       }
       throw Exception('Gagal mengirim rating. Coba lagi.');
+    }
+  }
+
+  /// Batas panjang balasan mitra. Angka yang sama diulang di
+  /// `Validators.balasan` dan di Security Rules `rating` (PRD §9).
+  static const batasPanjangBalasan = 500;
+
+  /// Mitra pemilik lapangan membalas (atau mengganti balasan) satu ulasan —
+  /// PRD AB-22, v1.5 (T-66), BB-86/88.
+  ///
+  /// Satu `update` pada dokumen `rating/{ratingId}` yang hanya menyentuh
+  /// `balasanMitra` dan `balasanPada`. Siapa yang boleh dicek Security
+  /// Rules (mitra pemilik lapangan itu), bukan di sini: tombolnya hanya
+  /// digambar untuk pemilik, tapi rules tetap penjaga sebenarnya.
+  ///
+  /// Tidak menyentuh `ratingTotal`/`jumlahRating`/`ratingRata2` — balasan
+  /// tidak memengaruhi angka rating, jadi tidak perlu transaction.
+  Future<void> balasUlasan({
+    required String ratingId,
+    required String teks,
+  }) async {
+    final bersih = teks.trim();
+    if (bersih.isEmpty) {
+      throw Exception('Balasan wajib diisi.');
+    }
+    if (bersih.length > batasPanjangBalasan) {
+      throw Exception('Balasan maksimal $batasPanjangBalasan karakter.');
+    }
+
+    try {
+      await _db.collection('rating').doc(ratingId).update({
+        'balasanMitra': bersih,
+        'balasanPada': Timestamp.fromDate(DateTime.now()),
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Hanya pemilik lapangan yang bisa membalas ulasan.');
+      }
+      if (e.code == 'not-found') {
+        throw Exception('Ulasan tidak ditemukan.');
+      }
+      throw Exception('Gagal mengirim balasan. Coba lagi.');
     }
   }
 

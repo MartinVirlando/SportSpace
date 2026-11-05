@@ -216,6 +216,16 @@ class AppStrings {
   // Lembar Beri Rating kalau pengguna sudah pernah menilai lapangan itu:
   // mengirim ulang MENGGANTI rating lama (satu rating per pengguna).
   static const ubahRating = 'Ubah Rating';
+  // Balasan mitra terhadap ulasan — v1.5 (T-66), PRD AB-22.
+  static const balas = 'Balas';
+  static const ubahBalasan = 'Ubah balasan';
+  static const balasanPemilik = 'Balasan pemilik';
+  static const judulBalasUlasan = 'Balas Ulasan';
+  static const labelBalasan = 'Balasanmu';
+  static const balasanTerkirim = 'Balasan terkirim.';
+  static const errBalasanWajib = 'Balasan wajib diisi.';
+  static const errBalasanPanjang = 'Balasan maksimal 500 karakter.';
+  static const errGagalKirimBalasan = 'Gagal mengirim balasan.';
   static const ratingSudahAda =
       'Kamu sudah pernah menilai lapangan ini. Mengirim lagi akan '
       'mengganti rating dan ulasanmu sebelumnya.';
