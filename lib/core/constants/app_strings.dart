@@ -102,6 +102,7 @@ class AppStrings {
   static const bagikan = 'Bagikan';
   static const bagikanKeWhatsApp = 'Bagikan ke WhatsApp';
   static const gagalBukaWhatsApp = 'Tidak bisa membuka WhatsApp.';
+  static const hubungiViaWhatsApp = 'Chat via WhatsApp';
   static const bagikanJudulAktivitas =
       'Yuk main bareng lewat Sport Space! 🏟️';
   static const bagikanJudulLapangan =

@@ -182,6 +182,9 @@ class _Isi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // null kalau nomor kosong atau telepon rumah — tombol WhatsApp disembunyikan.
+    final nomorWa = nomorWhatsAppDari(lapangan.nomorTelepon);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,6 +244,24 @@ class _Isi extends StatelessWidget {
                     label: AppStrings.kontak,
                     nilai: lapangan.nomorTelepon,
                   ),
+                  // v1.4 (T-61) — tombol WhatsApp hanya untuk nomor seluler;
+                  // telepon rumah (021…) tidak bisa dipakai di WhatsApp.
+                  if (nomorWa != null)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () => _hubungiWhatsApp(context, nomorWa),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                        ),
+                        icon: const Icon(Icons.chat_outlined, size: 14),
+                        label: const Text(
+                          AppStrings.hubungiViaWhatsApp,
+                          style: AppTextStyles.metaLapangan,
+                        ),
+                      ),
+                    ),
                 ],
                 if (lapangan.isMitra) ...[
                   const SizedBox(height: 28),
@@ -426,6 +447,17 @@ class _KartuUlasan extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Buka percakapan WhatsApp dengan nomor lapangan (PRD AB-15, T-61, BB-60).
+/// [nomorWa] sudah dinormalkan oleh `nomorWhatsAppDari`.
+Future<void> _hubungiWhatsApp(BuildContext context, String nomorWa) async {
+  final berhasil = await bukaTautanEksternal(tautanHubungiWhatsApp(nomorWa));
+  if (!berhasil && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(AppStrings.gagalBukaWhatsApp)),
     );
   }
 }

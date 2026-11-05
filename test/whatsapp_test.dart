@@ -62,6 +62,58 @@ void main() {
     await initializeDateFormatting('id_ID', null);
   });
 
+  group('nomorWhatsAppDari (T-61, BB-60, BB-61)', () {
+    test('nomor seluler 08… menjadi 628… (contoh BB-60)', () {
+      expect(nomorWhatsAppDari('081316441741'), '6281316441741');
+    });
+
+    test('seluruh pola nomor seluler di data seed lolos', () {
+      expect(nomorWhatsAppDari('08111189006'), '628111189006');
+      expect(nomorWhatsAppDari('08567685884'), '628567685884');
+      expect(nomorWhatsAppDari('087777721730'), '6287777721730');
+    });
+
+    test('spasi, tanda hubung, dan tanda kurung dibuang', () {
+      expect(nomorWhatsAppDari('0813-1644-1741'), '6281316441741');
+      expect(nomorWhatsAppDari('0813 1644 1741'), '6281316441741');
+      expect(nomorWhatsAppDari('(0813) 1644 1741'), '6281316441741');
+    });
+
+    test('awalan +62 dan 62 dipertahankan', () {
+      expect(nomorWhatsAppDari('+62 813-1644-1741'), '6281316441741');
+      expect(nomorWhatsAppDari('6281316441741'), '6281316441741');
+    });
+
+    test('telepon rumah tidak lolos, tombol tidak muncul (contoh BB-61)', () {
+      expect(nomorWhatsAppDari('0217429521'), isNull);
+      expect(nomorWhatsAppDari('0217496503'), isNull);
+      expect(nomorWhatsAppDari('(021) 742-9521'), isNull);
+    });
+
+    test('nomor kosong atau tanpa angka tidak lolos', () {
+      expect(nomorWhatsAppDari(''), isNull);
+      expect(nomorWhatsAppDari('   '), isNull);
+      expect(nomorWhatsAppDari('-'), isNull);
+    });
+
+    test('nomor terlalu pendek atau terlalu panjang tidak lolos', () {
+      expect(nomorWhatsAppDari('0812'), isNull);
+      expect(nomorWhatsAppDari('0813164417411234567'), isNull);
+    });
+
+    test('tanpa awalan 0 atau 62 tidak ditebak-tebak', () {
+      expect(nomorWhatsAppDari('81316441741'), isNull);
+    });
+  });
+
+  group('tautanHubungiWhatsApp', () {
+    test('mengarah ke percakapan dengan nomor, tanpa parameter text', () {
+      final tautan = tautanHubungiWhatsApp('6281316441741');
+      expect(tautan.toString(), 'https://wa.me/6281316441741');
+      expect(tautan.queryParameters, isEmpty);
+    });
+  });
+
   group('tautanBagikanWhatsApp', () {
     test('memakai https://wa.me/ dengan parameter text', () {
       final tautan = tautanBagikanWhatsApp('Halo');

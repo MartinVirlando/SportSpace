@@ -740,7 +740,7 @@ Lencana yang belum diraih tetap tampil **redup** beserta syaratnya, supaya pengg
 Semuanya memakai `url_launcher` yang sudah ada sejak T-51, mode `LaunchMode.externalApplication`, **tanpa package baru** dan **tanpa `canLaunchUrl`** (yang di Android 11+ butuh deklarasi `<queries>`). Kalau tidak ada aplikasi yang bisa membuka tautan, tampilkan `SnackBar` berbahasa Indonesia.
 
 - **Bagikan (T-63):** `https://wa.me/?text=<teks di-encode>`. Teks aktivitas memuat olahraga, jenis, tingkat, lapangan, waktu, jumlah pemain, dan biaya. Teks lapangan memuat nama, alamat, jam buka, dan `tautanMaps` bila terisi. Tidak ada tautan ke aplikasi (belum ada deep link atau halaman unduh).
-- **Hubungi (T-61):** `https://wa.me/<nomor>`, dengan `nomorTelepon` dinormalkan ke format internasional tanpa `+`: buang semua karakter bukan angka, awalan `0` diganti `62`. Tombol **hanya muncul** kalau hasil normalisasi diawali `628` (nomor seluler). Nomor telepon rumah seperti `021…` dan nomor kosong tidak menampilkan tombol, karena WhatsApp tidak bisa dipakai di sana.
+- **Hubungi (T-61):** `https://wa.me/<nomor>`, dengan `nomorTelepon` dinormalkan ke format internasional tanpa `+`: buang semua karakter bukan angka, awalan `0` diganti `62`. Tombol **hanya muncul** kalau hasil normalisasi diawali `628` (nomor seluler) dan panjang totalnya 11–15 digit. Nomor telepon rumah seperti `021…` dan nomor kosong tidak menampilkan tombol, karena WhatsApp tidak bisa dipakai di sana.
 - Normalisasi dan penyusunan teks adalah fungsi murni di `core/utils/whatsapp.dart`, supaya bisa diuji otomatis.
 
 ---

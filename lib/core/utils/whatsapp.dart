@@ -12,6 +12,37 @@ import 'formatter.dart';
 /// (`test/whatsapp_test.dart`). Membuka tautannya (`launchUrl`) dilakukan
 /// View lewat `tautan_eksternal.dart`.
 
+// ---------- Hubungi (T-61) ----------
+
+/// Mengubah [nomorTelepon] ke format internasional tanpa `+` untuk `wa.me`,
+/// atau `null` kalau nomor itu bukan nomor seluler yang bisa dipakai
+/// WhatsApp — BB-60, BB-61.
+///
+/// Langkah (PRD AB-15):
+/// 1. buang semua karakter bukan angka (spasi, `-`, `+`, tanda kurung);
+/// 2. awalan `0` diganti `62` (`0813…` → `62813…`);
+/// 3. hanya nomor seluler Indonesia yang lolos: diawali `628` dan panjang
+///    total 11–15 digit (batas nomor internasional 15 digit).
+///
+/// Telepon rumah (`021…` → `6221…`) dan nomor kosong menghasilkan `null`,
+/// jadi tombol WhatsApp tidak muncul — WhatsApp tidak bisa dipakai di sana.
+String? nomorWhatsAppDari(String nomorTelepon) {
+  var angka = nomorTelepon.replaceAll(RegExp(r'[^0-9]'), '');
+  if (angka.startsWith('0')) {
+    angka = '62${angka.substring(1)}';
+  }
+
+  final seluler = angka.startsWith('628');
+  final panjangWajar = angka.length >= 11 && angka.length <= 15;
+  return seluler && panjangWajar ? angka : null;
+}
+
+/// Tautan `wa.me` yang membuka percakapan langsung dengan
+/// [nomorInternasional] (hasil [nomorWhatsAppDari], mis. `6281316441741`).
+Uri tautanHubungiWhatsApp(String nomorInternasional) {
+  return Uri.parse('https://wa.me/$nomorInternasional');
+}
+
 // ---------- Bagikan (T-63) ----------
 
 /// Tautan `wa.me` yang membuka WhatsApp dengan [teks] sudah terisi dan
