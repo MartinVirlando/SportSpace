@@ -97,9 +97,20 @@ class CariRekanScreen extends StatelessWidget {
                   // tapi bisa jadi tidak ada yang cocok dengan chip jenis.
                   final daftar = vm.saring(semua);
                   if (daftar.isEmpty) {
-                    return const _Pesan(
-                      ikon: Icons.filter_alt_off_outlined,
-                      judul: AppStrings.kosongFilterAktivitas,
+                    // Kalau pengguna belum memilih filter jenis/tingkat,
+                    // daftar kosong bukan karena filter — mis. satu-satunya
+                    // aktivitas adalah yang PRIVAT (T-64), yang memang
+                    // disembunyikan. Pesannya jangan menyalahkan filter.
+                    final adaFilterAktif =
+                        vm.filterJenis != AppJenisAktivitas.semua ||
+                            vm.filterTingkat != AppTingkat.semua;
+                    return _Pesan(
+                      ikon: adaFilterAktif
+                          ? Icons.filter_alt_off_outlined
+                          : Icons.people_outline,
+                      judul: adaFilterAktif
+                          ? AppStrings.kosongFilterAktivitas
+                          : AppStrings.kosongAktivitas,
                       keterangan: '',
                     );
                   }

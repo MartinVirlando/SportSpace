@@ -84,6 +84,9 @@ class SeksiLencana extends StatelessWidget {
                           for (final lencana in daftar)
                             SizedBox(
                               width: lebar,
+                              // Tinggi tetap supaya semua kartu sama tinggi, walau
+                              // nama lencana ada yang satu dan ada yang dua baris.
+                              height: 96,
                               child: _KartuLencana(lencana: lencana),
                             ),
                         ],
@@ -158,6 +161,9 @@ class _KartuLencana extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Column(
+                // min: supaya Column dipusatkan vertikal oleh Row, sama seperti
+                // ikonnya, bukan menempel ke atas karena mengisi seluruh tinggi.
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(

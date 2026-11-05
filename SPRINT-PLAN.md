@@ -277,22 +277,50 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 
 | ID | Usulan | Skala | Tahap | Status |
 |---|---|---|---|---|
-| T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 13 tes hijau); BB-50–51 belum diuji di perangkat |
-| T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 19 tes hijau); BB-52–53 belum diuji di perangkat |
-| T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 28 tes hijau); BB-54–55 belum diuji di perangkat |
-| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Kode selesai 5 Nov 2026 (analyze, 78 tes hijau); BB-62–66 belum diuji di perangkat |
-| T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 36 tes hijau); BB-56–57 belum diuji di perangkat |
-| T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 91 tes hijau); BB-67–69 belum diuji di perangkat |
-| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Kode selesai 5 Nov 2026 (analyze, 133 tes hijau); BB-73–75 belum diuji di perangkat |
-| T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 55 tes hijau); BB-60–61 belum diuji di perangkat |
-| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 147 tes hijau); BB-76–78 belum diuji di perangkat |
-| T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 46 tes hijau); BB-58–59 belum diuji di perangkat |
-| T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Kode selesai 5 Nov 2026 (analyze, 170 tes hijau); BB-79–82 belum diuji di perangkat |
-| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 111 tes hijau); BB-70–72 belum diuji di perangkat |
+| T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 13 tes hijau); BB-50–51 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 19 tes hijau); BB-52–53 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 28 tes hijau); BB-54–55 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Kode selesai 5 Nov 2026 (analyze, 78 tes hijau); BB-62–66 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 36 tes hijau); BB-56–57 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 91 tes hijau); BB-67–69 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Kode selesai 5 Nov 2026 (analyze, 133 tes hijau); BB-73–75 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 55 tes hijau); BB-60–61 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 147 tes hijau); BB-76–78 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 46 tes hijau); BB-58–59 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Kode selesai 5 Nov 2026 (analyze, 170 tes hijau); BB-79–82 diuji di emulator 5 Nov 2026 (lihat catatan) |
+| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 111 tes hijau); BB-70–72 diuji di emulator 5 Nov 2026 (lihat catatan) |
 | T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 | Tidak dikerjakan (di luar AYO; T-67 butuh package baru) |
 | T-67 | Pengingat jadwal booking, notifikasi lokal *(ide di luar AYO; butuh package baru)* | Sedang | 3 | Tidak dikerjakan (di luar AYO; T-67 butuh package baru) |
 
 **Keputusan 5 November 2026:** Pak Gintoro menilai forum dan fitur terinspirasi AYO hanyalah **pemanis**; hanya modul besar yang perlu masuk Bab 3. Tim memutuskan mengerjakan **tahap 1 saja** (T-54, T-55, T-56, T-58, T-63, T-61) dan tidak menunggu persetujuan per fitur. Spesifikasinya ada di **PRD v1.4** ("Perubahan v1.4", AB-14, AB-15, BB-50…BB-61). T-31…T-34 (SUS, Bab 4–5) dan revisi gambar T-39 **menunggu fitur tahap 1 selesai**, supaya SUS menguji aplikasi versi akhir dan ERD digambar sekali saja. Tahap 2 dan 3 tidak dikerjakan sebelum tim konfirmasi lagi.
+
+**Hasil uji emulator 5 November 2026** (`sportspace_pixel`, Android 36, Firestore produksi, akun uji tetap PRD §10, build debug dari `main`). Seluruh fitur tahap 1, 2, dan 3 dijalankan lewat UI sungguhan:
+
+| Terbukti di perangkat | Catatan |
+|---|---|
+| BB-50, 51, 52, 53, 54 | Aktivitas Sparring/Mahir/privat dan Main Bareng/Pemula/gratis dibuat; semua kombinasi chip filter jenis, tingkat, dan olahraga benar |
+| BB-55 | Biaya 25000 tampil "Rp 25.000 / orang". Penolakan biaya negatif/di atas batas hanya diuji otomatis |
+| BB-56, 57 | Akun baru 0/5; akun dengan 5 booking 2/5 dengan kartu menyala |
+| BB-58, 59, 60, 61 | Teks bagikan aktivitas (memuat kode untuk pembuat) dan lapangan terbaca benar di `wa.me`; `081806507575` → chat `+62 818-0650-7575`; `0217429521` tanpa tombol |
+| BB-64, 65, 66 | "Buka sekarang" diuji dengan mengubah jam emulator: pukul 23:30 tepat 8 lapangan (yang tutup `00:00`), pukul 03:00 pesan kosong. Fasilitas "shower" tepat 5 lapangan. Reset kembali ke bawaan |
+| BB-67, 68, 69 | Blokir, buka blokir, dan jam yang dipesan tidak bisa disentuh |
+| BB-70, 71, 72 | Badge dan harga coret di kartu dan Detail; estimasi Rp 350.000 − 70.000 + 30.000 = Rp 310.000 tersimpan di booking; diskon 91 ditolak |
+| BB-73, 74 | Maksimal 5 produk; produk 2 × Sewa Raket tampil di Riwayat Pemesanan dan Booking Masuk, tidak ikut didiskon |
+| BB-76, 78 | Ubah jadwal 20:00–22:00 → 21:00–23:00 (tumpang tindih): slot 20 terlepas, 21 dipertahankan, 22 dikunci; status kembali Menunggu; notifikasi sampai ke mitra; setelah dibatalkan tombol Ubah Jadwal hilang dan seluruh slot kosong |
+| BB-79, 80, 81 | Kode `LGRCNK` (6 karakter), privat tidak tampil di daftar, huruf kecil diterima, kode salah "Kode tidak ditemukan.", dan **kode tidak terlihat oleh pengguna yang bukan pembuat/peserta** |
+
+**Belum terbukti di perangkat:**
+- **BB-62, 63** (urut rating/populer): tidak ada lapangan berulasan di data produksi, dan rating tidak bisa dihapus (rules `delete: false`) sehingga sengaja tidak dibuat. Urutan hanya diuji otomatis (23 tes); di perangkat terbukti kembali ke jarak saat tidak ada ulasan.
+- **BB-75** (harga produk berubah setelah booking), **BB-77** (rebutan slot saat ubah jadwal — butuh dua perangkat bersamaan), dan **BB-82** (aktivitas lama tanpa `visibilitas` — tidak ada aktivitas lama di data produksi): hanya diuji otomatis.
+- WhatsApp sungguhan tidak terpasang di emulator; tautan `wa.me` terbuka di Chrome dan isinya diperiksa, tetapi membuka aplikasi WhatsApp belum.
+- HP fisik belum.
+
+**Bug yang ditemukan lewat uji emulator dan sudah diperbaiki (5 November 2026):**
+1. **Spinner "Aktivitas Saya" di Profil tidak pernah selesai.** Stream siaran Firestore tidak mengulang event lama untuk pelanggan yang terlambat; `ListView` membangun bagian bawah secara malas, dan Lencana (T-58) mendorong bagian itu lebih jauh sehingga bug laten ini muncul. Perbaikan: `core/utils/stream_terakhir.dart` (satu langganan, nilai terakhir diulang ke tiap pelanggan baru), dipakai `ProfilViewModel`. Terverifikasi: tampil "Belum ada aktivitas yang kamu buat atau ikuti."
+2. Pesan kosong di Cari Rekan menyalahkan "filter" padahal tidak ada filter dipilih (satu-satunya aktivitas privat). Sekarang memakai pesan biasa kalau filter jenis dan tingkat tidak aktif.
+3. Tinggi kartu Lencana tidak seragam dan isinya tidak rata.
+
+**Data uji yang tertinggal di Firestore produksi** (tidak bisa dihapus lewat aplikasi karena Security Rules): 1 dokumen `booking` berstatus `DIBATALKAN` (Candra Wijaya, 20 November 2026) dan beberapa dokumen `notifikasi` untuk akun mitra uji. Slot, aktivitas, diskon, dan produk uji sudah dibersihkan; lapangan Candra Wijaya kini punya `diskonPersen: 0` dan `produkTambahan: []` (sebelumnya tidak ada, tidak berpengaruh). Bisa dihapus manual lewat Firebase Console bila diinginkan.
 
 **Urutan yang direkomendasikan:** tahap 1 = T-54, T-55, T-56, T-58, T-63, lalu T-61; tahap 2 = T-57, T-59, T-62, T-65; tahap 3 = T-60, T-64, T-66, T-67. Dokumen ide tadinya menahan T-59, T-60, T-61, T-62, T-65 sampai cabang forum di-merge karena konflik di `detail_lapangan_screen.dart`, `booking`/`lapangan`, rules, dan model — forum sudah masuk `main`, jadi blokir itu tidak berlaku lagi. Aturan tetap: satu cabang per fitur dari `main` terbaru, perubahan `models/` hanya oleh integrator. Fitur "venue tersedia hari ini" milik AYO sengaja tidak ditiru (boros pembacaan Firestore).
 
@@ -397,7 +425,7 @@ Dibatalkan   [-] T-00e  [-] T-49  [-] T-52  [-] T-53
 > 5. **Ubah manual 25 dokumen `lapangan` di Firebase Console**: field `sumberData` → `direktori_daring` (kode sudah diganti 19 Oktober 2026 — lihat PRD §10).
 > 6. **Keputusan terbuka:** harga/jam per jenis olahraga — masih riset.
 > 7. **Forum (merge 4 November 2026):** cocokkan rules forum di Firebase Console dengan `firestore.rules` di repo; putuskan dengan Pak Gintoro apakah forum masuk Bab 3–4 (PRD v1.3 sudah mencatatnya, §14 #38–#44) — lihat bagian "Forum" di atas.
-> 8. **Backlog v1.3 dari AYO (T-54…T-67):** **tahap 1 selesai di kode (5 November 2026)** — T-54, T-55, T-56, T-58, T-63, T-61 sudah di `main`, `flutter analyze` bersih, 55 tes otomatis hijau, APK debug terbangun. **Belum diuji di perangkat:** BB-50…BB-61 (PRD §11). Tahap 2 dan 3 belum dikerjakan. SUS (T-31) dan Bab 4–5 menunggu uji perangkat ini.
+> 8. **Backlog v1.3 dari AYO (T-54…T-67):** **semua fitur AYO yang direncanakan (T-54…T-65) selesai di kode dan diuji di emulator (5 November 2026)** — `flutter analyze` bersih, 179 tes otomatis hijau. Rinciannya, bug yang ditemukan dan diperbaiki, serta BB yang belum terbukti di perangkat ada di "Hasil uji emulator" pada bagian Backlog v1.3. **T-66 dan T-67 tidak dikerjakan** (di luar AYO, T-67 butuh package baru). SUS (T-31) dan Bab 4–5 baru bisa dilanjutkan setelah keputusan tim.
 >
 > **Keputusan 8 Oktober 2026:** T-00a–T-00c dicentang selesai; T-00d diganti jadi "tetap paket Spark"; T-00e, T-52, T-53 dibatalkan (T-49 sudah dibatalkan sejak 15 September).
 
