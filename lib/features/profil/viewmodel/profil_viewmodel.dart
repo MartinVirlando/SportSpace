@@ -4,9 +4,11 @@ import '../../../core/utils/status_booking.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/favorit_model.dart';
+import '../../../models/lapangan_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
 import '../../../repositories/booking_repository.dart';
 import '../../../repositories/favorit_repository.dart';
+import '../../../repositories/lapangan_repository.dart';
 
 /// ViewModel untuk tab Profil (L-13).
 ///
@@ -44,15 +46,18 @@ class ProfilViewModel extends ChangeNotifier {
     required BookingRepository bookingRepository,
     required AktivitasRepository aktivitasRepository,
     required FavoritRepository favoritRepository,
+    required LapanganRepository lapanganRepository,
     required this.userId,
   })  : streamRiwayatBooking = bookingRepository.streamRiwayatBooking(userId),
         streamAktivitasSaya =
             aktivitasRepository.streamAktivitasSaya(userId),
         streamDaftarFavorit =
             favoritRepository.streamDaftarFavorit(userId),
-        _bookingRepository = bookingRepository;
+        _bookingRepository = bookingRepository,
+        _lapanganRepository = lapanganRepository;
 
   final BookingRepository _bookingRepository;
+  final LapanganRepository _lapanganRepository;
 
   final Stream<List<BookingModel>> streamRiwayatBooking;
   final Stream<List<AktivitasBermainModel>> streamAktivitasSaya;
@@ -78,6 +83,11 @@ class ProfilViewModel extends ChangeNotifier {
       _bookingRepository.tandaiBookingSelesai(booking.bookingId);
     }
   }
+
+  /// Ambil lapangan untuk form Ubah Jadwal (T-62, AB-20). Melempar
+  /// `Exception` berpesan Indonesia kalau gagal — View yang menampilkannya.
+  Future<LapanganModel> ambilLapangan(String lapanganId) =>
+      _lapanganRepository.ambilSatuLapangan(lapanganId);
 
   /// Batalkan booking milik pengguna — PRD AB-04 lanjutan, T-46.
   /// Mengembalikan `null` kalau berhasil, atau pesan kesalahan kalau gagal.

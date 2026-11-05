@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/app_slot.dart';
 import '../core/utils/produk_tambahan.dart';
 import '../core/utils/status_booking.dart';
+import '../core/utils/ubah_jadwal.dart';
 import '../models/booking_model.dart';
 import '../models/notifikasi_model.dart';
 import '../models/produk_tambahan_model.dart';
@@ -303,6 +304,156 @@ class BookingRepository {
     }
   }
 
+  /// Pengguna mengubah jadwal booking miliknya — PRD AB-20, v1.5 (T-62),
+  /// BB-76, BB-77, BB-78.
+  ///
+  /// SATU transaction: slot lama dilepas, slot baru dikunci, booking
+  /// diperbarui, dan mitra diberi tahu — semuanya atau tidak sama sekali.
+  /// Kalau jadwal baru bentrok (BB-77), jadwal dan slot lama tidak berubah
+  /// sedikit pun.
+  ///
+  /// **Jebakan transaction (CLAUDE.md #1):** `transaction.get()` hanya
+  /// menerima `DocumentReference`, bukan Query, dan seluruh pembacaan harus
+  /// SEBELUM penulisan pertama. Karena itu kunci slot ber-ID deterministik
+  /// `{lapanganId}_{tanggal}_{jam}` dipakai lagi (sama seperti
+  /// [ajukanReservasi]), dan selisih slot lama-baru dihitung oleh fungsi
+  /// murni `rencanaUbahSlot` (`core/utils/ubah_jadwal.dart`).
+  ///
+  /// Jadwal LAMA dibaca dari dokumen booking di dalam transaction, bukan dari
+  /// [booking] yang dioper View — View bisa memegang salinan basi (mis.
+  /// mitra baru saja menolak booking ini). [booking] hanya dipakai untuk ID
+  /// dan nama.
+  ///
+  /// Status kembali `MENUNGGU`: mitra mengonfirmasi jadwal lama, bukan yang
+  /// baru, jadi harus mengonfirmasi ulang. Mitra menerima notifikasi
+  /// `BOOKING_DIJADWALKAN_ULANG`.
+  ///
+  /// [totalHargaBaru] dihitung pemanggil (harga dan diskon lapangan saat ini,
+  /// ditambah produk tambahan booking yang sama — AB-18/AB-19).
+  Future<void> ubahJadwalBooking({
+    required BookingModel booking,
+    required String userId,
+    required String tanggalBaru,
+    required String jamMulaiBaru,
+    required String jamSelesaiBaru,
+    required int totalHargaBaru,
+  }) async {
+    final bookingRef = _db.collection('booking').doc(booking.bookingId);
+    final notifRef = _db.collection('notifikasi').doc();
+
+    DocumentReference slotRef(KunciSlot k) => _db
+        .collection('slotBooking')
+        .doc('${booking.lapanganId}_${k.tanggal}_${k.jam}');
+
+    try {
+      await _db.runTransaction((transaction) async {
+        // ---- BACA (seluruhnya sebelum penulisan pertama) ----
+        final bookingSnap = await transaction.get(bookingRef);
+        if (!bookingSnap.exists) {
+          throw Exception('Booking tidak ditemukan.');
+        }
+        final lama = BookingModel.fromFirestore(bookingSnap);
+
+        if (lama.userId != userId) {
+          throw Exception('Ini bukan booking milikmu.');
+        }
+        if (lama.status != 'MENUNGGU' && lama.status != 'DIKONFIRMASI') {
+          throw Exception('Booking ini tidak bisa diubah jadwalnya.');
+        }
+        if (sudahLewatJamSelesai(lama)) {
+          throw Exception('Booking ini sudah lewat jam selesainya.');
+        }
+
+        final mulaiBaru = _waktuBooking(tanggalBaru, jamMulaiBaru);
+        if (!mulaiBaru.isAfter(DateTime.now())) {
+          throw Exception('Jadwal baru harus di masa depan.');
+        }
+
+        final rencana = rencanaUbahSlot(
+          lama: kunciSlotBooking(
+            tanggal: lama.tanggal,
+            jamMulai: lama.jamMulai,
+            jamSelesai: lama.jamSelesai,
+          ),
+          baru: kunciSlotBooking(
+            tanggal: tanggalBaru,
+            jamMulai: jamMulaiBaru,
+            jamSelesai: jamSelesaiBaru,
+          ),
+        );
+        if (rencana.tidakBerubah) {
+          throw Exception('Jadwal tidak berubah.');
+        }
+
+        // Slot baru (yang belum milik booking ini) tidak boleh sudah ada.
+        for (final k in rencana.dibuat) {
+          final snap = await transaction.get(slotRef(k));
+          if (snap.exists) {
+            throw Exception('Slot sudah dipesan');
+          }
+        }
+
+        // Slot lama hanya dihapus kalau memang milik booking ini — jangan
+        // pernah menghapus slot orang lain walau datanya ganjil.
+        final hapus = <KunciSlot>[];
+        for (final k in rencana.dihapus) {
+          final snap = await transaction.get(slotRef(k));
+          final data = snap.data() as Map<String, dynamic>?;
+          if (snap.exists && data?['bookingId'] == booking.bookingId) {
+            hapus.add(k);
+          }
+        }
+
+        // ---- TULIS ----
+        for (final k in hapus) {
+          transaction.delete(slotRef(k));
+        }
+        for (final k in rencana.dibuat) {
+          transaction.set(slotRef(k), {
+            'bookingId': booking.bookingId,
+            'lapanganId': booking.lapanganId,
+            'tanggal': k.tanggal,
+            'jam': k.jam,
+          });
+        }
+        transaction.update(bookingRef, {
+          'tanggal': tanggalBaru,
+          'jamMulai': jamMulaiBaru,
+          'jamSelesai': jamSelesaiBaru,
+          'totalHarga': totalHargaBaru,
+          'status': 'MENUNGGU',
+        });
+        transaction.set(
+          notifRef,
+          NotifikasiModel(
+            notifikasiId: notifRef.id,
+            untukUserId: lama.pemilikId,
+            tipe: 'BOOKING_DIJADWALKAN_ULANG',
+            judul: 'Jadwal reservasi diubah',
+            pesan: '${lama.namaUser} mengubah jadwal reservasi '
+                '"${lama.namaLapangan}" menjadi $tanggalBaru '
+                '$jamMulaiBaru–$jamSelesaiBaru. Mohon konfirmasi ulang.',
+            refId: booking.bookingId,
+            dibuatPada: DateTime.now(),
+          ).toFirestore(),
+        );
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin mengubah jadwal booking.');
+      }
+      throw Exception('Gagal mengubah jadwal booking. Coba lagi.');
+    }
+  }
+
+  /// "yyyy-MM-dd" + "HH:mm" → [DateTime]. Jam 24 ke atas (tutup tengah
+  /// malam) menggulung ke hari berikutnya, seperti di `status_booking.dart`.
+  DateTime _waktuBooking(String tanggal, String jam) {
+    final t = tanggal.split('-').map(int.parse).toList();
+    final j = jam.split(':').map(int.parse).toList();
+    return DateTime(t[0], t[1], t[2], j[0], j[1]);
+  }
+
   /// Stream riwayat booking milik satu pengguna — PRD L-13, T-27, BB-28.
   ///
   /// `Stream`, bukan `Future`: sama alasannya dengan [streamBookingMasuk]
@@ -358,15 +509,23 @@ class BookingRepository {
   /// bukan daftar yang perlu tetap hidup seperti notifikasi. Query baca
   /// ini terpisah dari transaction di [ajukanReservasi] — lihat catatan
   /// "Jebakan" di sana, transaction tidak boleh dicampur dengan Query.
+  ///
+  /// [abaikanBookingId] (v1.5, T-62): slot milik booking ini tidak ikut
+  /// dihitung "terisi". Dipakai mode Ubah Jadwal di L-10, supaya jam milik
+  /// booking itu sendiri tidak tampil "Penuh" dan bisa dipilih lagi.
   Future<Set<int>> ambilSlotTerisi({
     required String lapanganId,
     required String tanggal,
+    String? abaikanBookingId,
   }) async {
     final slot = await ambilSlotLapangan(
       lapanganId: lapanganId,
       tanggal: tanggal,
     );
-    return slot.keys.toSet();
+    return {
+      for (final entry in slot.entries)
+        if (entry.value != abaikanBookingId) entry.key,
+    };
   }
 
   /// Sama dengan [ambilSlotTerisi], tapi mengembalikan juga `bookingId`

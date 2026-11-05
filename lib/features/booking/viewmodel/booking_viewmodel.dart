@@ -41,9 +41,13 @@ class BookingViewModel extends ChangeNotifier {
   /// Memuat jam yang sudah terisi untuk [lapanganId] pada [tanggal]
   /// ("yyyy-MM-dd") — dipanggil ulang tiap kali tanggal diganti, supaya
   /// chip jam yang bertanda "Penuh" (PRD L-10) selalu sesuai tanggal aktif.
+  ///
+  /// [abaikanBookingId] (T-62): dalam mode Ubah Jadwal, jam milik booking
+  /// itu sendiri tidak dianggap terisi.
   Future<void> muatSlotTerisi({
     required String lapanganId,
     required String tanggal,
+    String? abaikanBookingId,
   }) async {
     _kondisiSlot = KondisiSlot.memuat;
     notifyListeners();
@@ -52,6 +56,7 @@ class BookingViewModel extends ChangeNotifier {
       _slotTerisi = await _repository.ambilSlotTerisi(
         lapanganId: lapanganId,
         tanggal: tanggal,
+        abaikanBookingId: abaikanBookingId,
       );
       _kondisiSlot = KondisiSlot.berhasil;
     } catch (_) {
@@ -77,6 +82,52 @@ class BookingViewModel extends ChangeNotifier {
       daftarJam: daftarJam,
       totalProduk: hitungTotalProduk(produkDipilih),
     );
+  }
+
+  /// Ubah jadwal booking — PRD AB-20, T-62, BB-76/BB-77. Mengembalikan
+  /// `true` kalau berhasil; kalau `false`, baca [pesanError].
+  ///
+  /// Total harga dihitung di sini (harga dan diskon lapangan SAAT INI,
+  /// ditambah produk tambahan milik [bookingLama] — produknya tidak
+  /// berubah) lalu diserahkan ke repository.
+  Future<bool> ubahJadwal({
+    required BookingModel bookingLama,
+    required LapanganModel lapangan,
+    required String userId,
+    required String tanggal,
+    required String jamMulai,
+    required String jamSelesai,
+  }) async {
+    _sedangProses = true;
+    _pesanError = null;
+    notifyListeners();
+
+    try {
+      final awal = int.parse(jamMulai.split(':')[0]);
+      final akhir = int.parse(jamSelesai.split(':')[0]);
+      final totalHarga = hitungRincian(
+        lapangan,
+        [for (var jam = awal; jam < akhir; jam++) jam],
+        produkDipilih: bookingLama.produkTambahan,
+      ).total;
+
+      await _repository.ubahJadwalBooking(
+        booking: bookingLama,
+        userId: userId,
+        tanggalBaru: tanggal,
+        jamMulaiBaru: jamMulai,
+        jamSelesaiBaru: jamSelesai,
+        totalHargaBaru: totalHarga,
+      );
+      _sedangProses = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _pesanError = e.toString().replaceFirst('Exception: ', '');
+      _sedangProses = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   /// Mengembalikan [BookingModel] kalau berhasil, `null` kalau gagal —

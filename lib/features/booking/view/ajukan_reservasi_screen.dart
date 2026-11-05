@@ -7,6 +7,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/utils/harga.dart';
 import '../../../core/utils/produk_tambahan.dart';
+import '../../../models/booking_model.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../models/produk_tambahan_model.dart';
 import '../../../repositories/booking_repository.dart';
@@ -21,10 +22,23 @@ import '../viewmodel/booking_viewmodel.dart';
 /// Dibuka lewat `Navigator.push` dari Detail Lapangan (L-06), hanya kalau
 /// `lapangan.isMitra == true` (AB-08) — tombol pemanggilnya sudah dijaga
 /// kondisi itu di `detail_lapangan_screen.dart`.
+///
+/// **Mode Ubah Jadwal (v1.5, T-62, AB-20):** kalau [bookingLama] diisi,
+/// layar yang sama dipakai untuk mengubah jadwal booking itu — tanggal, durasi,
+/// dan jam awal terisi jadwal lama, jam milik booking itu sendiri tidak
+/// ditandai "Penuh", dan produk tambahan tidak bisa diubah. Dibuka dari
+/// Riwayat Pemesanan (L-13), bukan dari Detail Lapangan.
 class AjukanReservasiScreen extends StatelessWidget {
   final LapanganModel lapangan;
 
-  const AjukanReservasiScreen({super.key, required this.lapangan});
+  /// `null` → mode Ajukan Reservasi biasa. Diisi → mode Ubah Jadwal.
+  final BookingModel? bookingLama;
+
+  const AjukanReservasiScreen({
+    super.key,
+    required this.lapangan,
+    this.bookingLama,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +46,22 @@ class AjukanReservasiScreen extends StatelessWidget {
       create: (context) => BookingViewModel(
         repository: context.read<BookingRepository>(),
       ),
-      child: _AjukanReservasiBody(lapangan: lapangan),
+      child: _AjukanReservasiBody(
+        lapangan: lapangan,
+        bookingLama: bookingLama,
+      ),
     );
   }
 }
 
 class _AjukanReservasiBody extends StatefulWidget {
   final LapanganModel lapangan;
+  final BookingModel? bookingLama;
 
-  const _AjukanReservasiBody({required this.lapangan});
+  const _AjukanReservasiBody({
+    required this.lapangan,
+    required this.bookingLama,
+  });
 
   @override
   State<_AjukanReservasiBody> createState() => _AjukanReservasiBodyState();
@@ -51,6 +72,39 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
   int? _jamMulai;
   int _durasi = 1;
 
+  bool get _modeUbah => widget.bookingLama != null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Mode Ubah Jadwal: awali dengan jadwal lama supaya pengguna tinggal
+    // menggeser, bukan mengisi dari nol.
+    final lama = widget.bookingLama;
+    if (lama != null) {
+      final t = lama.tanggal.split('-').map(int.parse).toList();
+      _tanggal = DateTime(t[0], t[1], t[2]);
+      _jamMulai = int.parse(lama.jamMulai.split(':')[0]);
+      final selesai = int.parse(lama.jamSelesai.split(':')[0]);
+      // Form hanya menawarkan durasi 1–3 jam.
+      _durasi = (selesai - _jamMulai!).clamp(1, 3);
+
+      // Slot dimuat setelah frame pertama: memanggil notifyListeners saat
+      // widget masih dibangun akan memicu galat.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _muatSlot());
+    }
+  }
+
+  /// Muat slot terisi untuk tanggal aktif. Dalam mode ubah, slot milik
+  /// booking itu sendiri diabaikan supaya jamnya tidak tampil "Penuh".
+  Future<void> _muatSlot() {
+    return context.read<BookingViewModel>().muatSlotTerisi(
+          lapanganId: widget.lapangan.lapanganId,
+          tanggal: _tanggalFormat,
+          abaikanBookingId: widget.bookingLama?.bookingId,
+        );
+  }
+
   /// Jumlah yang dipilih untuk tiap produk di katalog lapangan (indeks sama
   /// dengan `lapangan.produkTambahan`) — T-60, AB-19. Awal semuanya 0.
   late final List<int> _jumlahProduk =
@@ -58,15 +112,23 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
 
   /// Produk berjumlah > 0, disalin (nama dan harga) dari katalog — inilah
   /// yang disimpan ke `booking.produkTambahan`.
-  List<ProdukPesananModel> get _produkDipilih => [
-        for (var i = 0; i < _jumlahProduk.length; i++)
-          if (_jumlahProduk[i] > 0)
-            ProdukPesananModel(
-              nama: widget.lapangan.produkTambahan[i].nama,
-              harga: widget.lapangan.produkTambahan[i].harga,
-              jumlah: _jumlahProduk[i],
-            ),
-      ];
+  ///
+  /// Mode Ubah Jadwal: produk booking lama dipakai apa adanya (tidak bisa
+  /// diubah dari sini).
+  List<ProdukPesananModel> get _produkDipilih {
+    final lama = widget.bookingLama;
+    if (lama != null) return lama.produkTambahan;
+
+    return [
+      for (var i = 0; i < _jumlahProduk.length; i++)
+        if (_jumlahProduk[i] > 0)
+          ProdukPesananModel(
+            nama: widget.lapangan.produkTambahan[i].nama,
+            harga: widget.lapangan.produkTambahan[i].harga,
+            jumlah: _jumlahProduk[i],
+          ),
+    ];
+  }
 
   int get _jamBukaHour => int.parse(widget.lapangan.jamBuka.split(':')[0]);
 
@@ -124,10 +186,7 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
     });
 
     if (!mounted) return;
-    await context.read<BookingViewModel>().muatSlotTerisi(
-          lapanganId: widget.lapangan.lapanganId,
-          tanggal: _tanggalFormat,
-        );
+    await _muatSlot();
   }
 
   Future<void> _submit() async {
@@ -161,37 +220,60 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
         )
         .total;
 
-    final booking = await vm.ajukanReservasi(
-      lapanganId: widget.lapangan.lapanganId,
-      namaLapangan: widget.lapangan.nama,
-      pemilikId: widget.lapangan.pemilikId ?? '',
-      userId: user.userId,
-      namaUser: user.nama,
-      tanggal: _tanggalFormat,
-      jamMulai: '${_jamMulai!.toString().padLeft(2, '0')}:00',
-      jamSelesai: '${jamSelesai.toString().padLeft(2, '0')}:00',
-      totalHarga: totalHarga,
-      produkTambahan: _produkDipilih,
-    );
+    final jamMulaiTeks = '${_jamMulai!.toString().padLeft(2, '0')}:00';
+    final jamSelesaiTeks = '${jamSelesai.toString().padLeft(2, '0')}:00';
+
+    // Mode Ubah Jadwal (T-62, AB-20, BB-76/BB-77) atau Ajukan Reservasi biasa
+    // (AB-04). `berhasil` dan pesannya disamakan supaya penanganan di bawah
+    // satu jalur.
+    final bool berhasil;
+    final String pesanSukses;
+    final String pesanGagalBawaan;
+    final lama = widget.bookingLama;
+    if (lama != null) {
+      berhasil = await vm.ubahJadwal(
+        bookingLama: lama,
+        lapangan: widget.lapangan,
+        userId: user.userId,
+        tanggal: _tanggalFormat,
+        jamMulai: jamMulaiTeks,
+        jamSelesai: jamSelesaiTeks,
+      );
+      pesanSukses = AppStrings.jadwalDiubah;
+      pesanGagalBawaan = AppStrings.errGagalUbahJadwal;
+    } else {
+      final booking = await vm.ajukanReservasi(
+        lapanganId: widget.lapangan.lapanganId,
+        namaLapangan: widget.lapangan.nama,
+        pemilikId: widget.lapangan.pemilikId ?? '',
+        userId: user.userId,
+        namaUser: user.nama,
+        tanggal: _tanggalFormat,
+        jamMulai: jamMulaiTeks,
+        jamSelesai: jamSelesaiTeks,
+        totalHarga: totalHarga,
+        produkTambahan: _produkDipilih,
+      );
+      berhasil = booking != null;
+      pesanSukses = AppStrings.reservasiTerkirim;
+      pesanGagalBawaan = AppStrings.errGagalAjukanReservasi;
+    }
 
     if (!mounted) return;
 
-    if (booking != null) {
+    if (berhasil) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.reservasiTerkirim)),
+        SnackBar(content: Text(pesanSukses)),
       );
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.pesanError ?? AppStrings.errGagalAjukanReservasi)),
+        SnackBar(content: Text(vm.pesanError ?? pesanGagalBawaan)),
       );
-      // Slot yang barusan dipakai orang lain (BB-25) harus hilang dari
+      // Slot yang barusan dipakai orang lain (BB-25, BB-77) harus hilang dari
       // pilihan — muat ulang supaya chipnya langsung bertanda "Penuh".
       setState(() => _jamMulai = null);
-      await vm.muatSlotTerisi(
-        lapanganId: widget.lapangan.lapanganId,
-        tanggal: _tanggalFormat,
-      );
+      await _muatSlot();
     }
   }
 
@@ -204,8 +286,8 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: const Text(
-          AppStrings.ajukanReservasi,
+        title: Text(
+          _modeUbah ? AppStrings.ubahJadwal : AppStrings.ajukanReservasi,
           style: AppTextStyles.judulSeksi,
         ),
       ),
@@ -266,7 +348,8 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
                 onPilih: (jam) => setState(() => _jamMulai = jam),
               ),
               // v1.5 (T-60) — produk tambahan, hanya kalau lapangan punya.
-              if (widget.lapangan.produkTambahan.isNotEmpty) ...[
+              // Mode Ubah Jadwal: produk tidak bisa diubah, jadi tidak ditawarkan.
+              if (!_modeUbah && widget.lapangan.produkTambahan.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 const Text(
                   AppStrings.produkTambahanOpsional,
@@ -316,7 +399,11 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(AppStrings.ajukanReservasi),
+                    : Text(
+                        _modeUbah
+                            ? AppStrings.simpanJadwalBaru
+                            : AppStrings.ajukanReservasi,
+                      ),
               ),
             ],
           ),

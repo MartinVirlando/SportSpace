@@ -16,7 +16,9 @@ import '../../../models/user_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
 import '../../../repositories/booking_repository.dart';
 import '../../../repositories/favorit_repository.dart';
+import '../../../repositories/lapangan_repository.dart';
 import '../../aktivitas/view/detail_aktivitas_screen.dart';
+import '../../booking/view/ajukan_reservasi_screen.dart';
 import '../../auth/view/login_screen.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 // import '../../../routes/admin_seed_screen.dart'; // lihat catatan tile "Seed Data Awal" di bawah
@@ -62,6 +64,7 @@ class ProfilScreen extends StatelessWidget {
         bookingRepository: context.read<BookingRepository>(),
         aktivitasRepository: context.read<AktivitasRepository>(),
         favoritRepository: context.read<FavoritRepository>(),
+        lapanganRepository: context.read<LapanganRepository>(),
         userId: userId,
       ),
       child: const _ProfilBody(),
@@ -571,6 +574,36 @@ class _KartuRiwayatBooking extends StatefulWidget {
 
 class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
   bool _sedangBatal = false;
+  bool _sedangUbah = false;
+
+  /// Buka form Ubah Jadwal (T-62, AB-20). Lapangan dimuat dulu karena form
+  /// butuh jam operasional, harga, dan promo SAAT INI — Riwayat Pemesanan
+  /// hanya memegang `BookingModel`. Hasil akhirnya (sukses atau gagal)
+  /// ditampilkan oleh layar form itu sendiri; daftar ini ikut berubah lewat
+  /// `Stream`, tidak perlu dimuat ulang.
+  Future<void> _ubahJadwal() async {
+    setState(() => _sedangUbah = true);
+
+    try {
+      final lapangan = await widget.vm.ambilLapangan(widget.booking.lapanganId);
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => AjukanReservasiScreen(
+            lapangan: lapangan,
+            bookingLama: widget.booking,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+
+    if (mounted) setState(() => _sedangUbah = false);
+  }
 
   String _label(String status) {
     switch (status) {
@@ -682,7 +715,7 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
                 ),
               ),
               if (bisaDibatalkan)
-                _sedangBatal
+                _sedangBatal || _sedangUbah
                     ? const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),
                         child: SizedBox(
@@ -691,16 +724,33 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       )
-                    : TextButton(
-                        onPressed: _batalkan,
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                        ),
-                        child: const Text(
-                          AppStrings.batalkanBooking,
-                          style: TextStyle(color: Colors.red),
-                        ),
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // v1.5 (T-62, AB-20): syarat tampilnya sama dengan
+                          // Batalkan — hanya MENUNGGU/DIKONFIRMASI dan belum
+                          // lewat jam selesai.
+                          TextButton(
+                            onPressed: _ubahJadwal,
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(0, 0),
+                            ),
+                            child: const Text(AppStrings.ubahJadwal),
+                          ),
+                          const SizedBox(width: 16),
+                          TextButton(
+                            onPressed: _batalkan,
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(0, 0),
+                            ),
+                            child: const Text(
+                              AppStrings.batalkanBooking,
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
                       ),
             ],
           ),

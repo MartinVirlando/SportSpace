@@ -285,7 +285,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 91 tes hijau); BB-67–69 belum diuji di perangkat |
 | T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Kode selesai 5 Nov 2026 (analyze, 133 tes hijau); BB-73–75 belum diuji di perangkat |
 | T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 55 tes hijau); BB-60–61 belum diuji di perangkat |
-| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Rencana (PRD v1.5) |
+| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 147 tes hijau); BB-76–78 belum diuji di perangkat |
 | T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 46 tes hijau); BB-58–59 belum diuji di perangkat |
 | T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Rencana (PRD v1.5) |
 | T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 111 tes hijau); BB-70–72 belum diuji di perangkat |

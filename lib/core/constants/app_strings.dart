@@ -108,6 +108,13 @@ class AppStrings {
   static const sewaLapangan = 'Sewa lapangan';
   static const potongan = 'Potongan';
 
+  // ---------- Ubah jadwal booking (T-62, AB-20) ----------
+  static const ubahJadwal = 'Ubah Jadwal';
+  static const simpanJadwalBaru = 'Simpan Jadwal Baru';
+  static const jadwalDiubah =
+      'Jadwal diubah. Menunggu konfirmasi ulang dari mitra.';
+  static const errGagalUbahJadwal = 'Gagal mengubah jadwal.';
+
   // ---------- Produk tambahan (T-60, AB-19) ----------
   static const produkTambahanJudul = 'Produk Tambahan';
   static const produkTambahanOpsional = 'Tambahan (opsional)';
