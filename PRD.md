@@ -2,7 +2,7 @@
 
 **Aplikasi Android pencarian lapangan olahraga dan rekan bermain berbasis lokasi**
 
-Versi 1.4 · 5 November 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
+Versi 1.5 · 5 November 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
 
 > Dokumen ini adalah **sumber kebenaran tunggal** untuk implementasi. Jika ada pertentangan antara dokumen ini dan ingatan/asumsi, dokumen ini yang menang. Jika ada kebutuhan yang tidak tercantum di sini, **jangan dibangun** — tanyakan dulu.
 
@@ -65,6 +65,31 @@ Pak Gintoro menilai fitur tambahan seperti Forum dan fitur yang terinspirasi apl
 **Yang belum dikerjakan dari 14 usulan** (tahap 2 dan 3, tetap di backlog `SPRINT-PLAN.md`): T-57, T-59, T-60, T-62, T-64, T-65, T-66, T-67. T-67 butuh package baru, jadi izin harus diminta dulu (`CLAUDE.md`).
 
 > ⚠️ **Konsekuensi ke skripsi kecil, tapi ada.** T-54 sampai T-56 menambah tiga atribut ke entitas `AktivitasBermain` yang sudah ada di ERD Bab 3. Gambar ERD (M1 di "Putaran revisi 2") sebaiknya dibuat **setelah** atribut ini final, atau ketiganya disebut sebagai "tambahan di luar rancangan awal". Lihat §14 "Tambahan akibat v1.4".
+
+### Perubahan v1.5 (5 November 2026) — Fitur tambahan terinspirasi AYO, tahap 2 dan 3
+
+Tim memutuskan (5 November 2026) melanjutkan sisa usulan terinspirasi AYO yang memang berasal dari AYO: T-57, T-59, T-60, T-62, T-64, dan T-65. **T-66 (mitra membalas ulasan) dan T-67 (pengingat jadwal) tidak dikerjakan**: keduanya ide di luar AYO, dan T-67 butuh package baru yang belum diizinkan. Seperti v1.4, ini fitur pemanis menurut Pak Gintoro, tanpa koleksi baru, tanpa pembayaran, **dan tanpa perubahan Security Rules** (rules yang ada sudah mengizinkan semua tulisan di bawah).
+
+| # | Tugas | Perubahan | Bagian yang terdampak |
+|---|---|---|---|
+| 1 | **T-57** | **Urutkan dan saring lanjutan di Home** (L-04): urut Terdekat (bawaan, tetap AB-02) / Rating tertinggi / Terpopuler, saklar "Buka sekarang", dan filter fasilitas. Semua di klien | §7 AB-16, §8 L-04, §11 BB-62–66 |
+| 2 | **T-59** | **Mitra memblokir slot manual** lewat layar baru L-19 "Atur Slot", memakai kunci `slotBooking` yang sudah ada | §6.7, §7 AB-17, §8 L-14, L-19, §11 BB-67–69 |
+| 3 | **T-65** | **Promo dari mitra**: atribut `diskonPersen` pada `lapangan`. Badge di kartu dan Detail, estimasi dan `totalHarga` ikut turun. Tanpa pembayaran | §6.2, §7 AB-18, §8 L-04, L-06, L-10, L-15, §11 BB-70–72 |
+| 4 | **T-60** | **Produk tambahan saat booking** (sewa bola, rompi): mitra mendaftarkan item di `lapangan.produkTambahan`, pengguna memilih jumlahnya di L-10, disalin ke `booking.produkTambahan` | §6.2, §6.6, §7 AB-19, §8 L-10, L-13, L-14, L-15, §11 BB-73–75 |
+| 5 | **T-62** | **Ubah jadwal booking** (reschedule) dari L-13, satu transaction | §6.8, §7 AB-20, §8 L-10, L-13, §11 BB-76–78 |
+| 6 | **T-64** | **Aktivitas publik atau privat**: atribut `visibilitas` dan `kodeAkses`. Aktivitas privat tidak tampil di daftar dan dibuka lewat kode | §6.3, §7 AB-21, §8 L-07–L-09, §11 BB-79–82 |
+
+Urutan pengerjaan yang dipakai (menurut ketergantungan, bukan nomor): T-57, T-59, T-65, T-60, T-62, T-64. T-62 dikerjakan setelah T-65 dan T-60 karena menghitung ulang total harga memakai keduanya.
+
+**Dokumen lama tetap terbaca.** `lapangan` tanpa `diskonPersen` dibaca `0` dan tanpa `produkTambahan` dibaca daftar kosong. `booking` tanpa `produkTambahan` dibaca daftar kosong. `aktivitasBermain` tanpa `visibilitas` dibaca `"publik"`. Tidak perlu migrasi data.
+
+**Keputusan yang diambil** (tidak ada di rumusan masalah, dicatat supaya bisa dijelaskan):
+- **Urut harga tidak diadakan.** T-49 (filter harga) dibatalkan 15 September 2026, dan harga lapangan non-mitra hanya estimasi (Bab 3), jadi mengurutkan berdasarkan harga menyesatkan.
+- **AB-02 tidak berubah.** Urutan bawaan Home tetap murni jarak. Urut rating atau populer hanya terjadi bila pengguna memilihnya, dan kembali ke jarak lewat "Reset".
+- **Aktivitas privat disaring di klien**, bukan di query: Firestore mengecualikan dokumen yang tidak punya field dari query `where`, jadi aktivitas lama akan hilang dari daftar. Konsekuensinya privat bukan rahasia sungguhan: pengguna login yang menebak `aktivitasId` atau membaca koleksi tetap bisa melihatnya. Dicatat sebagai keterbatasan di Bab 5.
+- **Diskon hanya untuk sewa lapangan**, bukan produk tambahan.
+
+> ⚠️ **Konsekuensi ke skripsi.** Tiga entitas ERD bertambah atribut lagi (`lapangan`, `booking`, `aktivitasBermain`). Gambar ERD (M1) sebaiknya dibuat **setelah** ini final — lihat §14 "Tambahan akibat v1.5".
 
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
@@ -284,6 +309,7 @@ lib/
     constants/
       app_colors.dart          # warna tema — diekstrak dari Figma
       app_sports.dart          # daftar 4 olahraga + label + ikon
+      app_fasilitas.dart       # v1.5 — daftar fasilitas, dipakai form mitra L-15 dan filter Home (AB-16)
       app_strings.dart         # teks antarmuka berbahasa Indonesia
     data/
       seed_lapangan.dart       # data awal untuk AdminSeedScreen
@@ -294,6 +320,9 @@ lib/
       lencana.dart             # v1.4 — aturan lencana (AB-14), fungsi murni
       whatsapp.dart            # v1.4 — normalisasi nomor + teks bagikan (AB-15), fungsi murni
       tautan_eksternal.dart    # v1.4 — buka tautan di luar aplikasi (url_launcher), dipakai tombol Bagikan/WhatsApp
+      jam_buka.dart            # v1.5 — sedangBuka(), filter "Buka sekarang" (AB-16), fungsi murni
+      harga.dart               # v1.5 — diskon + total booking (AB-18, AB-19), fungsi murni
+      kode_akses.dart          # v1.5 — pembangkit kode aktivitas privat (AB-21), fungsi murni
     services/
       location_service.dart    # bungkus geolocator
 
@@ -381,6 +410,8 @@ Nama atribut mengikuti ERD Bab 3 **persis**. Jangan diterjemahkan ke bahasa Ingg
 | `ratingTotal` | int | ✓ | jumlah seluruh nilai rating, awal `0` |
 | `jumlahRating` | int | ✓ | banyak rating, awal `0` |
 | `ratingRata2` | double | ✓ | atribut turunan, awal `0.0` |
+| `diskonPersen` | int | ✓ | **v1.5 (T-65)** — persen promo dari mitra, `0`–`90`, `0` = tanpa promo. Dokumen lama dibaca `0` |
+| `produkTambahan` | List\<Map\> | ✓ | **v1.5 (T-60)** — item tambahan yang bisa dipesan bersama booking, maksimal 5. Tiap elemen `{"nama": String, "harga": int}`. Dokumen lama dibaca daftar kosong |
 
 > **`slotTersedia[]` TIDAK disimpan.** Di ERD ia atribut turunan, dihitung dari koleksi `slotBooking`. Jangan bikin fieldnya.
 >
@@ -406,6 +437,8 @@ Nama atribut mengikuti ERD Bab 3 **persis**. Jangan diterjemahkan ke bahasa Ingg
 | `jenisAktivitas` | String | ✓ | **v1.4 (T-54)** — `"main_bareng"` \| `"sparring"`. Dokumen lama tanpa field ini dibaca sebagai `"main_bareng"` |
 | `tingkatKemampuan` | String? | | **v1.4 (T-55)** — `"pemula"` \| `"menengah"` \| `"mahir"`. Wajib dipilih saat membuat aktivitas baru; `null` hanya untuk dokumen lama |
 | `biayaPerOrang` | int | ✓ | **v1.4 (T-56)** — rupiah, `0` = gratis, maksimal `1000000`. Informasi saja, dibayar di lokasi. Dokumen lama dibaca sebagai `0` |
+| `visibilitas` | String | ✓ | **v1.5 (T-64)** — `"publik"` \| `"privat"`. Dokumen lama dibaca `"publik"` |
+| `kodeAkses` | String? | | **v1.5 (T-64)** — kode 6 karakter, hanya terisi bila `visibilitas == "privat"`. Alfabet `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (tanpa I, O, 0, 1 agar tidak tertukar) |
 
 ### 6.4 `aktivitasBermain/{aktivitasId}/permintaan/{userId}` (subkoleksi)
 
@@ -443,8 +476,9 @@ ID dokumen = `"{userId}_{lapanganId}"` — satu pengguna hanya punya satu rating
 | `tanggal` | String | `"yyyy-MM-dd"` |
 | `jamMulai`, `jamSelesai` | String | `"HH:mm"`, selalu kelipatan 1 jam |
 | `status` | String | `MENUNGGU` \| `DIKONFIRMASI` \| `DITOLAK` \| `SELESAI` \| `DIBATALKAN` |
-| `totalHarga` | int | estimasi, dibayar di lokasi |
+| `totalHarga` | int | estimasi, dibayar di lokasi. **v1.5:** sewa setelah diskon (T-65) ditambah seluruh produk tambahan (T-60) |
 | `dibuatPada` | Timestamp | |
+| `produkTambahan` | List\<Map\> | **v1.5 (T-60)** — salinan produk yang dipilih saat booking, `{"nama", "harga", "jumlah"}`. Disalin (bukan rujukan) supaya perubahan harga mitra tidak mengubah booking lama. Booking lama dibaca daftar kosong |
 
 ### 6.7 `slotBooking/{lapanganId}_{tanggal}_{jam}` — kunci slot
 
@@ -458,6 +492,9 @@ ID dokumen contoh: `abc123_2026-09-01_19` (lapangan abc123, 1 Sept 2026, jam 19:
 | `lapanganId` | String |
 | `tanggal` | String |
 | `jam` | int (0–23) |
+| `diblokirOleh` | String | **v1.5 (T-59)** — hanya pada slot yang diblokir manual oleh mitra: `userId` mitra |
+
+**v1.5 (T-59) — slot yang diblokir mitra** memakai dokumen yang sama persis dengan ID deterministik yang sama, dengan `bookingId = "BLOKIR"` (nilai tetap, bukan ID booking sungguhan) dan `diblokirOleh` terisi. Karena itu pengguna melihatnya sebagai jam "Penuh" tanpa kode tambahan, dan `ajukanReservasi` otomatis menolaknya. Membuka blokir hanya boleh menghapus dokumen yang `bookingId`-nya `"BLOKIR"`; slot milik booking sungguhan tidak pernah bisa dihapus dari sini.
 
 ### 6.8 `notifikasi/{notifikasiId}`
 
@@ -465,7 +502,7 @@ ID dokumen contoh: `abc123_2026-09-01_19` (lapangan abc123, 1 Sept 2026, jam 19:
 |---|---|---|
 | `notifikasiId` | String | |
 | `untukUserId` | String | penerima |
-| `tipe` | String | `PERMINTAAN_GABUNG` \| `PERMINTAAN_DITERIMA` \| `PERMINTAAN_DITOLAK` \| `BOOKING_BARU` \| `BOOKING_DIKONFIRMASI` \| `BOOKING_DITOLAK` |
+| `tipe` | String | `PERMINTAAN_GABUNG` \| `PERMINTAAN_DITERIMA` \| `PERMINTAAN_DITOLAK` \| `BOOKING_BARU` \| `BOOKING_DIKONFIRMASI` \| `BOOKING_DITOLAK` \| `BOOKING_DIBATALKAN` \| `PESERTA_KELUAR` \| `AKTIVITAS_DIBATALKAN` \| `BOOKING_DIJADWALKAN_ULANG` *(v1.5, T-62, penerimanya mitra)* |
 | `judul` | String | |
 | `pesan` | String | |
 | `refId` | String | `aktivitasId` atau `bookingId` |
@@ -743,6 +780,119 @@ Semuanya memakai `url_launcher` yang sudah ada sejak T-51, mode `LaunchMode.exte
 - **Hubungi (T-61):** `https://wa.me/<nomor>`, dengan `nomorTelepon` dinormalkan ke format internasional tanpa `+`: buang semua karakter bukan angka, awalan `0` diganti `62`. Tombol **hanya muncul** kalau hasil normalisasi diawali `628` (nomor seluler) dan panjang totalnya 11–15 digit. Nomor telepon rumah seperti `021…` dan nomor kosong tidak menampilkan tombol, karena WhatsApp tidak bisa dipakai di sana.
 - Normalisasi dan penyusunan teks adalah fungsi murni di `core/utils/whatsapp.dart`, supaya bisa diuji otomatis.
 
+### AB-16 · Urutkan dan saring lanjutan di Home — **v1.5 (T-57)**
+
+Semuanya dihitung **di klien** pada daftar yang sudah diambil `ambilSemuaLapangan` (AB-02). Query tidak berubah, tidak ada index baru, tidak ada baca Firestore tambahan.
+
+| Pilihan | Aturan |
+|---|---|
+| Urut **Terdekat** *(bawaan)* | Murni jarak menaik — **persis AB-02**, tidak berubah |
+| Urut **Rating tertinggi** | `ratingRata2` menurun. Lapangan `jumlahRating == 0` selalu di akhir. Seri → jarak menaik |
+| Urut **Terpopuler** | `jumlahRating` menurun, lalu `ratingRata2` menurun, lalu jarak menaik |
+| Saklar **Buka sekarang** | Hanya lapangan yang jam operasionalnya mencakup jam perangkat saat ini |
+| Filter **Fasilitas** | Pilihan ganda; lapangan harus punya **semua** fasilitas yang dipilih |
+
+- **Buka sekarang** memakai fungsi murni `sedangBuka(jamBuka, jamTutup, sekarang)` di `core/utils/jam_buka.dart`. Jam tutup yang lebih kecil atau sama dengan jam buka berarti lewat tengah malam (`"00:00"` = tengah malam, lihat §6.2). Jam buka sama dengan jam tutup (mis. `00:00`–`00:00`) berarti buka 24 jam. Jam memakai zona waktu perangkat.
+- **Berlaku bersama** chip olahraga, kata kunci, dan toggle favorit (semuanya saling menyaring, `AND`).
+- **Urut harga sengaja tidak ada** (lihat "Keputusan yang diambil" di Perubahan v1.5).
+- Daftar fasilitas yang bisa dipilih adalah daftar yang sama dengan form mitra L-15 (`core/constants/app_fasilitas.dart`), supaya tidak ada dua sumber.
+
+### AB-17 · Mitra memblokir slot manual — **v1.5 (T-59)**
+
+Untuk jam yang tidak boleh dipesan lewat aplikasi (booking lewat telepon atau langsung, perawatan lapangan). Memakai kunci `slotBooking` yang sudah ada (§6.7), jadi tidak ada koleksi baru.
+
+```
+Mitra memilih lapangan miliknya dan sebuah tanggal di L-19.
+Tiap jam operasional tampil dalam tiga keadaan:
+  kosong     → bisa diblokir
+  diblokir   → slotBooking.bookingId == "BLOKIR", bisa dibuka lagi
+  dipesan    → slotBooking.bookingId lain, TIDAK bisa disentuh
+
+Mitra menekan jam kosong — blokirSlot (satu transaction):
+  baca lapangan/{id}: pemilikId harus == uid mitra, kalau tidak → tolak
+  baca slotBooking/{lapanganId}_{tanggal}_{jam}: kalau sudah ada → tolak "Slot sudah terisi"
+  set slotBooking {bookingId:"BLOKIR", lapanganId, tanggal, jam, diblokirOleh: uid}
+
+Mitra menekan jam diblokir — bukaBlokir (satu transaction):
+  baca slotBooking: kalau tidak ada → selesai (idempoten)
+  kalau bookingId != "BLOKIR" → tolak (itu milik booking sungguhan)
+  hapus dokumen
+```
+
+- Jam yang sudah lewat (pada hari ini) tidak bisa diblokir. Rentang tanggal sama dengan L-10 (maksimal 60 hari ke depan).
+- Memblokir **tidak** membatalkan booking yang sudah ada dan **tidak** mengirim notifikasi.
+- Booking yang ditolak, dibatalkan, atau diubah jadwalnya hanya menghapus slot milik booking itu sendiri (ID dihitung dari jam booking), jadi slot blokir di jam lain tidak terganggu.
+
+### AB-18 · Promo dari mitra — **v1.5 (T-65)**
+
+`lapangan.diskonPersen` (§6.2), `0`–`90`, diisi mitra di L-15. `0` berarti tidak ada promo.
+
+```
+hargaSetelahDiskon(nilai, persen) = (nilai × (100 − persen) + 50) ~/ 100     # dibulatkan ke rupiah terdekat
+```
+
+- Fungsi murni di `core/utils/harga.dart`, diuji otomatis.
+- **Diskon hanya untuk sewa lapangan** (`harga × jumlah jam` atau jumlah `hargaSlot`, AB-08). Produk tambahan (AB-19) **tidak** didiskon.
+- L-04 dan L-06: badge "Diskon X%", harga asli dicoret, harga setelah diskon di sampingnya. Tidak muncul kalau `diskonPersen == 0`.
+- L-10: estimasi menampilkan sewa asli, potongan, dan total. `booking.totalHarga` menyimpan hasil **setelah** diskon.
+- Booking yang sudah dibuat **tidak** berubah kalau mitra mengubah diskon kemudian.
+- Hanya lapangan mitra (`isMitra`) yang bisa punya promo, karena hanya mitra yang punya form L-15.
+
+### AB-19 · Produk tambahan saat booking — **v1.5 (T-60)**
+
+Item tambahan seperti sewa bola atau rompi. Hanya **informasi dan perhitungan estimasi**; dibayar di lokasi, tanpa payment gateway.
+
+- **Mitra (L-15):** daftar `produkTambahan` pada lapangan, maksimal **5** item. Tiap item wajib `nama` (1–30 karakter, setelah `trim`) dan `harga` (angka bulat 1–1.000.000).
+- **Pengguna (L-10):** bagian "Tambahan (opsional)" hanya muncul kalau lapangan punya produk. Tiap item punya pengatur jumlah **0–10**. Item berjumlah 0 tidak disimpan.
+- **Total:** `totalHarga = hargaSetelahDiskon(sewa, diskonPersen) + Σ(harga × jumlah)`. Fungsi murni di `core/utils/harga.dart`.
+- **Disalin ke booking:** `nama`, `harga`, `jumlah` disalin ke `booking.produkTambahan`, bukan dirujuk, jadi perubahan atau penghapusan produk oleh mitra tidak mengubah booking lama.
+- Ditampilkan di L-13 (Riwayat Pemesanan) dan L-14 (Booking Masuk), mis. "+ Sewa Bola ×2".
+
+### AB-20 · Ubah jadwal booking — **v1.5 (T-62)**
+
+Dipicu pengguna dari tombol **Ubah Jadwal** di L-13, selama status `MENUNGGU` atau `DIKONFIRMASI` dan jam selesainya belum lewat (syarat yang sama dengan Batalkan, AB-04 lanjutan). Memakai layar L-10 dalam mode ubah.
+
+```
+runTransaction:
+  bookingSnap = get(booking/{id})
+  tolak jika: tidak ada / bukan milik pengguna / status bukan MENUNGGU|DIKONFIRMASI / sudah lewat jam selesai
+  tolak jika: jadwal baru sama persis dengan yang lama ("Jadwal tidak berubah")
+  slotLama = { lapanganId_tanggalLama_jam }   ;  slotBaru = { lapanganId_tanggalBaru_jam }
+  untuk tiap slot di slotBaru yang BUKAN anggota slotLama:
+      get(slot) → kalau sudah ada → tolak "Slot sudah dipesan"
+      (anggota slotLama dilewati — itu milik booking ini sendiri, mis. geser 19:00–21:00 jadi 20:00–22:00)
+  hapus tiap slot di slotLama yang tidak ada di slotBaru
+  buat tiap slot di slotBaru yang tidak ada di slotLama
+  update booking { tanggal, jamMulai, jamSelesai, totalHarga, status: "MENUNGGU" }
+  buat notifikasi untuk pemilikId (tipe BOOKING_DIJADWALKAN_ULANG)
+```
+
+- Semua pembacaan dilakukan **sebelum** penulisan pertama (aturan transaction Firestore), dan hanya lewat `DocumentReference` ber-ID deterministik, tidak lewat query (jebakan #1 di `CLAUDE.md`).
+- **Status kembali `MENUNGGU`** karena mitra mengonfirmasi jadwal lama, bukan yang baru. Mitra diberi tahu dan harus mengonfirmasi ulang.
+- `totalHarga` dihitung ulang dengan harga dan diskon lapangan **saat ini** (AB-18) ditambah `produkTambahan` booking yang sama (AB-19).
+- Di L-10 mode ubah, jam milik booking itu sendiri pada tanggal yang sama **tidak** ditandai "Penuh".
+
+### AB-21 · Aktivitas publik atau privat — **v1.5 (T-64)**
+
+```
+Pembuat memilih Publik (bawaan) atau Privat di L-08.
+Privat → repository membangkitkan kodeAkses (6 karakter), memeriksa tidak dipakai
+         aktivitas lain (query kodeAkses ==, maksimal 5 percobaan), lalu menyimpannya.
+
+L-07 (daftar): aktivitas privat TIDAK tampil — disaring di klien (saringAktivitas).
+L-07 tombol "Punya kode?": pengguna mengetik kode (di-trim dan dijadikan huruf besar)
+   → query kodeAkses == kode, limit 1
+   → ketemu: buka L-09 (alur Gabung di L-09 sama seperti aktivitas publik, AB-06)
+   → tidak ketemu: "Kode tidak ditemukan."
+L-09: label "Privat"; kode ditampilkan HANYA kepada pembuat dan peserta;
+      teks Bagikan (AB-15) memuat kode.
+```
+
+- Query `kodeAkses ==` satu field, jadi **tidak butuh composite index**.
+- Pembangkitan kode adalah fungsi murni di `core/utils/kode_akses.dart` (menerima `Random` agar bisa diuji).
+- **Keterbatasan yang diakui:** privat hanya menyembunyikan dari daftar. Pengguna login yang tahu `aktivitasId`, atau membaca koleksi langsung, tetap bisa melihat dokumennya karena Security Rules `aktivitasBermain` mengizinkan `read` untuk semua pengguna login (§9). Untuk skripsi ini memadai; sebutkan di Bab 5.
+- Aktivitas yang dibatalkan, penuh, atau sudah lewat tetap bisa dibuka lewat kode (L-09 sudah menangani statusnya).
+
 ---
 
 ## 8. Spesifikasi Layar
@@ -771,7 +921,8 @@ Input nama, surel, nomor telepon, kata sandi, konfirmasi kata sandi, dan pilihan
 | Search bar | Filter daftar berdasarkan nama atau alamat lapangan (di sisi klien) |
 | Tombol toggle ♥ Favorit | **v1.2** — di ujung search bar. Aktif: tampilkan HANYA lapangan favorit (urutan jarak tetap). Tidak aktif: daftar normal |
 | Filter chip olahraga | Semua / Futsal / Mini Soccer / Badminton / Padel — **lima chip, termasuk "Semua"** |
-| Daftar kartu lapangan | **Daftar vertikal**, satu kartu per baris. Isi: foto, nama, alamat, **jarak (km, 1 desimal)**, harga per jam, rating rata-rata + jumlah ulasan, ikon ♡ favorit |
+| Tombol **Filter & Urutkan** | **v1.5 (T-57)** — ikon di ujung search bar, membuka lembar bawah berisi urutan (Terdekat / Rating tertinggi / Terpopuler), saklar "Buka sekarang", dan chip fasilitas, plus tombol **Reset**. Ada penanda titik pada ikon kalau ada pilihan selain bawaan. Aturan di AB-16 |
+| Daftar kartu lapangan | **Daftar vertikal**, satu kartu per baris. Isi: foto, nama, alamat, **jarak (km, 1 desimal)**, harga per jam, rating rata-rata + jumlah ulasan, ikon ♡ favorit. **v1.5 (T-65):** kalau ada promo, harga asli dicoret dan harga setelah diskon di sampingnya, plus badge "Diskon X%" |
 | Bottom navigation | Home · Map · Teman · Profil |
 
 **Peta tidak tertanam di Home.** Peta punya tab sendiri (L-05). Frame Figma menampilkan peta 220px di dalam Home — bagian itu dihapus, digantikan daftar vertikal penuh.
@@ -785,7 +936,7 @@ Tile URL: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
 `userAgentPackageName` wajib diisi sesuai package aplikasi.
 
 ### L-06 · Detail Lapangan — **diperbarui v1.1**
-Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta (internal, tab Map) + **tombol "Buka di Google Maps" (v1.2, T-51, hanya tampil kalau `tautanMaps` terisi, buka aplikasi/browser eksternal lewat `url_launcher`)**, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`. **v1.4:** di samping nomor telepon ada tombol **WhatsApp** (T-61, hanya untuk nomor seluler, AB-15) dan di bagian atas ada tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan lapangan.
+Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta (internal, tab Map) + **tombol "Buka di Google Maps" (v1.2, T-51, hanya tampil kalau `tautanMaps` terisi, buka aplikasi/browser eksternal lewat `url_launcher`)**, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`. **v1.5 (T-65):** kalau `diskonPersen > 0`, baris harga menampilkan harga asli dicoret, harga setelah diskon, dan badge "Diskon X%" (AB-18). **v1.4:** di samping nomor telepon ada tombol **WhatsApp** (T-61, hanya untuk nomor seluler, AB-15) dan di bagian atas ada tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan lapangan.
 
 > Figma menampilkan pemilihan slot jam langsung di layar ini. Pemilihan slot tetap di **L-10** sesuai PRD, karena butuh pemilihan tanggal dan perhitungan estimasi harga yang tidak muat di layar detail. Tombol "Booking Sekarang" di Figma = tombol "Ajukan Reservasi" yang membuka L-10.
 >
@@ -796,16 +947,22 @@ Dibuka dari tab **Teman**. Tab filter olahraga — **lima chip termasuk "Semua",
 
 **v1.4 (T-54, T-55, T-56):** di bawah chip olahraga ada dua baris chip filter tambahan. Baris **jenis** (Semua / Main Bareng / Sparring) dan baris **tingkat** (Semua tingkat / Pemula / Menengah / Mahir). Keduanya menyaring **di klien** dari daftar yang sudah diambil, jadi tidak butuh index baru, dan boleh dikombinasikan dengan chip olahraga. Aktivitas lama tanpa `tingkatKemampuan` hanya tampil di "Semua tingkat". Kartu memuat label jenis, label tingkat (bila ada), dan biaya ("Gratis" atau "Rp 25.000 / orang"). Kondisi kosong akibat filter memakai pesan tersendiri: "Tidak ada aktivitas yang cocok dengan filter."
 
+**v1.5 (T-64):** aktivitas **privat tidak tampil** di daftar ini (disaring di klien). Di header ada tombol **"Punya kode?"** yang membuka dialog isian kode; kode yang cocok membuka L-09, kode yang tidak cocok menampilkan "Kode tidak ditemukan." (AB-21).
+
 ### L-08 · Buat Aktivitas (form)
 Pilih olahraga, pilih lapangan (dari daftar lapangan), tanggal & jam, jumlah pemain dibutuhkan, catatan opsional. Validasi: semua wajib kecuali catatan; waktu harus di masa depan; jumlah pemain 2–30.
 
 **v1.4:** tiga isian baru. **Jenis aktivitas** (dua pilihan, bawaan Main Bareng), **tingkat kemampuan** (tiga pilihan, **wajib dipilih**, tanpa nilai bawaan agar data tidak condong), dan **biaya per orang** (angka rupiah, opsional, kosong dibaca `0` atau gratis, maksimal 1.000.000, tidak boleh negatif atau berisi huruf). Label bantu: "Informasi saja, dibayar di lokasi."
 
+**v1.5 (T-64):** satu isian lagi, **Visibilitas** (Publik bawaan, atau Privat). Pilihan Privat menampilkan keterangan bahwa kode akses dibuat otomatis setelah aktivitas disimpan.
+
 ### L-09 · Detail Aktivitas
-Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**, plus tombol **"Batalkan Aktivitas"** di bagian bawah (T-47, 15 September 2026, dengan dialog konfirmasi — menghapus seluruh dokumen aktivitas dan mengirim notifikasi ke semua peserta selain pembuat, lihat AB-06 lanjutan). Jika bukan pembuat: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya. **v1.4:** menampilkan jenis, tingkat kemampuan, dan biaya per orang, serta tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan aktivitas.
+Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**, plus tombol **"Batalkan Aktivitas"** di bagian bawah (T-47, 15 September 2026, dengan dialog konfirmasi — menghapus seluruh dokumen aktivitas dan mengirim notifikasi ke semua peserta selain pembuat, lihat AB-06 lanjutan). Jika bukan pembuat: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya. **v1.4:** menampilkan jenis, tingkat kemampuan, dan biaya per orang, serta tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan aktivitas. **v1.5 (T-64):** untuk aktivitas privat tampil label "Privat", dan **kode akses hanya terlihat oleh pembuat dan peserta**; teks Bagikan ikut memuat kode (AB-21).
 
 ### L-10 · Ajukan Reservasi (form)
 Pilih tanggal, jam mulai, durasi (jam). Tampilkan slot yang sudah terisi agar tidak dipilih (chip jam bertanda "Penuh", mengikuti gaya Figma). Tampilkan estimasi total harga. Tombol **Ajukan Reservasi** menjalankan AB-04.
+
+**v1.5:** (a) kalau lapangan punya `produkTambahan`, ada bagian **"Tambahan (opsional)"** dengan pengatur jumlah 0–10 per item (T-60, AB-19); (b) kalau `diskonPersen > 0`, kotak estimasi merinci sewa asli, potongan, produk, dan total (T-65, AB-18); (c) layar ini juga dipakai dalam **mode Ubah Jadwal** (T-62, AB-20): judul "Ubah Jadwal", tanggal dan jam awal terisi jadwal lama, jam milik booking itu sendiri tidak ditandai "Penuh", produk tambahan tidak bisa diubah, dan tombolnya **Simpan Jadwal Baru**.
 
 ### L-11 · Beri Rating (form/modal)
 Pilih bintang 1–5, isi ulasan opsional, tombol Kirim → menjalankan AB-05.
@@ -824,7 +981,7 @@ Dibuka dari tab **Profil**.
 | Lencana | **v1.4 (T-58)** — lima lencana pencapaian dari tiga angka statistik di atas (AB-14). Yang belum diraih tampil redup beserta syaratnya |
 | Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
-| Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan |
+| Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan. **v1.5:** pada syarat yang sama muncul juga tombol **"Ubah Jadwal"** (T-62, AB-20), dan produk tambahan yang dipesan ditampilkan sebagai baris "+ Sewa Bola ×2" (T-60) |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
 | Menu statis | Bantuan, Kebijakan Privasi, Tentang — halaman statis saja |
 | Dashboard Mitra | Hanya muncul jika `role == "mitra"` |
@@ -833,10 +990,15 @@ Dibuka dari tab **Profil**.
 > Figma menampilkan menu "Notifikasi: Aktif" yang bisa diatur. Itu **tidak dibangun** — §2.2 mengunci pengaturan sebagai halaman statis, dan aplikasi tidak memakai FCM sehingga tidak ada yang bisa dimatikan.
 
 ### L-14 · Dashboard Mitra
-Daftar lapangan milik mitra + tombol tambah lapangan; daftar booking masuk dengan tombol **Konfirmasi** / **Tolak**.
+Daftar lapangan milik mitra + tombol tambah lapangan; daftar booking masuk dengan tombol **Konfirmasi** / **Tolak**. **v1.5:** tiap kartu lapangan punya tombol **Atur Slot** yang membuka L-19 (T-59, AB-17), dan tiap baris booking menampilkan produk tambahan yang dipesan (T-60). Notifikasi `BOOKING_DIJADWALKAN_ULANG` (T-62) membuka layar ini.
 
 ### L-15 · Tambah/Edit Lapangan (form mitra)
 Nama, alamat, koordinat (latitude & longitude diisi manual atau ambil dari lokasi saat ini), jenis olahraga (multi-pilih), harga, jam buka & tutup, fasilitas (multi-pilih), URL foto. Saat disimpan: `isMitra = true`, `pemilikId = uid`, `sumberData = "mitra"`.
+
+**v1.5:** dua bagian baru. **Diskon (%)** (T-65, angka bulat 0–90, kosong dibaca 0, AB-18) dan **Produk Tambahan** (T-60, maksimal 5 baris nama + harga dengan tombol hapus per baris dan tombol tambah, AB-19).
+
+### L-19 · Atur Slot (mitra) — **v1.5 (T-59)**
+Dibuka dari tombol **Atur Slot** pada kartu lapangan di L-14, jadi hanya mitra pemilik lapangan itu yang sampai ke sini. Judul memuat nama lapangan. Tombol pilih **tanggal** (hari ini sampai 60 hari ke depan, sama seperti L-10). Di bawahnya **jam operasional** (`jamBuka`–`jamTutup`, aturan tengah malam sama seperti L-10) sebagai deretan chip dengan tiga keadaan: **kosong** (tekan untuk memblokir), **diblokir** (tekan untuk membuka, warna berbeda), dan **dipesan** (nonaktif, bertanda "Dipesan"). Tiga kondisi ditangani: memuat, kosong ("Lapangan ini tidak punya jam operasional untuk tanggal itu"), dan kesalahan dengan tombol coba lagi. Setiap tekan menampilkan `SnackBar` hasilnya. Aturan di AB-17.
 
 ### L-16 · Forum (daftar post) — **v1.3**
 Dibuka dari tab **Forum**. Judul "Forum", daftar kartu post: nama pembuat, cuplikan teks, gambar (kalau ada), tanggal & jam, ikon komentar + jumlah komentar. FAB "+" membuka L-17; menekan kartu membuka L-18. Tiga kondisi ditangani: memuat (spinner), kosong ("Belum ada post. Jadi yang pertama!"), dan kesalahan (ikon, judul "Gagal memuat", dan pesan penyebabnya; belum ada tombol coba lagi).
@@ -1110,6 +1272,27 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-59** | **Tekan Bagikan di Detail Lapangan** *(T-63)* | **WhatsApp terbuka dengan teks nama, alamat, jam buka, dan tautan Google Maps (bila ada)** |
 | **BB-60** | **Buka Detail Lapangan yang `nomorTelepon`-nya nomor seluler (mis. `081316441741`), tekan WhatsApp** *(T-61)* | **WhatsApp terbuka ke percakapan dengan nomor `6281316441741`** |
 | **BB-61** | **Buka Detail Lapangan yang nomornya telepon rumah (`0217429521`) atau kosong** *(T-61)* | **Tombol WhatsApp tidak muncul sama sekali** |
+| **BB-62** | **Di Home pilih urut "Rating tertinggi"** *(T-57)* | **Lapangan berurut `ratingRata2` menurun; yang belum punya ulasan di akhir; seri diurut jarak. Chip olahraga dan kata kunci tetap berlaku** |
+| **BB-63** | **Di Home pilih urut "Terpopuler"** *(T-57)* | **Lapangan berurut `jumlahRating` menurun (seri: rating, lalu jarak)** |
+| **BB-64** | **Nyalakan "Buka sekarang"** *(T-57)* | **Hanya lapangan yang jam operasionalnya mencakup jam sekarang yang tampil, termasuk yang tutup lewat tengah malam atau buka 24 jam** |
+| **BB-65** | **Pilih fasilitas "parkir" dan "toilet"** *(T-57)* | **Hanya lapangan yang punya keduanya tampil** |
+| **BB-66** | **Tekan Reset di lembar Filter & Urutkan** *(T-57)* | **Urutan kembali ke Terdekat (AB-02), saklar dan fasilitas bersih, penanda titik di ikon hilang** |
+| **BB-67** | **Mitra memblokir satu jam di L-19, lalu pengguna membuka L-10 untuk tanggal itu** *(T-59)* | **Jam itu bertanda "Penuh" di L-10, dan mengajukan reservasi pada jam itu ditolak "Slot sudah dipesan"** |
+| **BB-68** | **Mitra menekan jam yang diblokir di L-19** *(T-59)* | **Blokir terbuka, jam bisa dipesan lagi** |
+| **BB-69** | **Mitra membuka L-19 pada tanggal yang jamnya sudah dipesan pengguna** *(T-59)* | **Jam itu bertanda "Dipesan" dan tidak bisa ditekan; slot booking tidak terhapus** |
+| **BB-70** | **Mitra mengisi Diskon 20% pada lapangannya** *(T-65)* | **Badge "Diskon 20%" dan harga coret muncul di kartu Home dan Detail Lapangan; diskon 0, kosong, atau tidak ada badge** |
+| **BB-71** | **Ajukan reservasi pada lapangan berdiskon** *(T-65)* | **Estimasi di L-10 merinci potongan; `booking.totalHarga` yang tersimpan adalah harga setelah diskon** |
+| **BB-72** | **Isi Diskon 91 atau huruf** *(T-65)* | **Ditolak dengan pesan validasi, lapangan tidak berubah** |
+| **BB-73** | **Mitra menambah produk "Sewa Bola" Rp 15.000 di form lapangan** *(T-60)* | **Tersimpan di lapangan; menambah produk keenam atau produk bernama/berharga tidak valid ditolak** |
+| **BB-74** | **Pengguna memesan dengan 2 × "Sewa Bola"** *(T-60)* | **Total naik 2 × Rp 15.000 (tanpa diskon pada produk), tersimpan di `booking.produkTambahan`, dan terlihat di Riwayat Pemesanan serta Booking Masuk mitra** |
+| **BB-75** | **Mitra mengubah harga produk setelah booking dibuat** *(T-60)* | **Booking lama tetap memakai harga lama** |
+| **BB-76** | **Pengguna mengubah jadwal booking ke slot kosong** *(T-62)* | **Slot lama terbuka, slot baru terkunci, status jadi `MENUNGGU`, `totalHarga` dihitung ulang, mitra dapat notifikasi** |
+| **BB-77** | **Pengguna mengubah jadwal ke slot yang sudah dipesan orang lain** *(T-62)* | **Ditolak "Slot sudah dipesan"; jadwal dan slot lama tidak berubah sama sekali** |
+| **BB-78** | **Buka Riwayat Pemesanan pada booking `SELESAI`, `DIBATALKAN`, atau `DITOLAK`** *(T-62)* | **Tombol Ubah Jadwal tidak muncul; menggeser jadwal ke jam yang tumpang tindih dengan jadwal lamanya sendiri berhasil** |
+| **BB-79** | **Buat aktivitas Privat** *(T-64)* | **Kode 6 karakter tampil untuk pembuat; aktivitas tidak muncul di daftar Cari Rekan akun lain** |
+| **BB-80** | **Akun lain memasukkan kode itu lewat "Punya kode?"** *(T-64)* | **Detail Aktivitas terbuka dan permintaan gabung bisa dikirim; huruf kecil di kode tetap diterima** |
+| **BB-81** | **Masukkan kode yang salah** *(T-64)* | **Pesan "Kode tidak ditemukan.", tidak ada layar yang terbuka** |
+| **BB-82** | **Buka Cari Rekan dengan aktivitas lama (tanpa `visibilitas`)** *(T-64)* | **Aktivitas lama tetap tampil sebagai publik** |
 
 ---
 
@@ -1314,6 +1497,18 @@ Sesuai arahan Pak Gintoro (fitur pemanis tidak perlu masuk Bab 3), tidak ada use
 | 46 | Bab 4 (implementasi) | Satu paragraf: fitur lencana pencapaian dan tombol WhatsApp/bagikan ada di aplikasi sebagai tambahan di luar rancangan awal. Tangkapan layar Profil dan Detail Lapangan akan menampilkannya |
 | 47 | Bab 4 tabel Black Box | Tambah BB-50 sampai BB-61 bila tim ingin mengujinya di skripsi; kalau tidak, cukup tulis di Bab 4 bahwa fitur tambahan di luar ruang lingkup pengujian |
 | 48 | Bab 5 saran dan keterbatasan | Fitur AYO tahap 2 dan 3 (sort/filter Home, blokir slot, reschedule, promo, aktivitas privat, pengingat) sebagai pengembangan lanjutan. Biaya per orang hanya informasi, tanpa pembayaran. Filter jenis dan tingkat di klien tidak efisien untuk daftar yang sangat besar |
+
+### Tambahan akibat v1.5 (5 November 2026) — fitur tambahan tahap 2 dan 3
+
+Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 49 | ERD Bab 3 / Tabel 3.10 | Entitas `Lapangan` +`diskonPersen`, +`produkTambahan` (larik). Entitas `Booking` +`produkTambahan` (larik). Entitas `AktivitasBermain` +`visibilitas`, +`kodeAkses` (selain tiga atribut v1.4). Sesuai §6.2, §6.3, §6.6. **Gambar ERD (M1) setelah semua ini final** |
+| 50 | Bab 3.2 / pembahasan pengurutan hasil pencarian | AB-02 tetap benar: urutan **bawaan** murni jarak. Tambahkan satu kalimat bahwa pengguna boleh memilih urutan rating atau populer, dan itu tidak mengubah rancangan Haversine |
+| 51 | Bab 4 | Tambahkan ke paragraf fitur tambahan (#46): filter dan urut Home, blokir slot, promo, produk tambahan, ubah jadwal, aktivitas privat |
+| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-82 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Mitra membalas ulasan dan pengingat jadwal (T-66, T-67) sebagai pengembangan lanjutan |
 
 **Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
 

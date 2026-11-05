@@ -280,17 +280,17 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 13 tes hijau); BB-50–51 belum diuji di perangkat |
 | T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 19 tes hijau); BB-52–53 belum diuji di perangkat |
 | T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 28 tes hijau); BB-54–55 belum diuji di perangkat |
-| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Belum |
+| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Rencana (PRD v1.5) |
 | T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 36 tes hijau); BB-56–57 belum diuji di perangkat |
-| T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Belum |
-| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Belum |
+| T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Rencana (PRD v1.5) |
+| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Rencana (PRD v1.5) |
 | T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 55 tes hijau); BB-60–61 belum diuji di perangkat |
-| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Belum |
+| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Rencana (PRD v1.5) |
 | T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 46 tes hijau); BB-58–59 belum diuji di perangkat |
-| T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Belum |
-| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Belum |
-| T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 | Belum |
-| T-67 | Pengingat jadwal booking, notifikasi lokal *(ide di luar AYO; butuh package baru)* | Sedang | 3 | Belum |
+| T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Rencana (PRD v1.5) |
+| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Rencana (PRD v1.5) |
+| T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 | Tidak dikerjakan (di luar AYO; T-67 butuh package baru) |
+| T-67 | Pengingat jadwal booking, notifikasi lokal *(ide di luar AYO; butuh package baru)* | Sedang | 3 | Tidak dikerjakan (di luar AYO; T-67 butuh package baru) |
 
 **Keputusan 5 November 2026:** Pak Gintoro menilai forum dan fitur terinspirasi AYO hanyalah **pemanis**; hanya modul besar yang perlu masuk Bab 3. Tim memutuskan mengerjakan **tahap 1 saja** (T-54, T-55, T-56, T-58, T-63, T-61) dan tidak menunggu persetujuan per fitur. Spesifikasinya ada di **PRD v1.4** ("Perubahan v1.4", AB-14, AB-15, BB-50…BB-61). T-31…T-34 (SUS, Bab 4–5) dan revisi gambar T-39 **menunggu fitur tahap 1 selesai**, supaya SUS menguji aplikasi versi akhir dan ERD digambar sekali saja. Tahap 2 dan 3 tidak dikerjakan sebelum tim konfirmasi lagi.
 

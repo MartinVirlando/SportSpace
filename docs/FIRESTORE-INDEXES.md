@@ -314,3 +314,18 @@ Kalau langsung klik tautan, index-nya jadi hanya ada di Console dan tidak ikut k
 - [Firestore — Index overview](https://firebase.google.com/docs/firestore/query-data/index-overview)
 - [Firestore — Query with range and inequality filters on multiple fields](https://firebase.google.com/docs/firestore/query-data/multiple-range-fields)
 - [Firestore — Optimize queries with range and inequality filters](https://firebase.google.com/docs/firestore/query-data/multiple-range-optimize-indexes)
+
+---
+
+## Tambahan v1.5 (5 November 2026) — tidak ada index baru
+
+Fitur tahap 2 dan 3 sengaja dirancang tanpa composite index baru. Ringkasan query barunya:
+
+| Fitur | Query | Index |
+|---|---|---|
+| T-57 urut dan saring Home | Tidak ada query baru; semuanya di klien pada hasil `ambilSemuaLapangan` | — |
+| T-59 / T-62 slot | `slotBooking` `where lapanganId ==` + `where tanggal ==` + `orderBy jam` (yang sama dengan `ambilSlotTerisi`) | #10, sudah ada |
+| T-64 cari lewat kode | `aktivitasBermain` `where kodeAkses ==` + `limit(1)`, satu field `==` | otomatis (single-field), **tidak** perlu composite |
+| T-64 sembunyikan privat | Disaring di klien (`saringAktivitas`), **bukan** `where visibilitas == 'publik'` | — |
+
+**Kenapa privat tidak disaring di query:** Firestore tidak mengembalikan dokumen yang tidak punya field yang difilter. `where visibilitas == 'publik'` akan menyembunyikan seluruh aktivitas lama (sebelum v1.5) yang belum punya field `visibilitas`, dan filter itu juga menuntut composite index baru.
