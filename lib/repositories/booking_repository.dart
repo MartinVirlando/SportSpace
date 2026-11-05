@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../core/constants/app_slot.dart';
 import '../core/utils/status_booking.dart';
 import '../models/booking_model.dart';
 import '../models/notifikasi_model.dart';
@@ -352,6 +353,25 @@ class BookingRepository {
     required String lapanganId,
     required String tanggal,
   }) async {
+    final slot = await ambilSlotLapangan(
+      lapanganId: lapanganId,
+      tanggal: tanggal,
+    );
+    return slot.keys.toSet();
+  }
+
+  /// Sama dengan [ambilSlotTerisi], tapi mengembalikan juga `bookingId`
+  /// tiap slot (jam → bookingId) — v1.5 (T-59). Layar Atur Slot (L-19)
+  /// membutuhkannya untuk membedakan jam yang DIBLOKIR mitra
+  /// (`AppSlot.bookingIdBlokir`) dari jam yang DIPESAN pengguna.
+  ///
+  /// Query dan index-nya sama persis dengan yang lama (index #10), jadi
+  /// tidak ada index baru. [ambilSlotTerisi] sekarang memanggil ini supaya
+  /// query-nya hanya ada di satu tempat.
+  Future<Map<int, String>> ambilSlotLapangan({
+    required String lapanganId,
+    required String tanggal,
+  }) async {
     try {
       final snap = await _db
           .collection('slotBooking')
@@ -359,12 +379,119 @@ class BookingRepository {
           .where('tanggal', isEqualTo: tanggal)
           .orderBy('jam')
           .get();
-      return snap.docs.map((d) => (d['jam'] as num).toInt()).toSet();
+      return {
+        for (final d in snap.docs)
+          (d['jam'] as num).toInt(): (d.data()['bookingId'] as String?) ?? '',
+      };
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw Exception('Tidak punya izin membaca slot booking.');
       }
       throw Exception('Gagal memuat slot booking. Coba lagi.');
+    }
+  }
+
+  /// Mitra memblokir satu jam — PRD AB-17, v1.5 (T-59), BB-67.
+  ///
+  /// Memakai dokumen `slotBooking` ber-ID deterministik yang SAMA dengan slot
+  /// booking biasa (`{lapanganId}_{tanggal}_{jam}`), jadi pengguna melihatnya
+  /// sebagai jam "Penuh" dan [ajukanReservasi] otomatis menolaknya, tanpa
+  /// kode tambahan di sana.
+  ///
+  /// Transaction: dokumen slot dibaca dulu, dan kalau sudah ada (diblokir
+  /// atau dipesan) ditolak — dua mitra/perangkat yang menekan bersamaan, atau
+  /// pengguna yang baru saja memesan jam itu, tidak bisa saling menimpa.
+  /// Semua `transaction.get()` di sini pada `DocumentReference`, bukan
+  /// Query (jebakan #1 di CLAUDE.md).
+  ///
+  /// Lapangan dibaca juga untuk memastikan [mitraId] adalah `pemilikId`-nya.
+  /// Security Rules `slotBooking` mengizinkan semua pengguna login menulis
+  /// (§9), jadi pemeriksaan kepemilikan ini ditegakkan di sini.
+  Future<void> blokirSlot({
+    required String lapanganId,
+    required String tanggal,
+    required int jam,
+    required String mitraId,
+  }) async {
+    final lapanganRef = _db.collection('lapangan').doc(lapanganId);
+    final slotRef =
+        _db.collection('slotBooking').doc('${lapanganId}_${tanggal}_$jam');
+
+    try {
+      await _db.runTransaction((transaction) async {
+        final lapanganSnap = await transaction.get(lapanganRef);
+        _pastikanPemilik(lapanganSnap, mitraId);
+
+        final slotSnap = await transaction.get(slotRef);
+        if (slotSnap.exists) {
+          throw Exception('Slot sudah terisi.');
+        }
+
+        transaction.set(slotRef, {
+          'bookingId': AppSlot.bookingIdBlokir,
+          'lapanganId': lapanganId,
+          'tanggal': tanggal,
+          'jam': jam,
+          'diblokirOleh': mitraId,
+        });
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin memblokir slot.');
+      }
+      throw Exception('Gagal memblokir slot. Coba lagi.');
+    }
+  }
+
+  /// Mitra membuka blokir satu jam — PRD AB-17, v1.5 (T-59), BB-68, BB-69.
+  ///
+  /// HANYA menghapus dokumen yang `bookingId`-nya `AppSlot.bookingIdBlokir`.
+  /// Slot milik booking sungguhan tidak pernah boleh dihapus dari sini —
+  /// menghapusnya akan membuka jam yang masih punya pemesan dan memungkinkan
+  /// double booking, yang justru dicegah AB-04.
+  ///
+  /// Idempoten: slot yang sudah tidak ada (mis. sudah dibuka dari perangkat
+  /// lain) dianggap berhasil, bukan galat.
+  Future<void> bukaBlokir({
+    required String lapanganId,
+    required String tanggal,
+    required int jam,
+    required String mitraId,
+  }) async {
+    final lapanganRef = _db.collection('lapangan').doc(lapanganId);
+    final slotRef =
+        _db.collection('slotBooking').doc('${lapanganId}_${tanggal}_$jam');
+
+    try {
+      await _db.runTransaction((transaction) async {
+        final lapanganSnap = await transaction.get(lapanganRef);
+        _pastikanPemilik(lapanganSnap, mitraId);
+
+        final slotSnap = await transaction.get(slotRef);
+        if (!slotSnap.exists) return;
+
+        if (slotSnap.data()?['bookingId'] != AppSlot.bookingIdBlokir) {
+          throw Exception('Slot ini dipesan pengguna, tidak bisa dibuka.');
+        }
+
+        transaction.delete(slotRef);
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membuka blokir slot.');
+      }
+      throw Exception('Gagal membuka blokir slot. Coba lagi.');
+    }
+  }
+
+  /// Pastikan [lapanganSnap] ada dan `pemilikId`-nya [mitraId].
+  void _pastikanPemilik(DocumentSnapshot lapanganSnap, String mitraId) {
+    if (!lapanganSnap.exists) {
+      throw Exception('Lapangan tidak ditemukan.');
+    }
+    final data = lapanganSnap.data() as Map<String, dynamic>?;
+    if (data?['pemilikId'] != mitraId) {
+      throw Exception('Ini bukan lapangan milikmu.');
     }
   }
 }

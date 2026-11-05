@@ -11,6 +11,7 @@ import '../../../repositories/booking_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/dashboard_mitra_viewmodel.dart';
+import 'atur_slot_screen.dart';
 import 'form_lapangan_screen.dart';
 
 /// Halaman Dashboard Mitra — PRD L-14, T-25. BB-26 (konfirmasi), BB-27
@@ -191,31 +192,55 @@ class _KartuLapanganMitra extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
           boxShadow: AppColors.shadowKartu,
         ),
-        child: Row(
+        child: Column(
           children: [
-            Text(
-              lapangan.jenisOlahraga.isEmpty
-                  ? '🏟️'
-                  : AppSports.ikonDari(lapangan.jenisOlahraga.first),
-              style: const TextStyle(fontSize: 22),
+            Row(
+              children: [
+                Text(
+                  lapangan.jenisOlahraga.isEmpty
+                      ? '🏟️'
+                      : AppSports.ikonDari(lapangan.jenisOlahraga.first),
+                  style: const TextStyle(fontSize: 22),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(lapangan.nama, style: AppTextStyles.namaLapangan),
+                      const SizedBox(height: 2),
+                      Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
+                  style: AppTextStyles.harga,
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
+              ],
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(lapangan.nama, style: AppTextStyles.namaLapangan),
-                  const SizedBox(height: 2),
-                  Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
-                ],
+            // v1.5 (T-59) — membuka L-19 untuk memblokir/membuka jam.
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AturSlotScreen(lapangan: lapangan),
+                  ),
+                ),
+                icon: const Icon(Icons.event_busy_outlined, size: 14),
+                label: const Text(
+                  AppStrings.aturSlot,
+                  style: AppTextStyles.metaLapangan,
+                ),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 0),
+                ),
               ),
             ),
-            Text(
-              '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
-              style: AppTextStyles.harga,
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
           ],
         ),
       ),

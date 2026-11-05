@@ -98,6 +98,21 @@ class AppStrings {
   static const bukaGoogleMaps = 'Buka di Google Maps';
   static const gagalBukaTautan = 'Tidak bisa membuka tautan peta.';
 
+  // ---------- Atur Slot mitra (L-19, T-59, AB-17) ----------
+  static const aturSlot = 'Atur Slot';
+  static const judulAturSlot = 'Atur Slot';
+  static const keteranganAturSlot =
+      'Tekan jam kosong untuk memblokirnya, tekan jam yang diblokir untuk '
+      'membukanya. Jam yang sudah dipesan pengguna tidak bisa diubah.';
+  static const slotDiblokirLabel = 'Diblokir';
+  static const slotDipesanLabel = 'Dipesan';
+  static const slotLewatLabel = 'Lewat';
+  static const slotBerhasilDiblokir = 'Jam berhasil diblokir.';
+  static const slotBerhasilDibuka = 'Blokir dibuka.';
+  static const kosongJamOperasional =
+      'Lapangan ini tidak punya jam operasional yang valid.';
+  static const pilihTanggalDulu = 'Pilih tanggal dulu untuk melihat jamnya.';
+
   // ---------- Filter & Urutkan Home (L-04, T-57, AB-16) ----------
   static const filterUrutkan = 'Filter & Urutkan';
   static const resetFilter = 'Reset';
