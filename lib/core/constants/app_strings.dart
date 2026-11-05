@@ -119,6 +119,8 @@ class AppStrings {
   static const kosongFilterAktivitas =
       'Tidak ada aktivitas yang cocok dengan filter.';
   static const jenisAktivitas = 'Jenis Aktivitas';
+  static const tingkatKemampuan = 'Tingkat Kemampuan';
+  static const errTingkatWajib = 'Pilih tingkat kemampuan dulu.';
 
   // ---------- Buat Aktivitas (L-08) ----------
   static const jumlahPemainDibutuhkan = 'Jumlah Pemain Dibutuhkan';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_aktivitas.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
@@ -147,11 +146,7 @@ class _Isi extends StatelessWidget {
                       style: AppTextStyles.metaLapangan,
                     ),
                     const SizedBox(height: 6),
-                    LabelAktivitas(
-                      teks: AppJenisAktivitas.labelDari(
-                        aktivitas.jenisAktivitas,
-                      ),
-                    ),
+                    BarisLabelAktivitas(aktivitas: aktivitas),
                   ],
                 ),
               ),

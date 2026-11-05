@@ -57,6 +57,14 @@ class CariRekanScreen extends StatelessWidget {
               terpilih: vm.filterJenis,
               onPilih: context.read<AktivitasViewModel>().ubahFilterJenis,
             ),
+            const SizedBox(height: 8),
+            // v1.4 (T-55) — filter tingkat kemampuan, disaring di klien.
+            BarisChipFilter(
+              daftarKode: AppTingkat.daftarFilter,
+              label: AppTingkat.label,
+              terpilih: vm.filterTingkat,
+              onPilih: context.read<AktivitasViewModel>().ubahFilterTingkat,
+            ),
             const SizedBox(height: 14),
             Expanded(
               child: StreamBuilder<List<AktivitasBermainModel>>(
@@ -229,11 +237,7 @@ class _KartuAktivitas extends StatelessWidget {
                                   style: AppTextStyles.metaLapangan,
                                 ),
                                 const SizedBox(height: 6),
-                                LabelAktivitas(
-                                  teks: AppJenisAktivitas.labelDari(
-                                    aktivitas.jenisAktivitas,
-                                  ),
-                                ),
+                                BarisLabelAktivitas(aktivitas: aktivitas),
                               ],
                             ),
                           ),

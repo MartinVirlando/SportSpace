@@ -1,11 +1,38 @@
 import 'package:flutter/material.dart';
 
+import '../core/constants/app_aktivitas.dart';
 import '../core/constants/app_colors.dart';
+import '../models/aktivitas_bermain_model.dart';
 
-/// Label kecil berbentuk pil di kartu dan Detail Aktivitas — dipakai untuk
-/// jenis aktivitas (T-54), nanti juga tingkat kemampuan (T-55) dan biaya
-/// (T-56). Gayanya meniru label "Pembuat" di Detail Aktivitas: latar hijau
-/// tipis, teks hijau kecil.
+/// Deretan label kecil di kartu Cari Rekan (L-07) dan Detail Aktivitas
+/// (L-09): jenis aktivitas (T-54), tingkat kemampuan (T-55), dan nanti biaya
+/// per orang (T-56). Label yang datanya tidak ada (mis. tingkat pada
+/// aktivitas lama) tidak ditampilkan.
+class BarisLabelAktivitas extends StatelessWidget {
+  final AktivitasBermainModel aktivitas;
+
+  const BarisLabelAktivitas({super.key, required this.aktivitas});
+
+  @override
+  Widget build(BuildContext context) {
+    final tingkat = aktivitas.tingkatKemampuan;
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: [
+        LabelAktivitas(
+          teks: AppJenisAktivitas.labelDari(aktivitas.jenisAktivitas),
+        ),
+        if (tingkat != null)
+          LabelAktivitas(teks: AppTingkat.labelDari(tingkat)),
+      ],
+    );
+  }
+}
+
+/// Satu label berbentuk pil. Gayanya meniru label "Pembuat" di Detail
+/// Aktivitas: latar hijau tipis, teks hijau kecil.
 class LabelAktivitas extends StatelessWidget {
   final String teks;
 

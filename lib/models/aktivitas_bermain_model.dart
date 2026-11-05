@@ -31,6 +31,10 @@ class AktivitasBermainModel {
   /// v1.4 tidak punya field ini, jadi `fromFirestore` mengisi `main_bareng`.
   final String jenisAktivitas;
 
+  /// v1.4 (T-55) — `pemula` | `menengah` | `mahir`. `null` untuk dokumen
+  /// lama (sebelum v1.4); aktivitas baru selalu mengisinya.
+  final String? tingkatKemampuan;
+
   const AktivitasBermainModel({
     required this.aktivitasId,
     required this.jenisOlahraga,
@@ -46,6 +50,7 @@ class AktivitasBermainModel {
     this.catatan,
     required this.dibuatPada,
     required this.jenisAktivitas,
+    this.tingkatKemampuan,
   });
 
   factory AktivitasBermainModel.fromFirestore(DocumentSnapshot doc) {
@@ -68,6 +73,7 @@ class AktivitasBermainModel {
       dibuatPada:
           (data['dibuatPada'] as Timestamp?)?.toDate() ?? DateTime.now(),
       jenisAktivitas: data['jenisAktivitas'] as String? ?? 'main_bareng',
+      tingkatKemampuan: data['tingkatKemampuan'] as String?,
     );
   }
 
@@ -86,5 +92,6 @@ class AktivitasBermainModel {
         'catatan': catatan,
         'dibuatPada': Timestamp.fromDate(dibuatPada),
         'jenisAktivitas': jenisAktivitas,
+        'tingkatKemampuan': tingkatKemampuan,
       };
 }

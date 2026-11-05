@@ -44,7 +44,12 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
   final _catatanCtrl = TextEditingController();
 
   String _olahraga = AppSports.futsal;
-  String _jenis = AppJenisAktivitas.mainBareng; // v1.4 (T-54), bawaan Main Bareng
+  // v1.4 (T-54) — bawaan Main Bareng.
+  String _jenis = AppJenisAktivitas.mainBareng;
+  // v1.4 (T-55) — sengaja TANPA nilai bawaan: pembuat wajib memilih, supaya
+  // data tidak condong ke satu tingkat karena malas menekan chip.
+  String? _tingkat;
+  bool _tingkatBelumDipilih = false;
   String? _lapanganId;
   DateTime? _tanggal;
   TimeOfDay? _jam;
@@ -90,15 +95,24 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
     final formValid = _formKey.currentState?.validate() ?? false;
     final waktu = _waktuGabungan;
     final errWaktu = Validators.waktuDiMasaDepan(waktu);
+    final tingkat = _tingkat;
 
-    if (!formValid || _lapanganId == null || errWaktu != null) {
-      setState(() {}); // supaya pesan lapangan/waktu ikut tampil ulang
+    if (!formValid ||
+        _lapanganId == null ||
+        errWaktu != null ||
+        tingkat == null) {
+      // supaya pesan lapangan/waktu/tingkat ikut tampil ulang
+      setState(() => _tingkatBelumDipilih = tingkat == null);
       if (errWaktu != null) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(errWaktu)));
       } else if (_lapanganId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text(AppStrings.errLapanganWajib)),
+        );
+      } else if (tingkat == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.errTingkatWajib)),
         );
       }
       return;
@@ -120,6 +134,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
       pembuatId: user.userId,
       namaPembuat: user.nama,
       jenisAktivitas: _jenis,
+      tingkatKemampuan: tingkat,
       catatan:
           _catatanCtrl.text.trim().isEmpty ? null : _catatanCtrl.text.trim(),
     );
@@ -203,6 +218,39 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                     );
                   }).toList(),
                 ),
+                const SizedBox(height: 20),
+                // v1.4 (T-55) — Pemula / Menengah / Mahir, wajib dipilih.
+                const Text(
+                  AppStrings.tingkatKemampuan,
+                  style: AppTextStyles.judulSeksi,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: AppTingkat.daftarPilihan.map((kode) {
+                    final aktif = kode == _tingkat;
+                    return ChoiceChip(
+                      label: Text(AppTingkat.labelDari(kode)),
+                      selected: aktif,
+                      onSelected: (_) => setState(() {
+                        _tingkat = kode;
+                        _tingkatBelumDipilih = false;
+                      }),
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: aktif ? Colors.white : AppColors.textPrimary,
+                      ),
+                    );
+                  }).toList(),
+                ),
+                if (_tingkatBelumDipilih)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Text(
+                      AppStrings.errTingkatWajib,
+                      style: TextStyle(fontSize: 12, color: Colors.red),
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 const Text(AppStrings.lapangan, style: AppTextStyles.judulSeksi),
                 const SizedBox(height: 8),

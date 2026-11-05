@@ -99,6 +99,7 @@ class AktivitasRepository {
     required String pembuatId,
     required String namaPembuat,
     required String jenisAktivitas,
+    required String tingkatKemampuan,
     String? catatan,
   }) async {
     // Pengaman berlapis — sudah dicek di UI (`buat_aktivitas_screen.dart`
@@ -114,6 +115,9 @@ class AktivitasRepository {
     }
     if (!AppJenisAktivitas.valid(jenisAktivitas)) {
       throw Exception('Jenis aktivitas tidak valid.');
+    }
+    if (!AppTingkat.valid(tingkatKemampuan)) {
+      throw Exception('Tingkat kemampuan tidak valid.');
     }
 
     try {
@@ -133,6 +137,7 @@ class AktivitasRepository {
         catatan: catatan,
         dibuatPada: DateTime.now(),
         jenisAktivitas: jenisAktivitas,
+        tingkatKemampuan: tingkatKemampuan,
       );
 
       await ref.set(aktivitas.toFirestore());

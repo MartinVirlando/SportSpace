@@ -33,3 +33,36 @@ class AppJenisAktivitas {
   /// Nilai di Firestore harus salah satu dari [daftarPilihan].
   static bool valid(String kode) => daftarPilihan.contains(kode);
 }
+
+/// Tingkat kemampuan yang dicari — PRD 6.3 (`tingkatKemampuan`), v1.4
+/// (T-55). Dipilih manual oleh pembuat aktivitas; tidak ada penilaian
+/// otomatis. Aktivitas lama (sebelum v1.4) tidak punya tingkat (`null`).
+class AppTingkat {
+  AppTingkat._();
+
+  /// Nilai yang tersimpan di Firestore pada field `tingkatKemampuan`.
+  static const String pemula = 'pemula';
+  static const String menengah = 'menengah';
+  static const String mahir = 'mahir';
+
+  /// Nilai semu untuk chip "Semua tingkat" — TIDAK pernah disimpan.
+  static const String semua = '__semua__';
+
+  /// Pilihan di form Buat Aktivitas (L-08) — tanpa "Semua".
+  static const List<String> daftarPilihan = [pemula, menengah, mahir];
+
+  /// Urutan chip filter di Cari Rekan (L-07).
+  static const List<String> daftarFilter = [semua, pemula, menengah, mahir];
+
+  static const Map<String, String> label = {
+    semua: 'Semua tingkat',
+    pemula: 'Pemula',
+    menengah: 'Menengah',
+    mahir: 'Mahir',
+  };
+
+  static String labelDari(String kode) => label[kode] ?? kode;
+
+  /// Nilai di Firestore harus salah satu dari [daftarPilihan].
+  static bool valid(String kode) => daftarPilihan.contains(kode);
+}

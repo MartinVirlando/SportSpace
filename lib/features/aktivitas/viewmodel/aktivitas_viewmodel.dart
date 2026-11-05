@@ -50,9 +50,23 @@ class AktivitasViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Filter tingkat kemampuan (T-55) — sama seperti [filterJenis], di klien.
+  String _filterTingkat = AppTingkat.semua;
+  String get filterTingkat => _filterTingkat;
+
+  void ubahFilterTingkat(String kode) {
+    if (_filterTingkat == kode) return;
+    _filterTingkat = kode;
+    notifyListeners();
+  }
+
   /// Terapkan filter klien ke daftar yang datang dari [streamAktivitas].
   List<AktivitasBermainModel> saring(List<AktivitasBermainModel> daftar) {
-    return saringAktivitas(daftar, jenis: _filterJenis);
+    return saringAktivitas(
+      daftar,
+      jenis: _filterJenis,
+      tingkat: _filterTingkat,
+    );
   }
 
   /// ID aktivitas yang tombol "Gabung" kartunya sedang memproses —
