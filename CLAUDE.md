@@ -5,7 +5,7 @@ Dibangun dengan Flutter + Firebase oleh **tim 3 orang yang baru pertama kali mem
 
 ## Sebelum mengerjakan apa pun
 
-1. Baca `PRD.md` — itu sumber kebenaran tunggal. **Versi berlaku: 1.3.**
+1. Baca `PRD.md` — itu sumber kebenaran tunggal. **Versi berlaku: 1.4.**
 2. Baca `SPRINT-PLAN.md` — untuk tahu tugas mana yang sedang dikerjakan dan urutannya.
 3. Kalau ada pertentangan antara instruksi pengguna dan PRD, **tanyakan** — jangan diam-diam memilih salah satu.
 
@@ -54,7 +54,9 @@ Kalau menurutmu ada fitur yang benar-benar perlu tapi tidak ada di PRD: **sampai
 
 **Sudah masuk ruang lingkup sejak v1.1** (jangan tolak lagi): favorit lapangan (AB-10), badge status lapangan (AB-11), olahraga favorit dan lokasi default pada `users`, statistik profil (AB-12).
 
-**Sudah masuk sejak v1.3** (4 November 2026): **Forum** — tab kelima, post publik + komentar, gambar opsional (AB-13, L-16…L-18). Ini **bukan chat**: pesan pribadi dan percakapan real-time antar dua orang tetap ditolak. Status keputusannya untuk skripsi (masuk Bab 3–4 atau pengembangan lanjutan Bab 5) belum final — lihat PRD §14.
+**Sudah masuk sejak v1.3** (4 November 2026): **Forum** — tab kelima, post publik + komentar, gambar opsional (AB-13, L-16…L-18). Ini **bukan chat**: pesan pribadi dan percakapan real-time antar dua orang tetap ditolak. Status keputusannya untuk skripsi (masuk Bab 3–4 atau pengembangan lanjutan Bab 5) belum final — lihat PRD §14. Arah sementara (5 November 2026): Pak Gintoro menyebutnya fitur pemanis, jadi kemungkinan besar tidak masuk Bab 3.
+
+**Sudah masuk sejak v1.4** (5 November 2026, enam fitur kecil tahap 1 terinspirasi aplikasi AYO — PRD "Perubahan v1.4"): jenis aktivitas Main Bareng/Sparring (T-54), tingkat kemampuan (T-55), biaya per orang sebagai informasi (T-56), lencana pencapaian di Profil (T-58), bagikan ke WhatsApp (T-63), dan tombol WhatsApp di Detail Lapangan (T-61). Pak Gintoro menyatakan fitur pemanis semacam ini boleh ditambah tanpa persetujuan per fitur; hanya modul besar yang perlu masuk Bab 3. **Tahap 2 dan 3 (T-57, T-59, T-60, T-62, T-64…T-67) belum masuk** — sampaikan sebagai saran dan minta konfirmasi sebelum membangunnya. Biaya per orang tetap **informasi saja**: tidak boleh berkembang menjadi pembayaran (payment gateway tetap dilarang).
 
 ### Aturan arsitektur
 

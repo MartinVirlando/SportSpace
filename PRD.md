@@ -2,7 +2,7 @@
 
 **Aplikasi Android pencarian lapangan olahraga dan rekan bermain berbasis lokasi**
 
-Versi 1.3 · 4 November 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
+Versi 1.4 · 5 November 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
 
 > Dokumen ini adalah **sumber kebenaran tunggal** untuk implementasi. Jika ada pertentangan antara dokumen ini dan ingatan/asumsi, dokumen ini yang menang. Jika ada kebutuhan yang tidak tercantum di sini, **jangan dibangun** — tanyakan dulu.
 
@@ -43,7 +43,28 @@ Fitur **Forum** dibangun Martin di cabang `secondary` (1 Oktober–3 November 20
 | 1 | Tab kelima **Forum**: post publik beserta komentar. Navigasi bawah jadi **5 tab** (Home · Map · Teman · Profil · Forum) | §2.2, §5, §6.10–6.11, §7 AB-13, §8 L-16–L-18, §9, §11 BB-42–BB-49, §14 |
 | 2 | **Gambar post forum** (maksimal 1 per post) disimpan sebagai Base64 di dokumen `forum_posts` — pola yang sama dengan foto profil, dengan batas 500 KB mentah dan pengaman 700.000 karakter di Repository dan Security Rules | §2.1, §2.2, §12b |
 
-> ⚠️ **Keputusan belum final.** Forum tidak menjawab satu pun dari tiga rumusan masalah Bab 1 (pencarian lapangan berbasis lokasi, cari rekan bermain, reservasi) — posisinya sama dengan favorit pada putaran revisi 2. Tim dan Pak Gintoro masih harus memutuskan: **(a)** forum dimasukkan ke Bab 3–4 (tab jadi 5, ERD tambah dua entitas, kasus BB-42–BB-49), atau **(b)** forum tidak dimasukkan ke bab itu dan disebut sebagai pengembangan lanjutan di Bab 5. Kodenya sudah ada di aplikasi, jadi tangkapan layar Bab 4 akan menampilkan 5 tab kecuali tab Forum disembunyikan — lihat §14. Sampai diputuskan, PRD ini menganggap forum **bagian dari aplikasi**.
+> ⚠️ **Keputusan belum final, tetapi arahnya sudah ada (5 November 2026):** Pak Gintoro menyebut forum fitur pemanis, jadi jalur **(b)** di bawah yang paling mungkin. Forum tidak menjawab satu pun dari tiga rumusan masalah Bab 1 (pencarian lapangan berbasis lokasi, cari rekan bermain, reservasi) — posisinya sama dengan favorit pada putaran revisi 2. Tim dan Pak Gintoro masih harus memutuskan: **(a)** forum dimasukkan ke Bab 3–4 (tab jadi 5, ERD tambah dua entitas, kasus BB-42–BB-49), atau **(b)** forum tidak dimasukkan ke bab itu dan disebut sebagai pengembangan lanjutan di Bab 5. Kodenya sudah ada di aplikasi, jadi tangkapan layar Bab 4 akan menampilkan 5 tab kecuali tab Forum disembunyikan — lihat §14. Sampai diputuskan, PRD ini menganggap forum **bagian dari aplikasi**.
+
+### Perubahan v1.4 (5 November 2026) — Fitur tambahan terinspirasi aplikasi AYO, tahap 1
+
+Pak Gintoro menilai fitur tambahan seperti Forum dan fitur yang terinspirasi aplikasi **AYO** (`docs/IDE-FITUR-V1.3.md`) hanyalah **pemanis**; hanya **modul besar** yang perlu masuk Bab 3. Berdasarkan itu tim memutuskan (5 November 2026) membangun **enam fitur kecil tahap 1** tanpa meminta persetujuan per fitur, dan **tidak** menambahkannya ke Bab 3 sebagai use case atau diagram baru. Semuanya perluasan dari fitur yang sudah ada, tanpa koleksi baru, tanpa package baru, dan tanpa pembayaran.
+
+| # | Tugas | Perubahan | Bagian yang terdampak |
+|---|---|---|---|
+| 1 | **T-54** | Atribut baru `jenisAktivitas` pada `aktivitasBermain`: **Main Bareng** atau **Sparring**. Dipilih pembuat di L-08, jadi label di kartu L-07 dan L-09, dan chip filter di L-07 | §6.3, §8 L-07–L-09, §11 BB-50–51 |
+| 2 | **T-55** | Atribut baru `tingkatKemampuan`: **Pemula / Menengah / Mahir**, dipilih manual oleh pembuat. Chip filter kedua di L-07 | §6.3, §8 L-07–L-09, §11 BB-52–53 |
+| 3 | **T-56** | Atribut baru `biayaPerOrang` (rupiah, `0` = gratis). **Informasi saja**, dibayar di lokasi, tanpa payment gateway | §6.3, §8 L-08–L-09, §11 BB-54–55 |
+| 4 | **T-58** | **Lencana pencapaian** di L-13, dihitung dari tiga angka statistik AB-12 yang sudah ada. Tanpa field baru | §7 AB-14, §8 L-13, §11 BB-56–57 |
+| 5 | **T-63** | Tombol **Bagikan ke WhatsApp** di L-09 (aktivitas) dan L-06 (lapangan), lewat tautan `wa.me` dan `url_launcher` yang sudah ada | §7 AB-15, §8 L-06, L-09, §11 BB-58–59 |
+| 6 | **T-61** | Tombol **WhatsApp** di L-06 di samping nomor telepon, hanya untuk nomor seluler | §7 AB-15, §8 L-06, §11 BB-60–61 |
+
+**Tidak ada composite index baru.** Filter jenis aktivitas dan tingkat kemampuan dijalankan **di klien** pada daftar yang sudah diambil `streamAktivitasTerbuka` (query-nya tidak berubah, tetap index #2 dan #3). Security Rules tidak berubah.
+
+**Dokumen lama tetap terbaca.** Aktivitas yang dibuat sebelum v1.4 tidak punya ketiga atribut baru. `fromFirestore()` memberi nilai bawaan: `jenisAktivitas = "main_bareng"`, `tingkatKemampuan = null`, `biayaPerOrang = 0`. Tidak perlu migrasi data.
+
+**Yang belum dikerjakan dari 14 usulan** (tahap 2 dan 3, tetap di backlog `SPRINT-PLAN.md`): T-57, T-59, T-60, T-62, T-64, T-65, T-66, T-67. T-67 butuh package baru, jadi izin harus diminta dulu (`CLAUDE.md`).
+
+> ⚠️ **Konsekuensi ke skripsi kecil, tapi ada.** T-54 sampai T-56 menambah tiga atribut ke entitas `AktivitasBermain` yang sudah ada di ERD Bab 3. Gambar ERD (M1 di "Putaran revisi 2") sebaiknya dibuat **setelah** atribut ini final, atau ketiganya disebut sebagai "tambahan di luar rancangan awal". Lihat §14 "Tambahan akibat v1.4".
 
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
@@ -270,6 +291,8 @@ lib/
       haversine.dart           # WAJIB manual
       formatter.dart           # format rupiah, tanggal, jam
       validators.dart          # validasi form
+      lencana.dart             # v1.4 — aturan lencana (AB-14), fungsi murni
+      whatsapp.dart            # v1.4 — normalisasi nomor + teks bagikan (AB-15), fungsi murni
     services/
       location_service.dart    # bungkus geolocator
 
@@ -379,6 +402,9 @@ Nama atribut mengikuti ERD Bab 3 **persis**. Jangan diterjemahkan ke bahasa Ingg
 | `peserta` | List\<String\> | ✓ | daftar `userId`, awal berisi `pembuatId` |
 | `catatan` | String? | | |
 | `dibuatPada` | Timestamp | ✓ | |
+| `jenisAktivitas` | String | ✓ | **v1.4 (T-54)** — `"main_bareng"` \| `"sparring"`. Dokumen lama tanpa field ini dibaca sebagai `"main_bareng"` |
+| `tingkatKemampuan` | String? | | **v1.4 (T-55)** — `"pemula"` \| `"menengah"` \| `"mahir"`. Wajib dipilih saat membuat aktivitas baru; `null` hanya untuk dokumen lama |
+| `biayaPerOrang` | int | ✓ | **v1.4 (T-56)** — rupiah, `0` = gratis, maksimal `1000000`. Informasi saja, dibayar di lokasi. Dokumen lama dibaca sebagai `0` |
 
 ### 6.4 `aktivitasBermain/{aktivitasId}/permintaan/{userId}` (subkoleksi)
 
@@ -694,6 +720,28 @@ Kotak statistik ketiga di Figma berlabel "4.9★ Rating" — itu **diganti** men
 7. **Gambar:** maksimal satu per post, dipilih dari galeri lewat `image_picker` (`maxWidth`/`maxHeight` 1024, `imageQuality` 70). Tiga lapis batas — lihat §12b.
 8. **Tidak ada notifikasi** untuk komentar atau post baru. Forum tidak menyentuh koleksi `notifikasi`.
 
+### AB-14 · Lencana pencapaian — **v1.4 (T-58)**
+
+Lencana **tidak disimpan** di Firestore. Ia diturunkan di klien dari tiga angka yang **sama persis** dengan kotak statistik AB-12 (panjang `Stream` yang sudah dibaca L-13), jadi tidak ada baca Firestore tambahan dan angkanya ikut hidup.
+
+| Lencana | Syarat |
+|---|---|
+| Pemesan Pertama | Booking ≥ 1 |
+| Langganan Lapangan | Booking ≥ 5 |
+| Rekan Bermain | Aktivitas ≥ 1 |
+| Penggerak Komunitas | Aktivitas ≥ 5 |
+| Kolektor Favorit | Favorit ≥ 3 |
+
+Lencana yang belum diraih tetap tampil **redup** beserta syaratnya, supaya pengguna tahu apa yang harus dilakukan. Aturan penghitungannya satu fungsi murni di `core/utils/lencana.dart` agar bisa diuji otomatis. Catatan: angka "Booking" di AB-12 menghitung semua status (termasuk `DITOLAK` dan `DIBATALKAN`); lencana mengikuti angka itu apa adanya, sebagai penyederhanaan yang disengaja.
+
+### AB-15 · Bagikan dan hubungi lewat WhatsApp — **v1.4 (T-61, T-63)**
+
+Semuanya memakai `url_launcher` yang sudah ada sejak T-51, mode `LaunchMode.externalApplication`, **tanpa package baru** dan **tanpa `canLaunchUrl`** (yang di Android 11+ butuh deklarasi `<queries>`). Kalau tidak ada aplikasi yang bisa membuka tautan, tampilkan `SnackBar` berbahasa Indonesia.
+
+- **Bagikan (T-63):** `https://wa.me/?text=<teks di-encode>`. Teks aktivitas memuat olahraga, jenis, tingkat, lapangan, waktu, jumlah pemain, dan biaya. Teks lapangan memuat nama, alamat, jam buka, dan `tautanMaps` bila terisi. Tidak ada tautan ke aplikasi (belum ada deep link atau halaman unduh).
+- **Hubungi (T-61):** `https://wa.me/<nomor>`, dengan `nomorTelepon` dinormalkan ke format internasional tanpa `+`: buang semua karakter bukan angka, awalan `0` diganti `62`. Tombol **hanya muncul** kalau hasil normalisasi diawali `628` (nomor seluler). Nomor telepon rumah seperti `021…` dan nomor kosong tidak menampilkan tombol, karena WhatsApp tidak bisa dipakai di sana.
+- Normalisasi dan penyusunan teks adalah fungsi murni di `core/utils/whatsapp.dart`, supaya bisa diuji otomatis.
+
 ---
 
 ## 8. Spesifikasi Layar
@@ -736,7 +784,7 @@ Tile URL: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
 `userAgentPackageName` wajib diisi sesuai package aplikasi.
 
 ### L-06 · Detail Lapangan — **diperbarui v1.1**
-Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta (internal, tab Map) + **tombol "Buka di Google Maps" (v1.2, T-51, hanya tampil kalau `tautanMaps` terisi, buka aplikasi/browser eksternal lewat `url_launcher`)**, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`.
+Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta (internal, tab Map) + **tombol "Buka di Google Maps" (v1.2, T-51, hanya tampil kalau `tautanMaps` terisi, buka aplikasi/browser eksternal lewat `url_launcher`)**, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`. **v1.4:** di samping nomor telepon ada tombol **WhatsApp** (T-61, hanya untuk nomor seluler, AB-15) dan di bagian atas ada tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan lapangan.
 
 > Figma menampilkan pemilihan slot jam langsung di layar ini. Pemilihan slot tetap di **L-10** sesuai PRD, karena butuh pemilihan tanggal dan perhitungan estimasi harga yang tidak muat di layar detail. Tombol "Booking Sekarang" di Figma = tombol "Ajukan Reservasi" yang membuka L-10.
 >
@@ -745,11 +793,15 @@ Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10),
 ### L-07 · Cari Rekan
 Dibuka dari tab **Teman**. Tab filter olahraga — **lima chip termasuk "Semua", dan Mini Soccer wajib ada** (Figma baru punya tiga). Daftar kartu aktivitas berisi nama pembuat, olahraga, nama lapangan, tanggal & jam, dan `jumlahPemainSaatIni/jumlahPemainDibutuhkan` dengan progress bar; tombol **Gabung** per kartu; FAB untuk membuat aktivitas baru (L-08). Aktivitas yang sudah `PENUH` atau waktunya lewat tidak ditampilkan.
 
+**v1.4 (T-54, T-55, T-56):** di bawah chip olahraga ada dua baris chip filter tambahan. Baris **jenis** (Semua / Main Bareng / Sparring) dan baris **tingkat** (Semua tingkat / Pemula / Menengah / Mahir). Keduanya menyaring **di klien** dari daftar yang sudah diambil, jadi tidak butuh index baru, dan boleh dikombinasikan dengan chip olahraga. Aktivitas lama tanpa `tingkatKemampuan` hanya tampil di "Semua tingkat". Kartu memuat label jenis, label tingkat (bila ada), dan biaya ("Gratis" atau "Rp25.000 / orang"). Kondisi kosong akibat filter memakai pesan tersendiri: "Tidak ada aktivitas yang cocok dengan filter."
+
 ### L-08 · Buat Aktivitas (form)
 Pilih olahraga, pilih lapangan (dari daftar lapangan), tanggal & jam, jumlah pemain dibutuhkan, catatan opsional. Validasi: semua wajib kecuali catatan; waktu harus di masa depan; jumlah pemain 2–30.
 
+**v1.4:** tiga isian baru. **Jenis aktivitas** (dua pilihan, bawaan Main Bareng), **tingkat kemampuan** (tiga pilihan, **wajib dipilih**, tanpa nilai bawaan agar data tidak condong), dan **biaya per orang** (angka rupiah, opsional, kosong dibaca `0` atau gratis, maksimal 1.000.000, tidak boleh negatif atau berisi huruf). Label bantu: "Informasi saja, dibayar di lokasi."
+
 ### L-09 · Detail Aktivitas
-Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**, plus tombol **"Batalkan Aktivitas"** di bagian bawah (T-47, 15 September 2026, dengan dialog konfirmasi — menghapus seluruh dokumen aktivitas dan mengirim notifikasi ke semua peserta selain pembuat, lihat AB-06 lanjutan). Jika bukan pembuat: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya.
+Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**, plus tombol **"Batalkan Aktivitas"** di bagian bawah (T-47, 15 September 2026, dengan dialog konfirmasi — menghapus seluruh dokumen aktivitas dan mengirim notifikasi ke semua peserta selain pembuat, lihat AB-06 lanjutan). Jika bukan pembuat: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya. **v1.4:** menampilkan jenis, tingkat kemampuan, dan biaya per orang, serta tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan aktivitas.
 
 ### L-10 · Ajukan Reservasi (form)
 Pilih tanggal, jam mulai, durasi (jam). Tampilkan slot yang sudah terisi agar tidak dipilih (chip jam bertanda "Penuh", mengikuti gaya Figma). Tampilkan estimasi total harga. Tombol **Ajukan Reservasi** menjalankan AB-04.
@@ -769,6 +821,7 @@ Dibuka dari tab **Profil**.
 | Header | Avatar (foto dari `fotoProfilBase64` bila terisi — v1.2, jatuh balik ke inisial) + nama + surel + nomor telepon, tombol Edit Profil |
 | Kotak statistik | **Booking** · **Aktivitas** · **Favorit** — dihitung dengan AB-12 |
 | Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
+| Lencana | **v1.4 (T-58)** — lima lencana pencapaian dari tiga angka statistik di atas (AB-14). Yang belum diraih tampil redup beserta syaratnya |
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
 | Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
@@ -1044,6 +1097,18 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-47** | **Pemilik post memilih Edit Post, ubah isi, simpan** | **Isi berubah dan penanda "(diedit)" muncul. Pengguna lain tidak melihat menu Edit/Hapus di post itu** |
 | **BB-48** | **Pemilik post memilih Hapus Post dan mengonfirmasi** | **Post dan seluruh komentarnya terhapus, hilang dari daftar** |
 | **BB-49** | **Pengguna B mencoba mengubah isi atau menghapus post pengguna A** | **Ditolak Security Rules** |
+| **BB-50** | **Buat aktivitas dengan jenis Sparring** *(T-54)* | **Dokumen tersimpan dengan `jenisAktivitas = "sparring"`; kartu di Cari Rekan dan Detail Aktivitas berlabel Sparring** |
+| **BB-51** | **Pilih chip jenis "Sparring" di Cari Rekan** *(T-54)* | **Hanya aktivitas Sparring yang tampil. Aktivitas lama (tanpa field jenis) hanya muncul di "Semua" dan "Main Bareng"** |
+| **BB-52** | **Buat aktivitas tanpa memilih tingkat kemampuan** *(T-55)* | **Ditolak dengan pesan validasi, dokumen tidak dibuat** |
+| **BB-53** | **Pilih chip tingkat "Pemula" di Cari Rekan** *(T-55)* | **Hanya aktivitas bertingkat Pemula yang tampil. Aktivitas lama (tanpa tingkat) hanya muncul di "Semua tingkat"** |
+| **BB-54** | **Buat aktivitas dengan biaya dikosongkan** *(T-56)* | **`biayaPerOrang = 0`, kartu dan Detail Aktivitas menampilkan "Gratis"** |
+| **BB-55** | **Buat aktivitas dengan biaya 25000; lalu coba biaya negatif atau di atas 1.000.000** *(T-56)* | **25000 tampil "Rp25.000 / orang". Biaya negatif, di atas batas, atau bukan angka ditolak dengan pesan validasi** |
+| **BB-56** | **Buka Profil akun baru tanpa booking, aktivitas, dan favorit** *(T-58)* | **Kelima lencana tampil redup beserta syaratnya** |
+| **BB-57** | **Buat booking pertama, lalu buka Profil** *(T-58)* | **Lencana "Pemesan Pertama" menyala tanpa perlu keluar-masuk akun, lencana lain tetap redup** |
+| **BB-58** | **Tekan Bagikan di Detail Aktivitas** *(T-63)* | **WhatsApp terbuka dengan teks ringkasan aktivitas sudah terisi (olahraga, jenis, tingkat, lapangan, waktu, pemain, biaya)** |
+| **BB-59** | **Tekan Bagikan di Detail Lapangan** *(T-63)* | **WhatsApp terbuka dengan teks nama, alamat, jam buka, dan tautan Google Maps (bila ada)** |
+| **BB-60** | **Buka Detail Lapangan yang `nomorTelepon`-nya nomor seluler (mis. `081316441741`), tekan WhatsApp** *(T-61)* | **WhatsApp terbuka ke percakapan dengan nomor `6281316441741`** |
+| **BB-61** | **Buka Detail Lapangan yang nomornya telepon rumah (`0217429521`) atau kosong** *(T-61)* | **Tombol WhatsApp tidak muncul sama sekali** |
 
 ---
 
@@ -1221,7 +1286,9 @@ Catatan dari diskusi sebelumnya yang belum tercatat di tabel atas:
 
 ### Tambahan akibat Forum (4 November 2026) — **hanya kalau forum diputuskan masuk skripsi**
 
-Keputusannya belum diambil (lihat "Perubahan v1.3" di atas). Dua jalur:
+> **Arah sudah condong ke (b) — 5 November 2026.** Pak Gintoro menyebut forum sebagai fitur pemanis dan hanya modul besar yang perlu masuk Bab 3 (lihat "Perubahan v1.4"). Jadi #38–#44 **tidak perlu dikerjakan**, kecuali tim memutuskan lain. Jalur (b) di bawah yang berlaku sampai ada keputusan resmi.
+
+Dua jalur:
 
 - **(a) Forum masuk Bab 3–4:** kerjakan #38–#44 di bawah.
 - **(b) Forum tidak masuk Bab 3–4:** #38–#44 tidak dikerjakan. Tulis forum di Bab 5 sebagai pengembangan lanjutan, dan di Bab 4 sebutkan bahwa tab Forum ada di aplikasi tetapi di luar ruang lingkup pengujian. Putaran revisi 2 menuliskan **4 tab** — tangkapan layar Bab 4 akan menunjukkan 5, jadi kalimat itu tetap perlu disesuaikan.
@@ -1235,6 +1302,17 @@ Keputusannya belum diambil (lihat "Perubahan v1.3" di atas). Dua jalur:
 | 42 | Tabel 3.4 / Bab 2.9 | Kalimat "Cloud Firestore ... menyimpan foto profil pengguna dalam format Base64" → tambah "dan gambar post forum" (§12b) |
 | 43 | Bab 4 tabel Black Box | Tambah BB-42 sampai BB-49 |
 | 44 | Bab 5 keterbatasan | Komentar tidak bisa diedit/dihapus satuan; Security Rules forum punya satu titik longgar (penghitung komentar, §9); teks post tidak dibatasi panjangnya; gambar forum Base64 dibatasi 500 KB per post |
+
+### Tambahan akibat v1.4 (5 November 2026) — fitur tambahan tahap 1
+
+Sesuai arahan Pak Gintoro (fitur pemanis tidak perlu masuk Bab 3), tidak ada use case, activity diagram, atau subbab rancangan baru. Yang perlu disesuaikan hanya yang bisa terlihat penguji:
+
+| # | Bagian skripsi | Perubahan |
+|---|---|---|
+| 45 | ERD Bab 3 / Tabel 3.10, entitas `AktivitasBermain` | Tambah tiga atribut `jenisAktivitas`, `tingkatKemampuan`, `biayaPerOrang` (§6.3). **Buat ERD (M1) setelah ini final**, supaya tidak digambar dua kali. Alternatifnya, biarkan ERD dan sebutkan ketiganya di Bab 4 sebagai tambahan di luar rancangan awal |
+| 46 | Bab 4 (implementasi) | Satu paragraf: fitur lencana pencapaian dan tombol WhatsApp/bagikan ada di aplikasi sebagai tambahan di luar rancangan awal. Tangkapan layar Profil dan Detail Lapangan akan menampilkannya |
+| 47 | Bab 4 tabel Black Box | Tambah BB-50 sampai BB-61 bila tim ingin mengujinya di skripsi; kalau tidak, cukup tulis di Bab 4 bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 48 | Bab 5 saran dan keterbatasan | Fitur AYO tahap 2 dan 3 (sort/filter Home, blokir slot, reschedule, promo, aktivitas privat, pengingat) sebagai pengembangan lanjutan. Biaya per orang hanya informasi, tanpa pembayaran. Filter jenis dan tingkat di klien tidak efisien untuk daftar yang sangat besar |
 
 **Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
 

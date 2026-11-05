@@ -120,6 +120,8 @@ _db.collection('aktivitasBermain')
 
 ⚠️ **Jebakan yang pasti kalian temui di sini:** kalau sebuah query punya filter pertidaksamaan (`isGreaterThan`), maka `orderBy` yang pertama **wajib** field yang sama. Jadi `.orderBy('dibuatPada')` setelah `.where('waktu', isGreaterThan: ...)` akan ditolak Firestore, dan pesan errornya tidak menyebut hal ini dengan jelas.
 
+**v1.4 (T-54, T-55) — filter jenis aktivitas dan tingkat kemampuan TIDAK menambah index.** Dua filter baru di L-07 (`jenisAktivitas`, `tingkatKemampuan`) dijalankan **di klien** pada daftar yang sudah dikembalikan query #2/#3. Query-nya tidak berubah. Alasannya: menaruhnya di query menambah satu field `==` dan berarti index baru per kombinasi (jenis × tingkat × olahraga), sedangkan daftar aktivitas terbuka kecil sehingga menyaring di klien murah dan lebih sederhana dijelaskan di sidang. Kalau kelak daftar ini membesar, barulah filternya dipindah ke query beserta index-nya.
+
 Untuk "Aktivitas Saya" di Profil (L-13), ada dua daftar berbeda:
 
 ```dart

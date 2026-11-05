@@ -275,22 +275,24 @@ Martin menggabungkan PR #1 (`secondary` → `main`, commit `fd8ef3c`): fitur For
 
 Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 Oktober 2026). **Belum ada satu pun dari 14 usulan yang masuk ke kode `main`** (dicek 4 November 2026 lewat pencarian kode, setelah merge forum). Semuanya di luar PRD v1.1 — sama pola T-40/T-50/T-51: butuh persetujuan Pak Gintoro dan kasus BB baru sebelum dikoding. Hanya T-67 yang butuh package baru (`CLAUDE.md`: minta izin dulu). Nomor tugas di bawah mengikuti nomor usulan di dokumen ide (T-53 + nomor usulan).
 
-| ID | Usulan | Skala | Tahap |
-|---|---|---|---|
-| T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 |
-| T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 |
-| T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 |
-| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 |
-| T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 |
-| T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 |
-| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 |
-| T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 |
-| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 |
-| T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 |
-| T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 |
-| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 |
-| T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 |
-| T-67 | Pengingat jadwal booking, notifikasi lokal *(ide di luar AYO; butuh package baru)* | Sedang | 3 |
+| ID | Usulan | Skala | Tahap | Status |
+|---|---|---|---|---|
+| T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Belum |
+| T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Belum |
+| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Belum |
+| T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Belum |
+| T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Belum |
+| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Belum |
+| T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 | Belum |
+| T-67 | Pengingat jadwal booking, notifikasi lokal *(ide di luar AYO; butuh package baru)* | Sedang | 3 | Belum |
+
+**Keputusan 5 November 2026:** Pak Gintoro menilai forum dan fitur terinspirasi AYO hanyalah **pemanis**; hanya modul besar yang perlu masuk Bab 3. Tim memutuskan mengerjakan **tahap 1 saja** (T-54, T-55, T-56, T-58, T-63, T-61) dan tidak menunggu persetujuan per fitur. Spesifikasinya ada di **PRD v1.4** ("Perubahan v1.4", AB-14, AB-15, BB-50…BB-61). T-31…T-34 (SUS, Bab 4–5) dan revisi gambar T-39 **menunggu fitur tahap 1 selesai**, supaya SUS menguji aplikasi versi akhir dan ERD digambar sekali saja. Tahap 2 dan 3 tidak dikerjakan sebelum tim konfirmasi lagi.
 
 **Urutan yang direkomendasikan:** tahap 1 = T-54, T-55, T-56, T-58, T-63, lalu T-61; tahap 2 = T-57, T-59, T-62, T-65; tahap 3 = T-60, T-64, T-66, T-67. Dokumen ide tadinya menahan T-59, T-60, T-61, T-62, T-65 sampai cabang forum di-merge karena konflik di `detail_lapangan_screen.dart`, `booking`/`lapangan`, rules, dan model — forum sudah masuk `main`, jadi blokir itu tidak berlaku lagi. Aturan tetap: satu cabang per fitur dari `main` terbaru, perubahan `models/` hanya oleh integrator. Fitur "venue tersedia hari ini" milik AYO sengaja tidak ditiru (boros pembacaan Firestore).
 
