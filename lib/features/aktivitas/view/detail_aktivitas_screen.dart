@@ -147,6 +147,14 @@ class _Isi extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     BarisLabelAktivitas(aktivitas: aktivitas),
+                    // Biaya hanya informasi — tidak ada pembayaran di aplikasi.
+                    if (aktivitas.biayaPerOrang > 0) ...[
+                      const SizedBox(height: 4),
+                      const Text(
+                        AppStrings.bantuBiayaPerOrang,
+                        style: AppTextStyles.metaLapangan,
+                      ),
+                    ],
                   ],
                 ),
               ),

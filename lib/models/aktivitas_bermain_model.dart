@@ -35,6 +35,10 @@ class AktivitasBermainModel {
   /// lama (sebelum v1.4); aktivitas baru selalu mengisinya.
   final String? tingkatKemampuan;
 
+  /// v1.4 (T-56) — rupiah, `0` = gratis. Informasi saja (dibayar di lokasi),
+  /// tanpa pembayaran lewat aplikasi. Dokumen lama dibaca sebagai `0`.
+  final int biayaPerOrang;
+
   const AktivitasBermainModel({
     required this.aktivitasId,
     required this.jenisOlahraga,
@@ -51,6 +55,7 @@ class AktivitasBermainModel {
     required this.dibuatPada,
     required this.jenisAktivitas,
     this.tingkatKemampuan,
+    required this.biayaPerOrang,
   });
 
   factory AktivitasBermainModel.fromFirestore(DocumentSnapshot doc) {
@@ -74,6 +79,7 @@ class AktivitasBermainModel {
           (data['dibuatPada'] as Timestamp?)?.toDate() ?? DateTime.now(),
       jenisAktivitas: data['jenisAktivitas'] as String? ?? 'main_bareng',
       tingkatKemampuan: data['tingkatKemampuan'] as String?,
+      biayaPerOrang: (data['biayaPerOrang'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -93,5 +99,6 @@ class AktivitasBermainModel {
         'dibuatPada': Timestamp.fromDate(dibuatPada),
         'jenisAktivitas': jenisAktivitas,
         'tingkatKemampuan': tingkatKemampuan,
+        'biayaPerOrang': biayaPerOrang,
       };
 }

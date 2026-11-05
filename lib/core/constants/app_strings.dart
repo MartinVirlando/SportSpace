@@ -121,6 +121,13 @@ class AppStrings {
   static const jenisAktivitas = 'Jenis Aktivitas';
   static const tingkatKemampuan = 'Tingkat Kemampuan';
   static const errTingkatWajib = 'Pilih tingkat kemampuan dulu.';
+  static const biayaPerOrangOpsional = 'Biaya per Orang (opsional)';
+  static const hintBiayaPerOrang = 'Kosongkan kalau gratis';
+  static const bantuBiayaPerOrang = 'Informasi saja, dibayar di lokasi.';
+  static const biayaGratis = 'Gratis';
+  static const satuanBiayaPerOrang = '/ orang';
+  static const errBiayaAngka = 'Biaya harus berupa angka.';
+  static const errBiayaRentang = 'Biaya antara Rp 0 dan Rp 1.000.000.';
 
   // ---------- Buat Aktivitas (L-08) ----------
   static const jumlahPemainDibutuhkan = 'Jumlah Pemain Dibutuhkan';

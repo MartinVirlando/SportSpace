@@ -26,6 +26,7 @@ AktivitasBermainModel _aktivitas(
     dibuatPada: DateTime(2026, 11, 1),
     jenisAktivitas: jenis,
     tingkatKemampuan: tingkat,
+    biayaPerOrang: 0,
   );
 }
 

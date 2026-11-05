@@ -69,6 +69,7 @@ class BuatAktivitasViewModel extends ChangeNotifier {
     required String namaPembuat,
     required String jenisAktivitas,
     required String tingkatKemampuan,
+    required int biayaPerOrang,
     String? catatan,
   }) async {
     _sedangProses = true;
@@ -86,6 +87,7 @@ class BuatAktivitasViewModel extends ChangeNotifier {
         namaPembuat: namaPembuat,
         jenisAktivitas: jenisAktivitas,
         tingkatKemampuan: tingkatKemampuan,
+        biayaPerOrang: biayaPerOrang,
         catatan: catatan,
       );
       _sedangProses = false;

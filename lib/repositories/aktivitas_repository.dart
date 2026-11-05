@@ -100,6 +100,7 @@ class AktivitasRepository {
     required String namaPembuat,
     required String jenisAktivitas,
     required String tingkatKemampuan,
+    required int biayaPerOrang,
     String? catatan,
   }) async {
     // Pengaman berlapis — sudah dicek di UI (`buat_aktivitas_screen.dart`
@@ -118,6 +119,9 @@ class AktivitasRepository {
     }
     if (!AppTingkat.valid(tingkatKemampuan)) {
       throw Exception('Tingkat kemampuan tidak valid.');
+    }
+    if (!AppBiaya.valid(biayaPerOrang)) {
+      throw Exception('Biaya per orang harus antara Rp 0 dan Rp 1.000.000.');
     }
 
     try {
@@ -138,6 +142,7 @@ class AktivitasRepository {
         dibuatPada: DateTime.now(),
         jenisAktivitas: jenisAktivitas,
         tingkatKemampuan: tingkatKemampuan,
+        biayaPerOrang: biayaPerOrang,
       );
 
       await ref.set(aktivitas.toFirestore());

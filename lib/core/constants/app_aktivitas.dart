@@ -66,3 +66,18 @@ class AppTingkat {
   /// Nilai di Firestore harus salah satu dari [daftarPilihan].
   static bool valid(String kode) => daftarPilihan.contains(kode);
 }
+
+/// Batas biaya per orang — PRD 6.3 (`biayaPerOrang`), v1.4 (T-56).
+///
+/// Biaya hanyalah INFORMASI (dibayar di lokasi), bukan pembayaran lewat
+/// aplikasi — payment gateway dilarang (PRD §2.1). Dicek di View (validator),
+/// dan diulang di `AktivitasRepository` sebagai pengaman kedua.
+class AppBiaya {
+  AppBiaya._();
+
+  /// 0 berarti gratis.
+  static const int minimal = 0;
+  static const int maksimal = 1000000;
+
+  static bool valid(int nilai) => nilai >= minimal && nilai <= maksimal;
+}

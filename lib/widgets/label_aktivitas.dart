@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/app_aktivitas.dart';
 import '../core/constants/app_colors.dart';
+import '../core/utils/formatter.dart';
 import '../models/aktivitas_bermain_model.dart';
 
 /// Deretan label kecil di kartu Cari Rekan (L-07) dan Detail Aktivitas
-/// (L-09): jenis aktivitas (T-54), tingkat kemampuan (T-55), dan nanti biaya
-/// per orang (T-56). Label yang datanya tidak ada (mis. tingkat pada
+/// (L-09): jenis aktivitas (T-54), tingkat kemampuan (T-55), dan biaya per
+/// orang (T-56). Label yang datanya tidak ada (mis. tingkat pada
 /// aktivitas lama) tidak ditampilkan.
 class BarisLabelAktivitas extends StatelessWidget {
   final AktivitasBermainModel aktivitas;
@@ -26,6 +27,7 @@ class BarisLabelAktivitas extends StatelessWidget {
         ),
         if (tingkat != null)
           LabelAktivitas(teks: AppTingkat.labelDari(tingkat)),
+        LabelAktivitas(teks: Formatter.biayaPerOrang(aktivitas.biayaPerOrang)),
       ],
     );
   }

@@ -793,7 +793,7 @@ Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10),
 ### L-07 · Cari Rekan
 Dibuka dari tab **Teman**. Tab filter olahraga — **lima chip termasuk "Semua", dan Mini Soccer wajib ada** (Figma baru punya tiga). Daftar kartu aktivitas berisi nama pembuat, olahraga, nama lapangan, tanggal & jam, dan `jumlahPemainSaatIni/jumlahPemainDibutuhkan` dengan progress bar; tombol **Gabung** per kartu; FAB untuk membuat aktivitas baru (L-08). Aktivitas yang sudah `PENUH` atau waktunya lewat tidak ditampilkan.
 
-**v1.4 (T-54, T-55, T-56):** di bawah chip olahraga ada dua baris chip filter tambahan. Baris **jenis** (Semua / Main Bareng / Sparring) dan baris **tingkat** (Semua tingkat / Pemula / Menengah / Mahir). Keduanya menyaring **di klien** dari daftar yang sudah diambil, jadi tidak butuh index baru, dan boleh dikombinasikan dengan chip olahraga. Aktivitas lama tanpa `tingkatKemampuan` hanya tampil di "Semua tingkat". Kartu memuat label jenis, label tingkat (bila ada), dan biaya ("Gratis" atau "Rp25.000 / orang"). Kondisi kosong akibat filter memakai pesan tersendiri: "Tidak ada aktivitas yang cocok dengan filter."
+**v1.4 (T-54, T-55, T-56):** di bawah chip olahraga ada dua baris chip filter tambahan. Baris **jenis** (Semua / Main Bareng / Sparring) dan baris **tingkat** (Semua tingkat / Pemula / Menengah / Mahir). Keduanya menyaring **di klien** dari daftar yang sudah diambil, jadi tidak butuh index baru, dan boleh dikombinasikan dengan chip olahraga. Aktivitas lama tanpa `tingkatKemampuan` hanya tampil di "Semua tingkat". Kartu memuat label jenis, label tingkat (bila ada), dan biaya ("Gratis" atau "Rp 25.000 / orang"). Kondisi kosong akibat filter memakai pesan tersendiri: "Tidak ada aktivitas yang cocok dengan filter."
 
 ### L-08 · Buat Aktivitas (form)
 Pilih olahraga, pilih lapangan (dari daftar lapangan), tanggal & jam, jumlah pemain dibutuhkan, catatan opsional. Validasi: semua wajib kecuali catatan; waktu harus di masa depan; jumlah pemain 2–30.
@@ -1102,7 +1102,7 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-52** | **Buat aktivitas tanpa memilih tingkat kemampuan** *(T-55)* | **Ditolak dengan pesan validasi, dokumen tidak dibuat** |
 | **BB-53** | **Pilih chip tingkat "Pemula" di Cari Rekan** *(T-55)* | **Hanya aktivitas bertingkat Pemula yang tampil. Aktivitas lama (tanpa tingkat) hanya muncul di "Semua tingkat"** |
 | **BB-54** | **Buat aktivitas dengan biaya dikosongkan** *(T-56)* | **`biayaPerOrang = 0`, kartu dan Detail Aktivitas menampilkan "Gratis"** |
-| **BB-55** | **Buat aktivitas dengan biaya 25000; lalu coba biaya negatif atau di atas 1.000.000** *(T-56)* | **25000 tampil "Rp25.000 / orang". Biaya negatif, di atas batas, atau bukan angka ditolak dengan pesan validasi** |
+| **BB-55** | **Buat aktivitas dengan biaya 25000; lalu coba biaya negatif atau di atas 1.000.000** *(T-56)* | **25000 tampil "Rp 25.000 / orang". Biaya negatif, di atas batas, atau bukan angka ditolak dengan pesan validasi** |
 | **BB-56** | **Buka Profil akun baru tanpa booking, aktivitas, dan favorit** *(T-58)* | **Kelima lencana tampil redup beserta syaratnya** |
 | **BB-57** | **Buat booking pertama, lalu buka Profil** *(T-58)* | **Lencana "Pemesan Pertama" menyala tanpa perlu keluar-masuk akun, lencana lain tetap redup** |
 | **BB-58** | **Tekan Bagikan di Detail Aktivitas** *(T-63)* | **WhatsApp terbuka dengan teks ringkasan aktivitas sudah terisi (olahraga, jenis, tingkat, lapangan, waktu, pemain, biaya)** |

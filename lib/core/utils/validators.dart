@@ -1,3 +1,4 @@
+import '../constants/app_aktivitas.dart';
 import '../constants/app_strings.dart';
 
 /// Validasi form. Semua mengembalikan `null` kalau valid, atau pesan
@@ -54,6 +55,18 @@ class Validators {
     final angka = int.tryParse(nilai.trim());
     if (angka == null) return AppStrings.errJumlahPemainAngka;
     if (angka < 2 || angka > 30) return AppStrings.errJumlahPemainRentang;
+    return null;
+  }
+
+  /// Biaya per orang, opsional — PRD L-08, v1.4 (T-56), diuji BB-54/BB-55.
+  /// Kosong berarti gratis (dibaca `0`). Selain itu harus angka bulat
+  /// 0–1.000.000. Tanda minus dan huruf sudah ditolak `digitsOnly` di kolom
+  /// isian, tapi tetap dicek di sini supaya validator berdiri sendiri.
+  static String? biayaPerOrang(String? nilai) {
+    if (nilai == null || nilai.trim().isEmpty) return null; // opsional
+    final angka = int.tryParse(nilai.trim());
+    if (angka == null) return AppStrings.errBiayaAngka;
+    if (!AppBiaya.valid(angka)) return AppStrings.errBiayaRentang;
     return null;
   }
 

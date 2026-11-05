@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_aktivitas.dart';
@@ -42,6 +43,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
   final _formKey = GlobalKey<FormState>();
   final _jumlahPemainCtrl = TextEditingController();
   final _catatanCtrl = TextEditingController();
+  final _biayaCtrl = TextEditingController(); // v1.4 (T-56)
 
   String _olahraga = AppSports.futsal;
   // v1.4 (T-54) — bawaan Main Bareng.
@@ -58,6 +60,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
   void dispose() {
     _jumlahPemainCtrl.dispose();
     _catatanCtrl.dispose();
+    _biayaCtrl.dispose();
     super.dispose();
   }
 
@@ -135,6 +138,8 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
       namaPembuat: user.nama,
       jenisAktivitas: _jenis,
       tingkatKemampuan: tingkat,
+      // Kosong dibaca 0 (gratis) — validator sudah memastikan isinya angka.
+      biayaPerOrang: int.tryParse(_biayaCtrl.text.trim()) ?? 0,
       catatan:
           _catatanCtrl.text.trim().isEmpty ? null : _catatanCtrl.text.trim(),
     );
@@ -293,6 +298,20 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                     hintText: AppStrings.hintJumlahPemain,
                   ),
                   validator: Validators.jumlahPemain,
+                ),
+                const SizedBox(height: 16),
+                // v1.4 (T-56) — biaya per orang, informasi saja.
+                TextFormField(
+                  controller: _biayaCtrl,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(
+                    labelText: AppStrings.biayaPerOrangOpsional,
+                    hintText: AppStrings.hintBiayaPerOrang,
+                    helperText: AppStrings.bantuBiayaPerOrang,
+                    prefixText: 'Rp ',
+                  ),
+                  validator: Validators.biayaPerOrang,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(

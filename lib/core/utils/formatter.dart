@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:intl/intl.dart';
 
+import '../constants/app_strings.dart';
+
 /// Format rupiah, tanggal, dan jam.
 ///
 /// CLAUDE.md: jangan memformat manual di dalam widget — semua lewat sini,
@@ -25,6 +27,13 @@ class Formatter {
     }
     if (nilai >= 1000) return 'Rp ${nilai ~/ 1000}k';
     return 'Rp $nilai';
+  }
+
+  /// Biaya per orang pada aktivitas (T-56): 0 → "Gratis",
+  /// 25000 → "Rp 25.000 / orang". Informasi saja, tanpa pembayaran.
+  static String biayaPerOrang(int nilai) {
+    if (nilai <= 0) return AppStrings.biayaGratis;
+    return '${rupiah(nilai)} ${AppStrings.satuanBiayaPerOrang}';
   }
 
   /// DateTime → "Sen, 17 Agu 2026"
