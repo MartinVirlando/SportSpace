@@ -327,5 +327,7 @@ Fitur tahap 2 dan 3 sengaja dirancang tanpa composite index baru. Ringkasan quer
 | T-59 / T-62 slot | `slotBooking` `where lapanganId ==` + `where tanggal ==` + `orderBy jam` (yang sama dengan `ambilSlotTerisi`) | #10, sudah ada |
 | T-64 cari lewat kode | `aktivitasBermain` `where kodeAkses ==` + `limit(1)`, satu field `==` | otomatis (single-field), **tidak** perlu composite |
 | T-64 sembunyikan privat | Disaring di klien (`saringAktivitas`), **bukan** `where visibilitas == 'publik'` | — |
+| Perbaikan rating (L-11, 5 Nov 2026) | `RatingRepository.ambilRatingSaya`: `get()` satu dokumen `rating/{userId}_{lapanganId}` — bukan query | — |
+| Perbaikan Home (BB-84, 5 Nov 2026) | `HomeViewModel.perbaruiSatuLapangan`: `get()` satu dokumen `lapangan/{id}` lewat `ambilSatuLapangan` — bukan query | — |
 
 **Kenapa privat tidak disaring di query:** Firestore tidak mengembalikan dokumen yang tidak punya field yang difilter. `where visibilitas == 'publik'` akan menyembunyikan seluruh aktivitas lama (sebelum v1.5) yang belum punya field `visibilitas`, dan filter itu juga menuntut composite index baru.
