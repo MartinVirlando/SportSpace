@@ -54,7 +54,7 @@ Semuanya muat di Firestore + Provider. Hanya #14 yang butuh package baru (perlu 
 
 **Rekomendasi tahap 1:** nomor 1, 2, 3, 5, 10, lalu 8. Kecil, saling melengkapi, dan bisa dijelaskan sebagai "meniru konsep AYO tanpa pembayaran dan tanpa server". Nomor 4, 6, 9, dan 12 menyusul. Nomor 7, 11, 13, dan 14 paling akhir.
 
-**Status per 4 November 2026:** belum ada satu pun dari 14 usulan ini yang masuk ke kode `main`. Nomor tugasnya T-54…T-67 (T-53 + nomor usulan) dan dicatat di `SPRINT-PLAN.md`, bagian "Backlog v1.3". Cabang forum sudah di-merge ke `main` (4 November 2026), jadi pembagian "tunggu forum" di bawah tidak berlaku lagi.
+**Status per 5 November 2026:** enam usulan tahap 1 (nomor 1, 2, 3, 5, 8, 10 = T-54, T-55, T-56, T-58, T-61, T-63) sudah dikodekan dan masuk `main` (PRD v1.4); delapan lainnya belum. *(Per 4 November 2026 belum ada satu pun.)* Nomor tugasnya T-54…T-67 (T-53 + nomor usulan) dan dicatat di `SPRINT-PLAN.md`, bagian "Backlog v1.3". Cabang forum sudah di-merge ke `main` (4 November 2026), jadi pembagian "tunggu forum" di bawah tidak berlaku lagi.
 
 **Sengaja tidak dipakai:** fitur "venue tersedia hari ini" milik AYO. Itu menuntut membaca `slotBooking` untuk tiap lapangan sehingga boros pembacaan Firestore.
 

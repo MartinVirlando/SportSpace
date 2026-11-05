@@ -397,7 +397,7 @@ Dibatalkan   [-] T-00e  [-] T-49  [-] T-52  [-] T-53
 > 5. **Ubah manual 25 dokumen `lapangan` di Firebase Console**: field `sumberData` → `direktori_daring` (kode sudah diganti 19 Oktober 2026 — lihat PRD §10).
 > 6. **Keputusan terbuka:** harga/jam per jenis olahraga — masih riset.
 > 7. **Forum (merge 4 November 2026):** cocokkan rules forum di Firebase Console dengan `firestore.rules` di repo; putuskan dengan Pak Gintoro apakah forum masuk Bab 3–4 (PRD v1.3 sudah mencatatnya, §14 #38–#44) — lihat bagian "Forum" di atas.
-> 8. **Backlog v1.3 dari AYO (T-54…T-67):** belum ada yang dikerjakan; urutan tahap 1 ada di bagian "Backlog v1.3" di atas.
+> 8. **Backlog v1.3 dari AYO (T-54…T-67):** **tahap 1 selesai di kode (5 November 2026)** — T-54, T-55, T-56, T-58, T-63, T-61 sudah di `main`, `flutter analyze` bersih, 55 tes otomatis hijau, APK debug terbangun. **Belum diuji di perangkat:** BB-50…BB-61 (PRD §11). Tahap 2 dan 3 belum dikerjakan. SUS (T-31) dan Bab 4–5 menunggu uji perangkat ini.
 >
 > **Keputusan 8 Oktober 2026:** T-00a–T-00c dicentang selesai; T-00d diganti jadi "tetap paket Spark"; T-00e, T-52, T-53 dibatalkan (T-49 sudah dibatalkan sejak 15 September).
 
