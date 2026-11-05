@@ -214,13 +214,24 @@ class _Isi extends StatelessWidget {
                   final lapangan = daftar[i];
                   return KartuLapangan(
                     lapangan: lapangan,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => DetailLapanganScreen(
-                          lapanganId: lapangan.lapanganId,
+                    onTap: () {
+                      // Layar Detail dibuka sebagai route baru, di luar
+                      // pohon Provider Home — jadi ViewModel diambil DI SINI
+                      // lalu dititipkan lewat callback. Tujuannya: kartu ini
+                      // ikut menampilkan rating baru setelah pengguna
+                      // memberi rating (satu baca dokumen, bukan seluruh
+                      // daftar).
+                      final homeVm = context.read<HomeViewModel>();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DetailLapanganScreen(
+                            lapanganId: lapangan.lapanganId,
+                            onRatingBerubah: () => homeVm
+                                .perbaruiSatuLapangan(lapangan.lapanganId),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                     difavoritkan: idFavorit.contains(lapangan.lapanganId),
                     onTapFavorit: () => _toggleFavorit(context, favoritVm, lapangan.lapanganId, lapangan.nama),
                   );

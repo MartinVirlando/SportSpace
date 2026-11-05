@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/constants/app_sports.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/utils/ganti_lapangan.dart';
 import '../../../core/utils/haversine.dart';
 import '../../../core/utils/jam_buka.dart';
 import '../../../core/utils/urut_lapangan.dart';
@@ -243,6 +244,33 @@ class HomeViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  /// Memuat ulang SATU lapangan dan mengganti kartunya di daftar — dipanggil
+  /// setelah pengguna memberi rating di Detail Lapangan, supaya angka
+  /// bintang di Home ikut berubah tanpa menarik-untuk-menyegarkan.
+  ///
+  /// Hanya satu baca dokumen (bukan seluruh koleksi). Jarak dan urutan
+  /// terdekat tidak berubah ([gantiLapanganDalamDaftar] mempertahankan
+  /// `jarakKm`); urutan Rating/Populer yang sedang dipilih ikut dihitung
+  /// ulang oleh [lapanganTampil].
+  ///
+  /// Kalau gagal, daftar dibiarkan apa adanya (angka lama) dan tidak ada
+  /// pesan: ini penyegaran latar belakang yang tidak diminta pengguna, dan
+  /// menarik-untuk-menyegarkan tetap tersedia sebagai jalan keluar.
+  Future<void> perbaruiSatuLapangan(String lapanganId) async {
+    if (!_semuaLapangan.any((l) => l.lapanganId == lapanganId)) return;
+
+    try {
+      final baru = await _repository.ambilSatuLapangan(lapanganId);
+      // `muatLapangan` bisa berjalan selagi kita menunggu dan mengganti
+      // seluruh daftar; fungsi di bawah aman karena mencocokkan lewat ID
+      // pada daftar TERKINI, bukan pada indeks lama.
+      _semuaLapangan = gantiLapanganDalamDaftar(_semuaLapangan, baru);
+      notifyListeners();
+    } on Exception {
+      // Sengaja diabaikan — lihat catatan di atas.
+    }
   }
 
   void ubahFilterOlahraga(String kode) {

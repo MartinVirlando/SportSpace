@@ -25,11 +25,18 @@ class DetailLapanganViewModel extends ChangeNotifier {
   final LapanganRepository _repository;
   final RatingRepository _ratingRepository;
 
+  /// Dipanggil sekali setiap kali pengguna berhasil mengirim rating dari
+  /// layar ini. Pembukanya (mis. Home) memakainya untuk ikut menyegarkan
+  /// kartu lapangan yang sama; `null` untuk pembuka yang tidak perlu.
+  final VoidCallback? _onRatingBerubah;
+
   DetailLapanganViewModel({
     required LapanganRepository repository,
     required RatingRepository ratingRepository,
+    VoidCallback? onRatingBerubah,
   })  : _repository = repository,
-        _ratingRepository = ratingRepository;
+        _ratingRepository = ratingRepository,
+        _onRatingBerubah = onRatingBerubah;
 
   KondisiDetail _kondisi = KondisiDetail.memuat;
   KondisiDetail get kondisi => _kondisi;
@@ -66,6 +73,13 @@ class DetailLapanganViewModel extends ChangeNotifier {
     if (_lapanganIdTerakhir != null) {
       await muatDetail(_lapanganIdTerakhir!);
     }
+  }
+
+  /// Dipanggil View setelah rating berhasil dikirim: memuat ulang detail ini
+  /// (supaya `ratingRata2` baru tampil) dan memberi tahu pembuka layar.
+  Future<void> catatRatingBerubah(String lapanganId) async {
+    _onRatingBerubah?.call();
+    await muatDetail(lapanganId);
   }
 
   Stream<List<RatingModel>> streamUlasan(String lapanganId) =>

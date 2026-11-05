@@ -39,7 +39,16 @@ import '../viewmodel/detail_lapangan_viewmodel.dart';
 class DetailLapanganScreen extends StatelessWidget {
   final String lapanganId;
 
-  const DetailLapanganScreen({super.key, required this.lapanganId});
+  /// Opsional: dipanggil setelah pengguna berhasil memberi rating di layar
+  /// ini. Home memakainya untuk menyegarkan kartu lapangan yang sama,
+  /// sehingga angka bintang di daftar tidak tertinggal.
+  final VoidCallback? onRatingBerubah;
+
+  const DetailLapanganScreen({
+    super.key,
+    required this.lapanganId,
+    this.onRatingBerubah,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +70,7 @@ class DetailLapanganScreen extends StatelessWidget {
       create: (context) => DetailLapanganViewModel(
         repository: context.read<LapanganRepository>(),
         ratingRepository: context.read<RatingRepository>(),
+        onRatingBerubah: onRatingBerubah,
       )..muatDetail(lapanganId),
       child: ChangeNotifierProvider<FavoritViewModel>(
         create: (context) => FavoritViewModel(
@@ -346,7 +356,9 @@ class _Isi extends StatelessWidget {
     if (berhasil == true && context.mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text(AppStrings.ratingTerkirim)));
-      context.read<DetailLapanganViewModel>().muatDetail(lapangan.lapanganId);
+      context
+          .read<DetailLapanganViewModel>()
+          .catatRatingBerubah(lapangan.lapanganId);
     }
   }
 

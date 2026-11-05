@@ -213,6 +213,12 @@ class AppStrings {
   static const errPilihBintang = 'Pilih rating bintang dulu.';
   static const ratingTerkirim = 'Terima kasih atas ratingmu!';
   static const errGagalKirimRating = 'Gagal mengirim rating.';
+  // Lembar Beri Rating kalau pengguna sudah pernah menilai lapangan itu:
+  // mengirim ulang MENGGANTI rating lama (satu rating per pengguna).
+  static const ubahRating = 'Ubah Rating';
+  static const ratingSudahAda =
+      'Kamu sudah pernah menilai lapangan ini. Mengirim lagi akan '
+      'mengganti rating dan ulasanmu sebelumnya.';
 
   // ---------- Cari Rekan (L-07) ----------
   static const cariRekan = 'Cari Rekan Bermain';

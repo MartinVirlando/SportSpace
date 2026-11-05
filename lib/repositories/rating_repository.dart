@@ -96,6 +96,30 @@ class RatingRepository {
     }
   }
 
+  /// Ambil rating milik [userId] untuk satu lapangan, atau `null` kalau
+  /// belum pernah menilai — dipakai lembar Beri Rating (L-11) supaya
+  /// pengguna yang sudah pernah menilai melihat nilai lamanya dan tahu bahwa
+  /// mengirim ulang akan MENGGANTI, bukan menambah (PRD AB-05, AB-09).
+  ///
+  /// Hanya `get()` pada satu dokumen dengan ID deterministik
+  /// `{userId}_{lapanganId}` — bukan query, jadi tidak butuh index baru.
+  Future<RatingModel?> ambilRatingSaya({
+    required String userId,
+    required String lapanganId,
+  }) async {
+    try {
+      final snap =
+          await _db.collection('rating').doc('${userId}_$lapanganId').get();
+      if (!snap.exists) return null;
+      return RatingModel.fromFirestore(snap);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin membaca ulasanmu.');
+      }
+      throw Exception('Gagal memuat ulasanmu sebelumnya. Coba lagi.');
+    }
+  }
+
   /// Stream daftar ulasan satu lapangan, terbaru dulu — PRD L-06, T-22.
   ///
   /// Index #6 — (lapanganId ASC, tanggal DESC). Batas 20 mengikuti

@@ -967,6 +967,10 @@ Pilih tanggal, jam mulai, durasi (jam). Tampilkan slot yang sudah terisi agar ti
 ### L-11 · Beri Rating (form/modal)
 Pilih bintang 1–5, isi ulasan opsional, tombol Kirim → menjalankan AB-05.
 
+**Perbaikan 5 November 2026 (temuan uji ulang emulator):** rating itu satu per pengguna per lapangan dan boleh diperbarui (AB-05), jadi sebelum menampilkan form lembar ini **memuat rating lama pengguna** (`RatingRepository.ambilRatingSaya`, satu `get` dokumen `{userId}_{lapanganId}`, tanpa index baru). Kalau sudah pernah menilai: judul **"Ubah Rating"**, bintang dan teks ulasan **terisi nilai lama**, dan ada keterangan bahwa mengirim lagi akan **mengganti** rating dan ulasan sebelumnya. Kalau belum: judul "Beri Rating" dan form kosong seperti semula. Selama memuat tampil indikator; kalau gagal tampil pesan dengan tombol **Coba Lagi** — form sengaja **tidak** dibuka kosong, karena dari form kosong pengguna bisa menimpa ulasan lamanya tanpa tahu.
+
+Setelah rating terkirim dari Detail Lapangan yang dibuka dari **Home**, kartu lapangan itu di Home ikut berubah (1 baca dokumen, bukan seluruh daftar); sebelumnya angka di Home baru benar setelah layar ditarik untuk menyegarkan. Detail Lapangan yang dibuka dari Peta tidak memicu penyegaran ini.
+
 ### L-12 · Notifikasi
 Daftar dari koleksi `notifikasi` yang `untukUserId == uid`, urut terbaru. Menekan item membuka objek terkait dan menandai `sudahDibaca = true`.
 
@@ -1293,6 +1297,9 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-80** | **Akun lain memasukkan kode itu lewat "Punya kode?"** *(T-64)* | **Detail Aktivitas terbuka dan permintaan gabung bisa dikirim; huruf kecil di kode tetap diterima** |
 | **BB-81** | **Masukkan kode yang salah** *(T-64)* | **Pesan "Kode tidak ditemukan.", tidak ada layar yang terbuka** |
 | **BB-82** | **Buka Cari Rekan dengan aktivitas lama (tanpa `visibilitas`)** *(T-64)* | **Aktivitas lama tetap tampil sebagai publik** |
+| **BB-83** | **Buka "Beri Rating" pada lapangan yang sudah pernah kamu nilai** *(L-11)* | **Judul "Ubah Rating", bintang dan teks terisi nilai lama, ada keterangan bahwa ulasan akan diganti; pada lapangan yang belum pernah dinilai form kosong berjudul "Beri Rating"** |
+| **BB-84** | **Ubah rating dari Detail yang dibuka lewat Home, lalu kembali ke Home tanpa menarik layar** *(L-11, L-04)* | **Kartu lapangan itu langsung menampilkan rata-rata dan jumlah ulasan yang baru; jarak dan urutan Terdekat tidak bergeser** |
+| **BB-85** | **Buka "Beri Rating" saat tidak ada jaringan** *(L-11)* | **Pesan "Gagal memuat ulasanmu sebelumnya. Coba lagi." dengan tombol Coba Lagi, bukan form kosong; setelah jaringan kembali, Coba Lagi membuka form** |
 
 ---
 
@@ -1507,7 +1514,7 @@ Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
 | 49 | ERD Bab 3 / Tabel 3.10 | Entitas `Lapangan` +`diskonPersen`, +`produkTambahan` (larik). Entitas `Booking` +`produkTambahan` (larik). Entitas `AktivitasBermain` +`visibilitas`, +`kodeAkses` (selain tiga atribut v1.4). Sesuai §6.2, §6.3, §6.6. **Gambar ERD (M1) setelah semua ini final** |
 | 50 | Bab 3.2 / pembahasan pengurutan hasil pencarian | AB-02 tetap benar: urutan **bawaan** murni jarak. Tambahkan satu kalimat bahwa pengguna boleh memilih urutan rating atau populer, dan itu tidak mengubah rancangan Haversine |
 | 51 | Bab 4 | Tambahkan ke paragraf fitur tambahan (#46): filter dan urut Home, blokir slot, promo, produk tambahan, ubah jadwal, aktivitas privat |
-| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-82 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-85 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
 | 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Mitra membalas ulasan dan pengingat jadwal (T-66, T-67) sebagai pengembangan lanjutan |
 
 **Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
