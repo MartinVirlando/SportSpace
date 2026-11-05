@@ -302,6 +302,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | BB-55 | Biaya 25000 tampil "Rp 25.000 / orang". Penolakan biaya negatif/di atas batas hanya diuji otomatis |
 | BB-56, 57 | Akun baru 0/5; akun dengan 5 booking 2/5 dengan kartu menyala |
 | BB-58, 59, 60, 61 | Teks bagikan aktivitas (memuat kode untuk pembuat) dan lapangan terbaca benar di `wa.me`; `081806507575` → chat `+62 818-0650-7575`; `0217429521` tanpa tombol |
+| BB-62 | Setelah tim memberi rating ke lima lapangan: Rating tertinggi menampilkan Powerhouse 5,0 → Hey Beach 5,0 → Stadiums 5,0 → The Good Padel 3,0 → Sabnani 1,0, lalu seluruh lapangan tanpa ulasan di belakang dan berurut jarak (16,3 → 16,4 → 16,5 → 16,7 → 17,7 km); sesuai aturan seri-menurut-jarak. Reset kembali ke urutan jarak |
 | BB-64, 65, 66 | "Buka sekarang" diuji dengan mengubah jam emulator: pukul 23:30 tepat 8 lapangan (yang tutup `00:00`), pukul 03:00 pesan kosong. Fasilitas "shower" tepat 5 lapangan. Reset kembali ke bawaan |
 | BB-67, 68, 69 | Blokir, buka blokir, dan jam yang dipesan tidak bisa disentuh |
 | BB-70, 71, 72 | Badge dan harga coret di kartu dan Detail; estimasi Rp 350.000 − 70.000 + 30.000 = Rp 310.000 tersimpan di booking; diskon 91 ditolak |
@@ -310,7 +311,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | BB-79, 80, 81 | Kode `LGRCNK` (6 karakter), privat tidak tampil di daftar, huruf kecil diterima, kode salah "Kode tidak ditemukan.", dan **kode tidak terlihat oleh pengguna yang bukan pembuat/peserta** |
 
 **Belum terbukti di perangkat:**
-- **BB-62, 63** (urut rating/populer): tidak ada lapangan berulasan di data produksi, dan rating tidak bisa dihapus (rules `delete: false`) sehingga sengaja tidak dibuat. Urutan hanya diuji otomatis (23 tes); di perangkat terbukti kembali ke jarak saat tidak ada ulasan.
+- **BB-63** (urut Terpopuler), sebagian: pada uji ulang sore hari tim sudah memberi rating ke lima lapangan (masing-masing 1 ulasan), sehingga **BB-62 terbukti** (lihat di bawah) dan Terpopuler terbukti untuk kasus seri jumlah ulasan (jatuh ke rating menurun, lalu jarak; tanpa ulasan di belakang). Bagian "lapangan dengan lebih banyak ulasan tampil lebih dulu" belum terlihat di layar karena belum ada lapangan dengan 2 ulasan atau lebih; bagian itu hanya diuji otomatis (23 tes). Cara menuntaskannya: beri ulasan kedua dari akun lain ke satu lapangan, lalu pilih Terpopuler.
 - **BB-75** (harga produk berubah setelah booking), **BB-77** (rebutan slot saat ubah jadwal — butuh dua perangkat bersamaan), dan **BB-82** (aktivitas lama tanpa `visibilitas` — tidak ada aktivitas lama di data produksi): hanya diuji otomatis.
 - WhatsApp sungguhan tidak terpasang di emulator; tautan `wa.me` terbuka di Chrome dan isinya diperiksa, tetapi membuka aplikasi WhatsApp belum.
 - HP fisik belum.
