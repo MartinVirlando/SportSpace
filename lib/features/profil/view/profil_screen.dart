@@ -22,6 +22,7 @@ import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../mitra/view/dashboard_mitra_screen.dart';
 import '../viewmodel/profil_viewmodel.dart';
 import 'halaman_statis_screen.dart';
+import 'seksi_lencana.dart';
 import 'ubah_lokasi_default_sheet.dart';
 import 'ubah_olahraga_favorit_sheet.dart';
 import 'ubah_profil_sheet.dart';
@@ -118,6 +119,9 @@ class _ProfilBody extends StatelessWidget {
             _Header(user: user),
             const SizedBox(height: 20),
             _KotakStatistik(vm: vm),
+            const SizedBox(height: 20),
+            // v1.4 (T-58) — lencana dari tiga angka statistik di atas.
+            SeksiLencana(vm: vm),
             const Divider(height: 36),
             _SeksiOlahragaFavorit(olahragaFavorit: user.olahragaFavorit),
             const SizedBox(height: 20),

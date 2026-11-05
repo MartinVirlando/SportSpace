@@ -207,6 +207,20 @@ class AppStrings {
   static const errGagalPilihFoto = 'Gagal memilih foto. Coba lagi.';
   static const statBooking = 'Booking';
   static const statAktivitas = 'Aktivitas';
+
+  // ---------- Lencana pencapaian (L-13, T-58, AB-14) ----------
+  static const judulLencana = 'Lencana';
+  static const errGagalMuatLencana = 'Lencana belum bisa dimuat.';
+  static const lencanaPemesanPertama = 'Pemesan Pertama';
+  static const syaratPemesanPertama = 'Buat 1 booking';
+  static const lencanaLangganan = 'Langganan Lapangan';
+  static const syaratLangganan = 'Buat 5 booking';
+  static const lencanaRekanBermain = 'Rekan Bermain';
+  static const syaratRekanBermain = 'Buat atau ikut 1 aktivitas';
+  static const lencanaPenggerak = 'Penggerak Komunitas';
+  static const syaratPenggerak = 'Buat atau ikut 5 aktivitas';
+  static const lencanaKolektorFavorit = 'Kolektor Favorit';
+  static const syaratKolektorFavorit = 'Favoritkan 3 lapangan';
   static const statFavorit = 'Favorit';
   static const olahragaFavorit = 'Olahraga Favorit';
   static const lokasiDefault = 'Lokasi Default';

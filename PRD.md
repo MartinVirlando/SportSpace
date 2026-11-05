@@ -732,7 +732,7 @@ Lencana **tidak disimpan** di Firestore. Ia diturunkan di klien dari tiga angka 
 | Penggerak Komunitas | Aktivitas ≥ 5 |
 | Kolektor Favorit | Favorit ≥ 3 |
 
-Lencana yang belum diraih tetap tampil **redup** beserta syaratnya, supaya pengguna tahu apa yang harus dilakukan. Aturan penghitungannya satu fungsi murni di `core/utils/lencana.dart` agar bisa diuji otomatis. Catatan: angka "Booking" di AB-12 menghitung semua status (termasuk `DITOLAK` dan `DIBATALKAN`); lencana mengikuti angka itu apa adanya, sebagai penyederhanaan yang disengaja.
+Lencana yang belum diraih tetap tampil **redup** beserta syaratnya, supaya pengguna tahu apa yang harus dilakukan. Judul seksi menampilkan jumlah yang sudah diraih (mis. `2/5`); saat angka belum termuat tampil spinner, dan bila salah satu aliran gagal tampil "Lencana belum bisa dimuat." Kondisi "kosong" tidak ada karena kelima lencana selalu tampil. Aturan penghitungannya satu fungsi murni di `core/utils/lencana.dart` agar bisa diuji otomatis. Catatan: angka "Booking" di AB-12 menghitung semua status (termasuk `DITOLAK` dan `DIBATALKAN`); lencana mengikuti angka itu apa adanya, sebagai penyederhanaan yang disengaja.
 
 ### AB-15 · Bagikan dan hubungi lewat WhatsApp — **v1.4 (T-61, T-63)**
 
@@ -820,8 +820,8 @@ Dibuka dari tab **Profil**.
 |---|---|
 | Header | Avatar (foto dari `fotoProfilBase64` bila terisi — v1.2, jatuh balik ke inisial) + nama + surel + nomor telepon, tombol Edit Profil |
 | Kotak statistik | **Booking** · **Aktivitas** · **Favorit** — dihitung dengan AB-12 |
-| Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
 | Lencana | **v1.4 (T-58)** — lima lencana pencapaian dari tiga angka statistik di atas (AB-14). Yang belum diraih tampil redup beserta syaratnya |
+| Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
 | Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
