@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/status_booking.dart';
@@ -49,6 +51,7 @@ class ProfilViewModel extends ChangeNotifier {
     required FavoritRepository favoritRepository,
     required LapanganRepository lapanganRepository,
     required this.userId,
+    this.onRiwayatBookingBerubah,
   })  : _riwayatBooking = StreamTerakhir(
           bookingRepository.streamRiwayatBooking(userId),
         ),
@@ -59,7 +62,27 @@ class ProfilViewModel extends ChangeNotifier {
           favoritRepository.streamDaftarFavorit(userId),
         ),
         _bookingRepository = bookingRepository,
-        _lapanganRepository = lapanganRepository;
+        _lapanganRepository = lapanganRepository {
+    // Pengingat jadwal (T-67, AB-23): setiap daftar booking berubah, kabari
+    // pemanggil. Langganan dibuat DI SINI, bukan di widget, karena bagian
+    // Riwayat Pemesanan ada di `ListView` yang membangun anaknya secara
+    // malas — kalau bergantung pada `StreamBuilder`, pengingat baru
+    // dijadwalkan setelah pengguna menggulir sampai ke sana.
+    if (onRiwayatBookingBerubah != null) {
+      _langgananBooking = _riwayatBooking.stream.listen(
+        onRiwayatBookingBerubah,
+        // Galatnya sudah ditampilkan bagian Riwayat sendiri; di sini cukup
+        // tidak membiarkannya lolos sebagai galat tak tertangani.
+        onError: (Object _) {},
+      );
+    }
+  }
+
+  /// Dipanggil tiap daftar booking pengguna berubah — dipakai untuk
+  /// menyinkronkan pengingat jadwal. `null` kalau tidak diperlukan.
+  final void Function(List<BookingModel> daftar)? onRiwayatBookingBerubah;
+
+  StreamSubscription<List<BookingModel>>? _langgananBooking;
 
   final BookingRepository _bookingRepository;
   final LapanganRepository _lapanganRepository;
@@ -84,6 +107,7 @@ class ProfilViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _langgananBooking?.cancel();
     _riwayatBooking.dispose();
     _aktivitasSaya.dispose();
     _daftarFavorit.dispose();

@@ -2,6 +2,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- T-67 pengingat jadwal: POST_NOTIFICATIONS sudah ditambahkan oleh plugin.
+         RECEIVE_BOOT_COMPLETED supaya pengingat dijadwalkan ulang setelah HP
+         dinyalakan ulang. SENGAJA tanpa SCHEDULE_EXACT_ALARM/USE_EXACT_ALARM:
+         izin alarm tepat-waktu butuh persetujuan khusus dan tidak perlu untuk
+         pengingat "satu jam sebelum main" yang boleh bergeser beberapa menit. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:label="Sport Space"
         android:name="${applicationName}"
@@ -28,6 +34,17 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- T-67: penerima yang menampilkan notifikasi terjadwal, dan menjadwalkan
+             ulang semuanya setelah HP restart atau aplikasi diperbarui. -->
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

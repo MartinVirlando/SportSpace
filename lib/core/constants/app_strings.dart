@@ -216,6 +216,32 @@ class AppStrings {
   // Lembar Beri Rating kalau pengguna sudah pernah menilai lapangan itu:
   // mengirim ulang MENGGANTI rating lama (satu rating per pengguna).
   static const ubahRating = 'Ubah Rating';
+  // Pengingat jadwal booking — v1.5 (T-67), PRD AB-23.
+  static const pengingatJudul = 'Sebentar lagi waktunya main!';
+  // Kata "sekitar": alarm tidak-tepat-waktu boleh terlambat beberapa menit,
+  // jadi "60 menit lagi" bisa keliru ketika notifikasi benar-benar muncul.
+  static String pengingatIsi(
+    String namaLapangan,
+    String jamMulai,
+    String jamSelesai,
+    int menitLagi,
+  ) {
+    final lama =
+        menitLagi % 60 == 0 ? '${menitLagi ~/ 60} jam' : '$menitLagi menit';
+    return '$namaLapangan · $jamMulai–$jamSelesai, mulai sekitar $lama lagi.';
+  }
+  static const namaKanalPengingat = 'Pengingat Jadwal';
+  static const deskripsiKanalPengingat =
+      'Pengingat sebelum jadwal booking yang sudah dikonfirmasi';
+  static const judulPengaturan = 'Pengaturan';
+  static const pengingatJadwal = 'Pengingat jadwal';
+  static const keteranganPengingat =
+      'Notifikasi 1 jam sebelum jadwal booking yang sudah dikonfirmasi mitra.';
+  static const izinNotifikasiBelum =
+      'Izin notifikasi belum diberikan. Aktifkan lewat pengaturan HP '
+      'supaya pengingat muncul.';
+  static const errGagalAturPengingat = 'Gagal mengatur pengingat. Coba lagi.';
+
   // Balasan mitra terhadap ulasan — v1.5 (T-66), PRD AB-22.
   static const balas = 'Balas';
   static const ubahBalasan = 'Ubah balasan';

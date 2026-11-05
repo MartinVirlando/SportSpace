@@ -40,6 +40,9 @@ dependencies:
   url_launcher: ^6.3.1 # T-51 — tombol "Buka di Google Maps" (buka aplikasi/browser eksternal)
 
   cupertino_icons: ^1.0.8
+  flutter_local_notifications: ^22.3.3
+  timezone: ^0.11.2
+  shared_preferences: ^2.5.6
 
 dev_dependencies:
   flutter_test:

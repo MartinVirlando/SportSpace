@@ -7,8 +7,10 @@ import 'package:provider/provider.dart';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_strings.dart';
 import 'core/services/location_service.dart';
+import 'core/services/pengingat_service.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
 import 'features/lapangan/viewmodel/home_viewmodel.dart';
+import 'features/pengaturan/viewmodel/pengaturan_viewmodel.dart';
 import 'repositories/aktivitas_repository.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/booking_repository.dart';
@@ -16,6 +18,7 @@ import 'repositories/favorit_repository.dart';
 import 'repositories/forum_repository.dart';
 import 'repositories/lapangan_repository.dart';
 import 'repositories/notifikasi_repository.dart';
+import 'repositories/pengaturan_repository.dart';
 import 'repositories/rating_repository.dart';
 import 'routes/splash_screen.dart';
 import 'firebase_options.dart';
@@ -32,11 +35,24 @@ Future<void> main() async {
   // locale dimuat lebih dulu. Tanpa ini, Formatter.tanggal() akan error.
   await initializeDateFormatting('id_ID', null);
 
-  runApp(const SportSpaceApp());
+  // Pengaturan yang tersimpan di HP (v1.5): disiapkan SEBELUM runApp supaya
+  // pilihan pengguna sudah terbaca di frame pertama. Pengingat jadwal (T-67)
+  // butuh plugin notifikasi diinisialisasi lebih dulu.
+  final pengingat = PengingatService();
+  await pengingat.inisialisasi();
+  final pengaturan = PengaturanViewModel(
+    repository: await PengaturanRepository.buka(),
+    pengingat: pengingat,
+  );
+  await pengaturan.muat();
+
+  runApp(SportSpaceApp(pengaturan: pengaturan));
 }
 
 class SportSpaceApp extends StatelessWidget {
-  const SportSpaceApp({super.key});
+  final PengaturanViewModel pengaturan;
+
+  const SportSpaceApp({super.key, required this.pengaturan});
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +80,10 @@ class SportSpaceApp extends StatelessWidget {
             repository: context.read<AuthRepository>(),
           ),
         ),
+
+        // Pengaturan di HP (CLAUDE.md aturan 6: state lintas layar) — dibuat
+        // di main() dan dititipkan di sini lewat `.value`.
+        ChangeNotifierProvider<PengaturanViewModel>.value(value: pengaturan),
 
         ChangeNotifierProvider<HomeViewModel>(
           create: (context) => HomeViewModel(

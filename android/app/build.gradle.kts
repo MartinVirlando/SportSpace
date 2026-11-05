@@ -13,6 +13,10 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications (T-67, pengingat jadwal) memakai API
+        // bahasa Java baru untuk penjadwalan; desugaring membuatnya jalan
+        // juga di Android lama. Wajib walau hanya memakai sebagian fitur.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -45,6 +49,11 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
+}
+
+dependencies {
+    // Pasangan isCoreLibraryDesugaringEnabled di atas (T-67).
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 flutter {

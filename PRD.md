@@ -108,6 +108,22 @@ Pemilik produk menyetujui T-66 (5 November 2026). Berbeda dari tugas v1.5 di ata
 
 > ⚠️ **Konsekuensi ke skripsi.** Entitas `rating` di ERD Bab 3 bertambah dua atribut — lihat §14 #54.
 
+### Tambahan v1.5 (5 November 2026, sore) — T-67 Pengingat jadwal booking
+
+Pemilik produk menyetujui T-67 dan memberi izin package baru yang gratis (5 November 2026). Berbeda dari semua tugas v1.5 lain, **T-67 menambah tiga package dan mengubah konfigurasi Android** — lihat §4 dan AB-23.
+
+| # | Tugas | Perubahan | Bagian yang terdampak |
+|---|---|---|---|
+| 8 | **T-67** | **Pengingat jadwal**: HP pengguna menampilkan notifikasi sekitar 1 jam sebelum jam mulai booking yang sudah `DIKONFIRMASI`. Dijadwalkan di HP lewat `flutter_local_notifications`, ada saklar di Profil. Tanpa koleksi baru, tanpa perubahan Security Rules | §4, §5, §7 AB-23, §8 L-13, §11 BB-91–95 |
+
+**Keputusan yang diambil** (dicatat supaya bisa dijelaskan):
+- **Bukan push notification.** Notifikasi dijadwalkan dan dibunyikan oleh HP sendiri (AlarmManager), tanpa Firebase Cloud Messaging dan tanpa Cloud Functions (dilarang `CLAUDE.md`). Gratis, dan tidak butuh jaringan saat pengingat muncul.
+- **Alarm tidak-tepat-waktu (`inexactAllowWhileIdle`).** Izin alarm tepat-waktu (`SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM`) butuh persetujuan khusus dan sengaja tidak dipakai. Konsekuensinya notifikasi bisa terlambat beberapa menit (uji emulator: terlambat 2 menit 47 detik) dan, menurut Android, paling lama sampai sekitar satu jam di kondisi hemat daya. Karena itu teks berbunyi "mulai **sekitar** 1 jam lagi".
+- **Bawaan menyala**, bisa dimatikan di Profil. Dialog izin notifikasi Android 13+ diminta **sekali per sesi** saat ada pengingat yang perlu dijadwalkan, dan selalu diminta ketika pengguna menyalakan saklar secara sengaja.
+- **Waktu setempat.** Jam mulai booking dibaca sebagai waktu HP; zona waktu tidak dikonversi (aplikasi hanya untuk Indonesia).
+
+> ⚠️ **Keterbatasan yang diakui (Bab 5).** Pengingat baru dijadwalkan ketika aplikasi **terbuka** dan melihat booking sudah dikonfirmasi. Kalau mitra mengonfirmasi saat aplikasi pengguna tertutup, pengingat baru terjadwal saat aplikasi dibuka berikutnya — jika itu sudah lewat waktu pengingatnya, tidak ada pengingat. Mengatasinya butuh push dari server (FCM), yang dilarang.
+
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
 Ditemukan dan diperbaiki selama implementasi Sprint 3 (T-13, T-14). Bukan perubahan ruang lingkup/fitur, jadi tidak menyentuh Bab 1–3 — murni supaya dokumen ini tetap cocok dengan kode dan Security Rules yang sudah di-deploy.
@@ -293,6 +309,9 @@ dependencies:
   cached_network_image: ^3.x # foto lapangan
   image_picker: ^1.x         # v1.2 — pilih foto profil dari galeri (disimpan Base64, BUKAN Storage)
   url_launcher: ^6.x         # v1.2 (T-51) — tombol "Buka di Google Maps" (L-06), buka aplikasi/browser eksternal
+  flutter_local_notifications: ^22.x # v1.5 (T-67) — pengingat jadwal booking, dijadwalkan DI HP (bukan FCM, bukan server). Butuh desugaring di android/app/build.gradle.kts
+  timezone: ^0.11.x          # v1.5 (T-67) — tipe TZDateTime yang diminta zonedSchedule (dipakai dengan zona UTC; data zona waktu tidak dimuat)
+  shared_preferences: ^2.x   # v1.5 (T-67) — pengaturan yang tersimpan di HP (saklar pengingat; nanti mode tampilan)
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.x  # 16 September 2026 — generate ikon launcher Android dari assets/images/logo.jpg, dev-only, tidak ikut ke APK
@@ -340,8 +359,10 @@ lib/
       jam_buka.dart            # v1.5 — sedangBuka(), filter "Buka sekarang" (AB-16), fungsi murni
       harga.dart               # v1.5 — diskon + total booking (AB-18, AB-19), fungsi murni
       kode_akses.dart          # v1.5 — pembangkit kode aktivitas privat (AB-21), fungsi murni
+      pengingat_jadwal.dart    # v1.5 — rencanakanPengingat() + idPengingatDari() (AB-23), fungsi murni
     services/
       location_service.dart    # bungkus geolocator
+      pengingat_service.dart   # v1.5 — bungkus flutter_local_notifications (AB-23)
 
   models/
     user_model.dart
@@ -929,6 +950,31 @@ Ulasan yang sudah dibalas menampilkan blok "Balasan pemilik" + teks + tanggal, u
 - **Pengguna mengubah ratingnya (AB-05)** tidak menghapus balasan: `beriRating` memakai `update` pada `nilaiRating`, `ulasanTeks`, `namaUser`, dan `tanggal` saja bila dokumennya sudah ada (membuat dokumen baru tetap `set`).
 - **Keterbatasan yang diakui:** balasan tidak bisa dihapus, hanya diganti; pengguna tidak diberi tahu bahwa ulasannya dibalas. Sebutkan di Bab 5 bila perlu.
 
+### AB-23 · Pengingat jadwal booking — **v1.5 (T-67)**
+
+```
+ProfilViewModel berlangganan riwayat booking pengguna (StreamTerakhir yang sama dengan L-13).
+Tiap daftar berubah → PengaturanViewModel.sinkronkanPengingat(daftar):
+   rencana = rencanakanPengingat(daftar, sekarang)        // fungsi murni, core/utils/pengingat_jadwal.dart
+   saklar mati          → batalkan semua pengingat terjadwal
+   saklar menyala       → izin notifikasi? (kalau belum & ada rencana: minta SEKALI per sesi)
+                          lalu PengingatService.jadwalkan(rencana)   // batalkan semua, jadwalkan ulang
+Keluar akun → batalkan semua pengingat yang belum muncul.
+```
+
+`rencanakanPengingat`:
+- Hanya booking **`DIKONFIRMASI`**. `MENUNGGU`, `DITOLAK`, `DIBATALKAN`, `SELESAI` tidak diingatkan. Booking yang dijadwal ulang (T-62) kembali `MENUNGGU`, jadi pengingat lamanya hilang sampai mitra mengonfirmasi lagi.
+- Waktu muncul = `tanggal` + `jamMulai` **dikurangi 60 menit** (`menitSebelumMain`). Kalau waktu itu sudah lewat atau tepat sekarang, booking dilewati — tidak ada pengingat terlambat.
+- `tanggal`/`jamMulai` yang tidak terbaca dilewati, tidak menggagalkan booking lain.
+- Diurutkan dari yang terdekat dan dipotong **20** (`batasPengingat`), karena Android membatasi jumlah alarm per aplikasi.
+- ID notifikasi stabil dari `bookingId` (FNV-1a 32-bit, ditulis manual): `String.hashCode` Dart tidak dijamin sama antar-proses.
+
+Notifikasi: judul **"Sebentar lagi waktunya main!"**, isi **"{nama lapangan} · {jamMulai}–{jamSelesai}, mulai sekitar 1 jam lagi."**, kanal "Pengingat Jadwal" (pengguna bisa mematikannya dari pengaturan HP).
+
+- **Tanpa query dan tanpa Security Rules baru:** daftar booking datang dari stream `streamRiwayatBooking` yang sudah ada.
+- **Konfigurasi Android:** desugaring (`isCoreLibraryDesugaringEnabled` + `desugar_jdk_libs`) di `build.gradle.kts`; izin `RECEIVE_BOOT_COMPLETED` dan dua receiver di `AndroidManifest.xml` (menjadwalkan ulang setelah HP restart atau aplikasi diperbarui); `POST_NOTIFICATIONS` ditambahkan plugin.
+- **Penyimpanan pilihan:** `PengaturanRepository` (`shared_preferences`) — milik perangkat, bukan akun, sehingga tidak masuk Firestore dan tidak mengubah ERD.
+
 ---
 
 ## 8. Spesifikasi Layar
@@ -1025,11 +1071,12 @@ Dibuka dari tab **Profil**.
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
 | Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan. **v1.5:** pada syarat yang sama muncul juga tombol **"Ubah Jadwal"** (T-62, AB-20), dan produk tambahan yang dipesan ditampilkan sebagai baris "+ Sewa Bola ×2" (T-60) |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
+| Pengaturan | **v1.5 (T-67)** — saklar **"Pengingat jadwal"** (AB-23), bawaan menyala. Kalau saklar menyala tetapi Android belum mengizinkan notifikasi, tampil petunjuk berwarna oranye; kalau gagal mengatur pengingat, tampil pesan galat berwarna merah. Pilihan disimpan di HP |
 | Menu statis | Bantuan, Kebijakan Privasi, Tentang — halaman statis saja |
 | Dashboard Mitra | Hanya muncul jika `role == "mitra"` |
-| Keluar | Logout |
+| Keluar | Logout; **v1.5:** membatalkan pengingat jadwal yang belum muncul lebih dulu (AB-23) |
 
-> Figma menampilkan menu "Notifikasi: Aktif" yang bisa diatur. Itu **tidak dibangun** — §2.2 mengunci pengaturan sebagai halaman statis, dan aplikasi tidak memakai FCM sehingga tidak ada yang bisa dimatikan.
+> Figma menampilkan menu "Notifikasi: Aktif" yang bisa diatur. Sampai v1.4 itu **tidak dibangun**: §2.2 mengunci pengaturan sebagai halaman statis, dan aplikasi tidak memakai FCM sehingga tidak ada yang bisa dimatikan. **Sejak v1.5 (T-67)** ada satu saklar yang bermakna — pengingat jadwal lokal — sehingga bagian "Pengaturan" di atas ditambahkan. Notifikasi in-app (L-12) tetap tanpa pengaturan.
 
 ### L-14 · Dashboard Mitra
 Daftar lapangan milik mitra + tombol tambah lapangan; daftar booking masuk dengan tombol **Konfirmasi** / **Tolak**. **v1.5:** tiap kartu lapangan punya tombol **Atur Slot** yang membuka L-19 (T-59, AB-17), dan tiap baris booking menampilkan produk tambahan yang dipesan (T-60). Notifikasi `BOOKING_DIJADWALKAN_ULANG` (T-62) membuka layar ini.
@@ -1371,6 +1418,11 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-88** | **Kirim balasan kosong atau lebih dari 500 karakter** *(T-66)* | **Ditolak dengan pesan validasi; tidak ada tulisan ke Firestore** |
 | **BB-89** | **Pengguna mengubah rating-nya sendiri pada ulasan yang sudah dibalas** *(T-66, AB-05)* | **Nilai dan teks ulasan berubah, balasan mitra tetap ada; `jumlahRating` tidak bertambah** |
 | **BB-90** | **Penyewa mencoba menulis `balasanMitra` langsung ke dokumen `rating`, atau mitra lain membalas ulasan di lapangan yang bukan miliknya** *(T-66)* | **Ditolak Security Rules** |
+| **BB-91** | **Booking `MENUNGGU` lalu dikonfirmasi mitra; pengguna membuka aplikasi** *(T-67)* | **Saat `MENUNGGU` tidak ada pengingat; setelah `DIKONFIRMASI` terjadwal satu pengingat 60 menit sebelum jam mulai, dan notifikasi "Sebentar lagi waktunya main!" muncul dengan nama lapangan dan jam** |
+| **BB-92** | **Booking dikonfirmasi yang waktu pengingatnya sudah lewat** *(T-67)* | **Tidak ada pengingat yang dijadwalkan** |
+| **BB-93** | **Lebih dari 20 booking dikonfirmasi di masa depan** *(T-67)* | **Hanya 20 pengingat terdekat yang dijadwalkan** |
+| **BB-94** | **Matikan lalu nyalakan saklar "Pengingat jadwal"; izin notifikasi belum diberikan** *(T-67)* | **Mati: semua pengingat dibatalkan. Nyala: dijadwalkan ulang. Saat izin belum ada, menyalakan saklar memunculkan dialog izin Android, dan selama belum diizinkan tampil petunjuk oranye** |
+| **BB-95** | **Batalkan booking, atau keluar akun** *(T-67)* | **Pengingat booking itu hilang; keluar akun membatalkan semua pengingat yang belum muncul** |
 
 ---
 
@@ -1585,8 +1637,9 @@ Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
 | 49 | ERD Bab 3 / Tabel 3.10 | Entitas `Lapangan` +`diskonPersen`, +`produkTambahan` (larik). Entitas `Booking` +`produkTambahan` (larik). Entitas `AktivitasBermain` +`visibilitas`, +`kodeAkses` (selain tiga atribut v1.4). Sesuai §6.2, §6.3, §6.6. **Gambar ERD (M1) setelah semua ini final** |
 | 50 | Bab 3.2 / pembahasan pengurutan hasil pencarian | AB-02 tetap benar: urutan **bawaan** murni jarak. Tambahkan satu kalimat bahwa pengguna boleh memilih urutan rating atau populer, dan itu tidak mengubah rancangan Haversine |
 | 51 | Bab 4 | Tambahkan ke paragraf fitur tambahan (#46): filter dan urut Home, blokir slot, promo, produk tambahan, ubah jadwal, aktivitas privat |
-| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-90 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
-| 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Pengingat jadwal (T-67) sebagai pengembangan lanjutan; balasan mitra (T-66, sudah dikerjakan) tidak bisa dihapus dan tidak memberi notifikasi ke pengguna |
+| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-95 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Balasan mitra (T-66, sudah dikerjakan) tidak bisa dihapus dan tidak memberi notifikasi ke pengguna. Pengingat jadwal (T-67, sudah dikerjakan) hanya terjadwal saat aplikasi terbuka dan boleh terlambat beberapa menit karena alarm tidak-tepat-waktu |
+| 55 | Bab 3 teknologi / Bab 4 implementasi (daftar package) | Tiga package baru: `flutter_local_notifications`, `timezone`, `shared_preferences` (§4). Notifikasi ini **lokal di HP**, bukan Firebase Cloud Messaging — penting dijelaskan karena Bab 3 menyatakan notifikasi dibuat in-app lewat Firestore listener. Konfigurasi Android (desugaring, izin, receiver) ikut berubah |
 | 54 | Bab 3 ERD dan 3.3.2 (atribut `rating`) | Entitas `rating` bertambah dua atribut: `balasanMitra` dan `balasanPada` (T-66). Gambar ERD sebaiknya dibuat setelah atribut ini final, atau keduanya disebut "tambahan di luar rancangan awal". Security Rules `rating` juga berubah (dua jalur `update`, §9) |
 
 **Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*

@@ -25,7 +25,9 @@ import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../mitra/view/dashboard_mitra_screen.dart';
 import '../viewmodel/profil_viewmodel.dart';
 import 'halaman_statis_screen.dart';
+import '../../pengaturan/viewmodel/pengaturan_viewmodel.dart';
 import 'seksi_lencana.dart';
+import 'seksi_pengaturan.dart';
 import 'ubah_lokasi_default_sheet.dart';
 import 'ubah_olahraga_favorit_sheet.dart';
 import 'ubah_profil_sheet.dart';
@@ -66,6 +68,9 @@ class ProfilScreen extends StatelessWidget {
         favoritRepository: context.read<FavoritRepository>(),
         lapanganRepository: context.read<LapanganRepository>(),
         userId: userId,
+        // T-67: tiap daftar booking berubah, sinkronkan pengingat jadwal.
+        onRiwayatBookingBerubah:
+            context.read<PengaturanViewModel>().sinkronkanPengingat,
       ),
       child: const _ProfilBody(),
     );
@@ -76,6 +81,10 @@ class _ProfilBody extends StatelessWidget {
   const _ProfilBody();
 
   Future<void> _keluar(BuildContext context) async {
+    // T-67: batalkan pengingat milik akun ini SEBELUM keluar, supaya
+    // pengguna berikutnya di HP yang sama tidak menerimanya.
+    await context.read<PengaturanViewModel>().batalkanPengingat();
+    if (!context.mounted) return;
     await context.read<AuthViewModel>().keluar();
     if (context.mounted) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -144,6 +153,9 @@ class _ProfilBody extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             _SeksiAktivitasSaya(vm: vm, userId: user.userId),
+            const Divider(height: 36),
+            // v1.5 (T-67) — pengaturan yang tersimpan di HP.
+            const SeksiPengaturan(),
             const Divider(height: 36),
             _TileMenu(
               ikon: Icons.help_outline,
