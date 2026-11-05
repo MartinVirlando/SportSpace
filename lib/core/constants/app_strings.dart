@@ -98,6 +98,18 @@ class AppStrings {
   static const bukaGoogleMaps = 'Buka di Google Maps';
   static const gagalBukaTautan = 'Tidak bisa membuka tautan peta.';
 
+  // ---------- Filter & Urutkan Home (L-04, T-57, AB-16) ----------
+  static const filterUrutkan = 'Filter & Urutkan';
+  static const resetFilter = 'Reset';
+  static const urutkan = 'Urutkan';
+  static const urutTerdekat = 'Terdekat';
+  static const urutRating = 'Rating tertinggi';
+  static const urutPopuler = 'Terpopuler';
+  static const bukaSekarang = 'Buka sekarang';
+  static const keteranganBukaSekarang =
+      'Hanya lapangan yang jam operasionalnya mencakup jam ini';
+  static const tampilkanHasil = 'Tampilkan Hasil';
+
   // ---------- Bagikan & WhatsApp (T-61, T-63, AB-15) ----------
   static const bagikan = 'Bagikan';
   static const bagikanKeWhatsApp = 'Bagikan ke WhatsApp';

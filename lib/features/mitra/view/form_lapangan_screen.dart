@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_fasilitas.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/services/location_service.dart';
@@ -11,17 +12,6 @@ import '../../../models/lapangan_model.dart';
 import '../../../repositories/lapangan_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/form_lapangan_viewmodel.dart';
-
-/// Fasilitas yang bisa dipilih mitra — kosakata yang sama dipakai
-/// `SEED-DATA.md`/`seed_lapangan.dart`, bukan daftar baku dari PRD.
-const _daftarFasilitas = [
-  'parkir',
-  'toilet',
-  'kantin',
-  'ruang ganti',
-  'mushola',
-  'shower',
-];
 
 /// Halaman Tambah/Edit Lapangan — PRD L-15, T-26. BB-29 (tambah lapangan
 /// baru tampil di pencarian dengan `isMitra: true`).
@@ -418,7 +408,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _daftarFasilitas.map((f) {
+                  children: AppFasilitas.daftar.map((f) {
                     final aktif = _fasilitas.contains(f);
                     return FilterChip(
                       label: Text(f),

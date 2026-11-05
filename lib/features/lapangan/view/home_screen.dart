@@ -14,6 +14,7 @@ import '../../notifikasi/view/notifikasi_screen.dart';
 import '../../notifikasi/viewmodel/notifikasi_viewmodel.dart';
 import '../viewmodel/home_viewmodel.dart';
 import 'detail_lapangan_screen.dart';
+import 'lembar_filter_lapangan.dart';
 
 /// Halaman Home — PRD L-04.
 ///
@@ -82,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onBerubah: context.read<HomeViewModel>().ubahKataKunci,
                 hanyaFavorit: vm.hanyaFavorit,
                 onTapFavorit: context.read<HomeViewModel>().ubahHanyaFavorit,
+                adaFilterLanjutan: vm.adaFilterLanjutan,
+                onTapFilter: () => showLembarFilterLapangan(context),
               ),
               const SizedBox(height: 10),
               BarisChipOlahraga(
@@ -351,11 +354,15 @@ class _KolomPencarian extends StatelessWidget {
   final ValueChanged<String> onBerubah;
   final bool hanyaFavorit;
   final VoidCallback onTapFavorit;
+  final bool adaFilterLanjutan;
+  final VoidCallback onTapFilter;
 
   const _KolomPencarian({
     required this.onBerubah,
     required this.hanyaFavorit,
     required this.onTapFavorit,
+    required this.adaFilterLanjutan,
+    required this.onTapFilter,
   });
 
   @override
@@ -402,6 +409,40 @@ class _KolomPencarian extends StatelessWidget {
                   color: hanyaFavorit
                       ? AppColors.primary
                       : AppColors.textSecondary,
+                ),
+              ),
+            ),
+            // T-57 (AB-16): lembar Filter & Urutkan. Titik hijau kecil
+            // menandakan ada pilihan selain bawaan yang sedang aktif.
+            GestureDetector(
+              onTap: onTapFilter,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      Icons.tune,
+                      size: 18,
+                      color: adaFilterLanjutan
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                    ),
+                    if (adaFilterLanjutan)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/utils/haversine.dart';
+import '../../../core/utils/jam_buka.dart';
+import '../../../core/utils/urut_lapangan.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/lapangan_repository.dart';
 
@@ -76,6 +78,60 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---------- Urut dan saring lanjutan (T-57, AB-16) ----------
+
+  UrutanLapangan _urutan = UrutanLapangan.terdekat;
+
+  /// Urutan yang dipilih pengguna. BAWAANNYA [UrutanLapangan.terdekat] =
+  /// AB-02 (murni jarak); yang lain hanya kalau pengguna memilihnya.
+  UrutanLapangan get urutan => _urutan;
+
+  bool _bukaSekarang = false;
+  bool get bukaSekarang => _bukaSekarang;
+
+  final Set<String> _fasilitasDipilih = {};
+
+  /// Salinan, bukan set aslinya — supaya View tidak bisa mengubah state
+  /// lewat getter ini tanpa lewat [ubahFasilitas].
+  Set<String> get fasilitasDipilih => Set.unmodifiable(_fasilitasDipilih);
+
+  /// True kalau ada pilihan lanjutan yang berbeda dari bawaan — dipakai
+  /// View untuk penanda titik pada ikon Filter & Urutkan.
+  bool get adaFilterLanjutan =>
+      _urutan != UrutanLapangan.terdekat ||
+      _bukaSekarang ||
+      _fasilitasDipilih.isNotEmpty;
+
+  void ubahUrutan(UrutanLapangan urutan) {
+    if (_urutan == urutan) return;
+    _urutan = urutan;
+    notifyListeners();
+  }
+
+  void ubahBukaSekarang(bool nilai) {
+    if (_bukaSekarang == nilai) return;
+    _bukaSekarang = nilai;
+    notifyListeners();
+  }
+
+  /// Pilih/batal pilih satu fasilitas (pilihan ganda).
+  void ubahFasilitas(String fasilitas) {
+    if (!_fasilitasDipilih.remove(fasilitas)) {
+      _fasilitasDipilih.add(fasilitas);
+    }
+    notifyListeners();
+  }
+
+  /// Kembali ke bawaan: urut Terdekat (AB-02), saklar mati, fasilitas
+  /// kosong. TIDAK menyentuh chip olahraga, kata kunci, atau toggle favorit
+  /// — itu kendali lain di layar yang sama.
+  void resetFilterLanjutan() {
+    _urutan = UrutanLapangan.terdekat;
+    _bukaSekarang = false;
+    _fasilitasDipilih.clear();
+    notifyListeners();
+  }
+
   /// Nomor urut permintaan [muatLapangan] yang sedang berjalan — dipakai
   /// supaya panggilan yang tumpang tindih tidak saling menimpa state.
   /// Tanpa ini: kalau pengguna menekan "Coba Lagi" atau menarik-refresh
@@ -85,11 +141,12 @@ class HomeViewModel extends ChangeNotifier {
   /// tampil ke pengguna.
   int _permintaanTerakhir = 0;
 
-  /// Daftar yang benar-benar ditampilkan: hasil penyaringan olahraga
-  /// dan kata kunci. Urutan jaraknya tetap terjaga karena penyaringan
-  /// tidak mengubah urutan.
+  /// Daftar yang benar-benar ditampilkan: hasil penyaringan olahraga,
+  /// kata kunci, dan (v1.5, T-57) "Buka sekarang" serta fasilitas — lalu
+  /// diurutkan menurut [urutan]. Pada urutan bawaan (terdekat), urutan
+  /// jarak tetap terjaga karena penyaringan tidak mengubah urutan.
   List<LapanganModel> get lapanganTampil {
-    return _semuaLapangan.where((lapangan) {
+    final tersaring = _semuaLapangan.where((lapangan) {
       // Saring olahraga. `jenisOlahraga` bertipe List, jadi pakai contains —
       // satu lapangan bisa punya lebih dari satu cabang.
       final cocokOlahraga = _filterOlahraga == AppSports.semua ||
@@ -101,8 +158,17 @@ class HomeViewModel extends ChangeNotifier {
           lapangan.nama.toLowerCase().contains(kunci) ||
           lapangan.alamat.toLowerCase().contains(kunci);
 
-      return cocokOlahraga && cocokKunci;
+      // T-57: jam operasional dibandingkan dengan jam perangkat saat ini.
+      final cocokBuka = !_bukaSekarang ||
+          sedangBuka(lapangan.jamBuka, lapangan.jamTutup, DateTime.now());
+
+      return cocokOlahraga && cocokKunci && cocokBuka;
     }).toList();
+
+    return urutkanLapangan(
+      saringFasilitas(tersaring, _fasilitasDipilih),
+      _urutan,
+    );
   }
 
   // ---------- Aksi ----------

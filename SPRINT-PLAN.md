@@ -280,7 +280,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | T-54 | Jenis aktivitas: Main Bareng / Sparring (`jenisAktivitas`, chip filter di tab Teman) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 13 tes hijau); BB-50–51 belum diuji di perangkat |
 | T-55 | Tingkat kemampuan Pemula / Menengah / Mahir (field + filter Cari Rekan) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 19 tes hijau); BB-52–53 belum diuji di perangkat |
 | T-56 | Biaya per orang di aktivitas (informasi saja, bayar di lokasi) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 28 tes hijau); BB-54–55 belum diuji di perangkat |
-| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Rencana (PRD v1.5) |
+| T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Kode selesai 5 Nov 2026 (analyze, 78 tes hijau); BB-62–66 belum diuji di perangkat |
 | T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 36 tes hijau); BB-56–57 belum diuji di perangkat |
 | T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Rencana (PRD v1.5) |
 | T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Rencana (PRD v1.5) |
