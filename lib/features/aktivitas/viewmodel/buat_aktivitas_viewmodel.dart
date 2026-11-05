@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/aktivitas_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
@@ -43,6 +44,12 @@ class BuatAktivitasViewModel extends ChangeNotifier {
   String? _pesanError;
   String? get pesanError => _pesanError;
 
+  /// Aktivitas yang barusan berhasil dibuat. View memakainya untuk
+  /// menampilkan kode akses kalau aktivitasnya privat (T-64, AB-21) — kode
+  /// dibuat repository, jadi baru diketahui setelah tersimpan.
+  AktivitasBermainModel? _aktivitasDibuat;
+  AktivitasBermainModel? get aktivitasDibuat => _aktivitasDibuat;
+
   Future<void> muatDaftarLapangan() async {
     _kondisiLapangan = KondisiDaftarLapangan.memuat;
     notifyListeners();
@@ -70,6 +77,7 @@ class BuatAktivitasViewModel extends ChangeNotifier {
     required String jenisAktivitas,
     required String tingkatKemampuan,
     required int biayaPerOrang,
+    required String visibilitas,
     String? catatan,
   }) async {
     _sedangProses = true;
@@ -77,7 +85,7 @@ class BuatAktivitasViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _aktivitasRepository.buatAktivitas(
+      _aktivitasDibuat = await _aktivitasRepository.buatAktivitas(
         jenisOlahraga: jenisOlahraga,
         jumlahPemainDibutuhkan: jumlahPemainDibutuhkan,
         waktu: waktu,
@@ -88,6 +96,7 @@ class BuatAktivitasViewModel extends ChangeNotifier {
         jenisAktivitas: jenisAktivitas,
         tingkatKemampuan: tingkatKemampuan,
         biayaPerOrang: biayaPerOrang,
+        visibilitas: visibilitas,
         catatan: catatan,
       );
       _sedangProses = false;

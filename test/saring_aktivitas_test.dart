@@ -10,6 +10,7 @@ AktivitasBermainModel _aktivitas(
   String id, {
   required String jenis,
   String? tingkat,
+  String visibilitas = AppVisibilitas.publik,
 }) {
   return AktivitasBermainModel(
     aktivitasId: id,
@@ -26,6 +27,7 @@ AktivitasBermainModel _aktivitas(
     dibuatPada: DateTime(2026, 11, 1),
     jenisAktivitas: jenis,
     tingkatKemampuan: tingkat,
+    visibilitas: visibilitas,
     biayaPerOrang: 0,
   );
 }
@@ -119,6 +121,87 @@ void main() {
         tingkat: AppTingkat.pemula,
       );
       expect(hasil, isEmpty);
+    });
+  });
+
+  group('saringAktivitas — privat disembunyikan (T-64, BB-79, BB-82)', () {
+    final campuran = [
+      _aktivitas('pub1', jenis: AppJenisAktivitas.mainBareng),
+      _aktivitas(
+        'priv1',
+        jenis: AppJenisAktivitas.mainBareng,
+        visibilitas: AppVisibilitas.privat,
+      ),
+      _aktivitas('pub2', jenis: AppJenisAktivitas.sparring),
+      _aktivitas(
+        'priv2',
+        jenis: AppJenisAktivitas.sparring,
+        visibilitas: AppVisibilitas.privat,
+      ),
+    ];
+
+    test('aktivitas privat tidak pernah ikut daftar', () {
+      expect(_id(saringAktivitas(campuran)), ['pub1', 'pub2']);
+    });
+
+    test('tetap tersembunyi walau filter jenis dan tingkat dipilih', () {
+      expect(
+        _id(saringAktivitas(campuran, jenis: AppJenisAktivitas.mainBareng)),
+        ['pub1'],
+      );
+      expect(
+        _id(saringAktivitas(campuran, jenis: AppJenisAktivitas.sparring)),
+        ['pub2'],
+      );
+    });
+
+    test('semua privat → daftar kosong', () {
+      final semuaPrivat = [
+        _aktivitas(
+          'a',
+          jenis: AppJenisAktivitas.mainBareng,
+          visibilitas: AppVisibilitas.privat,
+        ),
+      ];
+      expect(saringAktivitas(semuaPrivat), isEmpty);
+    });
+
+    test('aktivitas lama tanpa field visibilitas dibaca publik, tetap tampil', () {
+      // Konstruktor tanpa visibilitas meniru fromFirestore dokumen lama
+      // (bawaan 'publik').
+      final lama = AktivitasBermainModel(
+        aktivitasId: 'lama',
+        jenisOlahraga: 'futsal',
+        jumlahPemainDibutuhkan: 10,
+        jumlahPemainSaatIni: 1,
+        waktu: DateTime(2026, 12, 1, 19),
+        lapanganId: 'lap1',
+        namaLapangan: 'L',
+        pembuatId: 'u1',
+        namaPembuat: 'P',
+        status: 'TERBUKA',
+        peserta: const ['u1'],
+        dibuatPada: DateTime(2026, 11, 1),
+        jenisAktivitas: AppJenisAktivitas.mainBareng,
+        biayaPerOrang: 0,
+      );
+      expect(lama.visibilitas, 'publik');
+      expect(lama.kodeAkses, isNull);
+      expect(saringAktivitas([lama]), hasLength(1));
+    });
+  });
+
+  group('AppVisibilitas', () {
+    test('hanya dua nilai yang valid', () {
+      expect(AppVisibilitas.valid('publik'), isTrue);
+      expect(AppVisibilitas.valid('privat'), isTrue);
+      expect(AppVisibilitas.valid('rahasia'), isFalse);
+      expect(AppVisibilitas.valid(''), isFalse);
+    });
+
+    test('label berbahasa Indonesia', () {
+      expect(AppVisibilitas.labelDari('publik'), 'Publik');
+      expect(AppVisibilitas.labelDari('privat'), 'Privat');
     });
   });
 

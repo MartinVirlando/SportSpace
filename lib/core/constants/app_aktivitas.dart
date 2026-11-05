@@ -81,3 +81,31 @@ class AppBiaya {
 
   static bool valid(int nilai) => nilai >= minimal && nilai <= maksimal;
 }
+
+/// Visibilitas aktivitas — PRD 6.3 (`visibilitas`), v1.5 (T-64), AB-21.
+///
+/// - `publik` — tampil di daftar Cari Rekan (bawaan, dan nilai untuk dokumen
+///   lama yang belum punya field ini).
+/// - `privat` — TIDAK tampil di daftar; hanya bisa dibuka lewat `kodeAkses`.
+///
+/// Privat hanya MENYEMBUNYIKAN dari daftar, bukan dilindungi Security Rules
+/// (rules `aktivitasBermain` mengizinkan `read` untuk semua pengguna login).
+/// Keterbatasan ini dicatat di PRD AB-21 dan Bab 5.
+class AppVisibilitas {
+  AppVisibilitas._();
+
+  static const String publik = 'publik';
+  static const String privat = 'privat';
+
+  /// Pilihan di form Buat Aktivitas (L-08).
+  static const List<String> daftarPilihan = [publik, privat];
+
+  static const Map<String, String> label = {
+    publik: 'Publik',
+    privat: 'Privat',
+  };
+
+  static String labelDari(String kode) => label[kode] ?? kode;
+
+  static bool valid(String kode) => daftarPilihan.contains(kode);
+}

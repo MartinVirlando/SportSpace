@@ -126,6 +126,39 @@ class CariRekanScreen extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
+  /// Dialog isian kode akses aktivitas privat — PRD AB-21, T-64, BB-80/81.
+  Future<void> _bukaDenganKode(BuildContext context) async {
+    final vm = context.read<AktivitasViewModel>();
+    final kode = await showDialog<String>(
+      context: context,
+      builder: (_) => const _DialogKode(),
+    );
+    if (kode == null || !context.mounted) return;
+
+    try {
+      final aktivitas = await vm.cariAktivitasByKode(kode);
+      if (!context.mounted) return;
+
+      if (aktivitas == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.kodeTidakDitemukan)),
+        );
+        return;
+      }
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              DetailAktivitasScreen(aktivitasId: aktivitas.aktivitasId),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -137,7 +170,74 @@ class _Header extends StatelessWidget {
         AppSizes.marginLayar,
         12,
       ),
-      child: const Text(AppStrings.cariRekan, style: AppTextStyles.sambutan),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(AppStrings.cariRekan, style: AppTextStyles.sambutan),
+          ),
+          // v1.5 (T-64): buka aktivitas privat lewat kode.
+          TextButton.icon(
+            onPressed: () => _bukaDenganKode(context),
+            icon: const Icon(Icons.vpn_key_outlined, size: 16),
+            label: const Text(AppStrings.punyaKode),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dialog isian kode akses. Mengembalikan teks mentah yang diketik (sudah
+/// di-`trim`), atau `null` kalau dibatalkan atau dikosongkan.
+///
+/// StatefulWidget karena `TextEditingController` harus dibuang saat dialog
+/// ditutup — bukan di `StatelessWidget`, yang tidak punya `dispose`.
+class _DialogKode extends StatefulWidget {
+  const _DialogKode();
+
+  @override
+  State<_DialogKode> createState() => _DialogKodeState();
+}
+
+class _DialogKodeState extends State<_DialogKode> {
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _kirim() {
+    final teks = _ctrl.text.trim();
+    Navigator.of(context).pop(teks.isEmpty ? null : teks);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text(AppStrings.judulMasukkanKode),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        textCapitalization: TextCapitalization.characters,
+        decoration: const InputDecoration(hintText: AppStrings.hintKode),
+        onSubmitted: (_) => _kirim(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(AppStrings.batal),
+        ),
+        TextButton(
+          onPressed: _kirim,
+          child: const Text(AppStrings.bukaAktivitas),
+        ),
+      ],
     );
   }
 }

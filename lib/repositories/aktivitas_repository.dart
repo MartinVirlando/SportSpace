@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/app_aktivitas.dart';
 import '../core/constants/app_sports.dart';
+import '../core/utils/kode_akses.dart';
 import '../models/aktivitas_bermain_model.dart';
 import '../models/notifikasi_model.dart';
 import '../models/permintaan_gabung_model.dart';
@@ -101,6 +104,7 @@ class AktivitasRepository {
     required String jenisAktivitas,
     required String tingkatKemampuan,
     required int biayaPerOrang,
+    required String visibilitas,
     String? catatan,
   }) async {
     // Pengaman berlapis — sudah dicek di UI (`buat_aktivitas_screen.dart`
@@ -123,8 +127,16 @@ class AktivitasRepository {
     if (!AppBiaya.valid(biayaPerOrang)) {
       throw Exception('Biaya per orang harus antara Rp 0 dan Rp 1.000.000.');
     }
+    if (!AppVisibilitas.valid(visibilitas)) {
+      throw Exception('Visibilitas aktivitas tidak valid.');
+    }
 
     try {
+      // Aktivitas privat butuh kode akses (T-64, AB-21). Publik tidak punya.
+      final kodeAkses = visibilitas == AppVisibilitas.privat
+          ? await _buatKodeBelumDipakai()
+          : null;
+
       final ref = _db.collection('aktivitasBermain').doc();
       final aktivitas = AktivitasBermainModel(
         aktivitasId: ref.id,
@@ -143,6 +155,8 @@ class AktivitasRepository {
         jenisAktivitas: jenisAktivitas,
         tingkatKemampuan: tingkatKemampuan,
         biayaPerOrang: biayaPerOrang,
+        visibilitas: visibilitas,
+        kodeAkses: kodeAkses,
       );
 
       await ref.set(aktivitas.toFirestore());
@@ -152,6 +166,59 @@ class AktivitasRepository {
         throw Exception('Tidak punya izin membuat aktivitas.');
       }
       throw Exception('Gagal membuat aktivitas. Coba lagi.');
+    }
+  }
+
+  /// Membangkitkan kode akses yang belum dipakai aktivitas mana pun —
+  /// PRD AB-21, T-64.
+  ///
+  /// Setiap kandidat diperiksa lewat query `kodeAkses ==` satu field (tanpa
+  /// composite index). Pemeriksaan ini TIDAK atomik dengan penyimpanan
+  /// aktivitas: dua pembuat yang kebetulan mendapat kode sama pada milidetik
+  /// yang sama bisa sama-sama lolos. Dengan 32^6 ≈ 1,07 miliar kemungkinan,
+  /// peluangnya diabaikan untuk skala skripsi; Firestore Transaction tidak
+  /// bisa menjalankan Query (CLAUDE.md #1), jadi tidak ada cara membuatnya
+  /// atomik tanpa koleksi pemetaan baru, yang berlebihan di sini.
+  ///
+  /// Mencoba paling banyak 5 kali, lalu menyerah dengan pesan yang jelas.
+  Future<String> _buatKodeBelumDipakai() async {
+    final acak = Random.secure();
+    for (var percobaan = 0; percobaan < 5; percobaan++) {
+      final kode = buatKodeAkses(acak);
+      final bentrok = await _db
+          .collection('aktivitasBermain')
+          .where('kodeAkses', isEqualTo: kode)
+          .limit(1)
+          .get();
+      if (bentrok.docs.isEmpty) return kode;
+    }
+    throw Exception('Gagal membuat kode akses. Coba lagi.');
+  }
+
+  /// Cari aktivitas lewat kode akses — PRD AB-21, T-64, BB-80/BB-81.
+  ///
+  /// Mengembalikan `null` kalau kode tidak ditemukan ATAU bentuknya tidak sah
+  /// (yang kedua ditolak tanpa membaca Firestore sama sekali). [kode] boleh
+  /// mentah dari pengguna: dirapikan dulu (`normalisasiKodeAkses`).
+  ///
+  /// Query `kodeAkses ==` satu field + `limit(1)`, otomatis ter-index.
+  Future<AktivitasBermainModel?> cariAktivitasByKode(String kode) async {
+    final rapi = normalisasiKodeAkses(kode);
+    if (!kodeAksesValid(rapi)) return null;
+
+    try {
+      final hasil = await _db
+          .collection('aktivitasBermain')
+          .where('kodeAkses', isEqualTo: rapi)
+          .limit(1)
+          .get();
+      if (hasil.docs.isEmpty) return null;
+      return AktivitasBermainModel.fromFirestore(hasil.docs.first);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw Exception('Tidak punya izin mencari aktivitas.');
+      }
+      throw Exception('Gagal mencari aktivitas. Coba lagi.');
     }
   }
 

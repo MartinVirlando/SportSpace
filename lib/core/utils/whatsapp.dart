@@ -58,9 +58,22 @@ Uri tautanBagikanWhatsApp(String teks) {
 /// Teks ringkasan aktivitas untuk dibagikan — BB-58. Baris tingkat kemampuan
 /// dan catatan hanya muncul kalau ada isinya (dokumen lama tidak punya
 /// tingkat).
-String teksBagikanAktivitas(AktivitasBermainModel a) {
+///
+/// [sertakanKode] (v1.5, T-64): untuk aktivitas privat, ikutkan kode akses
+/// supaya penerima bisa bergabung. Diisi `true` HANYA oleh pembuat dan
+/// peserta; siapa pun yang tidak terlibat tidak boleh ikut menyebarkan kode.
+/// Aktivitas publik tidak pernah memuat kode.
+String teksBagikanAktivitas(
+  AktivitasBermainModel a, {
+  bool sertakanKode = false,
+}) {
   final tingkat = a.tingkatKemampuan;
   final catatan = a.catatan;
+  final kode = a.kodeAkses;
+  final adaKode = sertakanKode &&
+      a.visibilitas == AppVisibilitas.privat &&
+      kode != null &&
+      kode.isNotEmpty;
 
   final baris = <String>[
     AppStrings.bagikanJudulAktivitas,
@@ -77,6 +90,7 @@ String teksBagikanAktivitas(AktivitasBermainModel a) {
         '${a.biayaPerOrang > 0 ? ' (${AppStrings.bantuBiayaPerOrang})' : ''}',
     if (catatan != null && catatan.trim().isNotEmpty)
       '📝 ${AppStrings.bagikanCatatan}: ${catatan.trim()}',
+    if (adaKode) '🔒 ${AppStrings.bagikanKodeAkses}: $kode',
   ];
 
   return baris.join('\n');

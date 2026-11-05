@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/app_aktivitas.dart';
 import '../core/constants/app_colors.dart';
+import '../core/constants/app_strings.dart';
 import '../core/utils/formatter.dart';
 import '../models/aktivitas_bermain_model.dart';
 
@@ -28,6 +29,10 @@ class BarisLabelAktivitas extends StatelessWidget {
         if (tingkat != null)
           LabelAktivitas(teks: AppTingkat.labelDari(tingkat)),
         LabelAktivitas(teks: Formatter.biayaPerOrang(aktivitas.biayaPerOrang)),
+        // v1.5 (T-64): aktivitas privat diberi label, supaya jelas ia dibuka
+        // lewat kode (daftar Cari Rekan tidak menampilkannya sama sekali).
+        if (aktivitas.visibilitas == AppVisibilitas.privat)
+          const LabelAktivitas(teks: AppStrings.labelPrivat),
       ],
     );
   }

@@ -48,6 +48,8 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
   String _olahraga = AppSports.futsal;
   // v1.4 (T-54) — bawaan Main Bareng.
   String _jenis = AppJenisAktivitas.mainBareng;
+  // v1.5 (T-64) — bawaan Publik.
+  String _visibilitas = AppVisibilitas.publik;
   // v1.4 (T-55) — sengaja TANPA nilai bawaan: pembuat wajib memilih, supaya
   // data tidak condong ke satu tingkat karena malas menekan chip.
   String? _tingkat;
@@ -140,6 +142,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
       tingkatKemampuan: tingkat,
       // Kosong dibaca 0 (gratis) — validator sudah memastikan isinya angka.
       biayaPerOrang: int.tryParse(_biayaCtrl.text.trim()) ?? 0,
+      visibilitas: _visibilitas,
       catatan:
           _catatanCtrl.text.trim().isEmpty ? null : _catatanCtrl.text.trim(),
     );
@@ -147,12 +150,66 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
     if (!mounted) return;
 
     if (berhasil) {
+      // Aktivitas privat: kode akses baru diketahui setelah tersimpan, jadi
+      // tampilkan sekarang — pembuat perlu membagikannya (T-64, AB-21).
+      final kode = vm.aktivitasDibuat?.kodeAkses;
+      if (_visibilitas == AppVisibilitas.privat && kode != null) {
+        await _tampilkanKodeAkses(kode);
+        if (!mounted) return;
+      }
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(vm.pesanError ?? AppStrings.errGagalBuatAktivitas)),
       );
     }
+  }
+
+  /// Dialog yang menampilkan kode akses aktivitas privat yang baru dibuat,
+  /// dengan tombol Salin (T-64, AB-21, BB-79).
+  Future<void> _tampilkanKodeAkses(String kode) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(AppStrings.judulAktivitasPrivatDibuat),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(AppStrings.isiAktivitasPrivatDibuat),
+            const SizedBox(height: 16),
+            Center(
+              child: SelectableText(
+                kode,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 4,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: kode));
+              if (!dialogContext.mounted) return;
+              ScaffoldMessenger.of(dialogContext).showSnackBar(
+                const SnackBar(content: Text(AppStrings.kodeDisalin)),
+              );
+            },
+            child: const Text(AppStrings.salinKode),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(AppStrings.selesaiTombol),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -222,6 +279,35 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                       ),
                     );
                   }).toList(),
+                ),
+                const SizedBox(height: 20),
+                // v1.5 (T-64) — Publik (bawaan) atau Privat.
+                const Text(
+                  AppStrings.visibilitas,
+                  style: AppTextStyles.judulSeksi,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: AppVisibilitas.daftarPilihan.map((kode) {
+                    final aktif = kode == _visibilitas;
+                    return ChoiceChip(
+                      label: Text(AppVisibilitas.labelDari(kode)),
+                      selected: aktif,
+                      onSelected: (_) => setState(() => _visibilitas = kode),
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: aktif ? Colors.white : AppColors.textPrimary,
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _visibilitas == AppVisibilitas.privat
+                      ? AppStrings.keteranganPrivat
+                      : AppStrings.keteranganPublik,
+                  style: AppTextStyles.metaLapangan,
                 ),
                 const SizedBox(height: 20),
                 // v1.4 (T-55) — Pemula / Menengah / Mahir, wajib dipilih.

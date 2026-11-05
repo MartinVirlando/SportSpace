@@ -39,6 +39,14 @@ class AktivitasBermainModel {
   /// tanpa pembayaran lewat aplikasi. Dokumen lama dibaca sebagai `0`.
   final int biayaPerOrang;
 
+  /// v1.5 (T-64) — `publik` | `privat`. Dokumen lama dibaca `publik`.
+  /// Privat hanya menyembunyikan dari daftar Cari Rekan, bukan dilindungi
+  /// Security Rules (PRD AB-21).
+  final String visibilitas;
+
+  /// v1.5 (T-64) — kode akses 6 karakter, hanya terisi bila privat.
+  final String? kodeAkses;
+
   const AktivitasBermainModel({
     required this.aktivitasId,
     required this.jenisOlahraga,
@@ -56,6 +64,8 @@ class AktivitasBermainModel {
     required this.jenisAktivitas,
     this.tingkatKemampuan,
     required this.biayaPerOrang,
+    this.visibilitas = 'publik',
+    this.kodeAkses,
   });
 
   factory AktivitasBermainModel.fromFirestore(DocumentSnapshot doc) {
@@ -80,6 +90,8 @@ class AktivitasBermainModel {
       jenisAktivitas: data['jenisAktivitas'] as String? ?? 'main_bareng',
       tingkatKemampuan: data['tingkatKemampuan'] as String?,
       biayaPerOrang: (data['biayaPerOrang'] as num?)?.toInt() ?? 0,
+      visibilitas: data['visibilitas'] as String? ?? 'publik',
+      kodeAkses: data['kodeAkses'] as String?,
     );
   }
 
@@ -100,5 +112,7 @@ class AktivitasBermainModel {
         'jenisAktivitas': jenisAktivitas,
         'tingkatKemampuan': tingkatKemampuan,
         'biayaPerOrang': biayaPerOrang,
+        'visibilitas': visibilitas,
+        'kodeAkses': kodeAkses,
       };
 }

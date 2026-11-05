@@ -69,6 +69,14 @@ class AktivitasViewModel extends ChangeNotifier {
     );
   }
 
+  /// Cari aktivitas privat lewat kode akses — PRD AB-21, T-64, BB-80/BB-81.
+  ///
+  /// Mengembalikan `null` kalau kode tidak ditemukan (atau bentuknya tidak
+  /// sah). Melempar `Exception` berpesan Indonesia kalau pencarian gagal —
+  /// View yang menangkap dan menampilkannya.
+  Future<AktivitasBermainModel?> cariAktivitasByKode(String kode) =>
+      _repository.cariAktivitasByKode(kode);
+
   /// ID aktivitas yang tombol "Gabung" kartunya sedang memproses —
   /// dipakai untuk menonaktifkan tombol itu saja, bukan seluruh layar,
   /// selagi menunggu Firestore.

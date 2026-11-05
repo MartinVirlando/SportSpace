@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_aktivitas.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
@@ -109,6 +111,16 @@ class _Isi extends StatelessWidget {
     final user = context.watch<AuthViewModel>().user;
     final apakahPembuat = user != null && user.userId == aktivitas.pembuatId;
 
+    // T-64 (AB-21): kode akses aktivitas privat HANYA terlihat oleh pembuat
+    // dan peserta. Orang lain yang membuka halaman ini (mis. lewat kode yang
+    // mereka tahu, sebelum bergabung) tidak diberi kode untuk disebarkan.
+    final kodeAkses = aktivitas.kodeAkses;
+    final bolehLihatKode = user != null &&
+        (apakahPembuat || aktivitas.peserta.contains(user.userId));
+    final tampilKode = aktivitas.visibilitas == AppVisibilitas.privat &&
+        kodeAkses != null &&
+        bolehLihatKode;
+
     final pesertaDiterima =
         permintaan.where((p) => p.status == 'DITERIMA').toList();
     final permintaanMenunggu =
@@ -162,6 +174,10 @@ class _Isi extends StatelessWidget {
               ),
             ],
           ),
+          if (tampilKode) ...[
+            const SizedBox(height: 16),
+            _BarisKodeAkses(kode: kodeAkses),
+          ],
           if (aktivitas.catatan != null && aktivitas.catatan!.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(aktivitas.catatan!, style: AppTextStyles.namaLapangan),
@@ -185,7 +201,11 @@ class _Isi extends StatelessWidget {
           const SizedBox(height: 12),
           // v1.4 (T-63) — bagikan ringkasan aktivitas lewat WhatsApp.
           OutlinedButton.icon(
-            onPressed: () => _bagikan(context, aktivitas),
+            onPressed: () => _bagikan(
+              context,
+              aktivitas,
+              sertakanKode: bolehLihatKode,
+            ),
             icon: const Icon(Icons.share_outlined, size: 18),
             label: const Text(AppStrings.bagikanKeWhatsApp),
             style: OutlinedButton.styleFrom(
@@ -227,12 +247,19 @@ class _Isi extends StatelessWidget {
 }
 
 /// Buka WhatsApp dengan teks ringkasan aktivitas (PRD AB-15, T-63, BB-58).
+///
+/// [sertakanKode] (T-64): kode akses aktivitas privat ikut dibagikan hanya
+/// kalau pengguna ini pembuat atau peserta — orang yang tidak terlibat tidak
+/// ikut menyebarkan kode.
 Future<void> _bagikan(
   BuildContext context,
-  AktivitasBermainModel aktivitas,
-) async {
+  AktivitasBermainModel aktivitas, {
+  required bool sertakanKode,
+}) async {
   final berhasil = await bukaTautanEksternal(
-    tautanBagikanWhatsApp(teksBagikanAktivitas(aktivitas)),
+    tautanBagikanWhatsApp(
+      teksBagikanAktivitas(aktivitas, sertakanKode: sertakanKode),
+    ),
   );
   if (!berhasil && context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -715,6 +742,58 @@ class _Pesan extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Kode akses aktivitas privat dengan tombol Salin — PRD L-09, AB-21, T-64.
+/// Hanya digambar untuk pembuat dan peserta (lihat `tampilKode` di `_Isi`).
+class _BarisKodeAkses extends StatelessWidget {
+  final String kode;
+
+  const _BarisKodeAkses({required this.kode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
+        boxShadow: AppColors.shadowKartu,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          const Text(AppStrings.kodeAkses, style: AppTextStyles.metaLapangan),
+          const SizedBox(width: 12),
+          SelectableText(
+            kode,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2,
+              color: AppColors.primary,
+            ),
+          ),
+          const Spacer(),
+          TextButton(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: kode));
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text(AppStrings.kodeDisalin)),
+              );
+            },
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 0),
+            ),
+            child: const Text(AppStrings.salinKode),
+          ),
+        ],
       ),
     );
   }

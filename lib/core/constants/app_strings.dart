@@ -108,6 +108,28 @@ class AppStrings {
   static const sewaLapangan = 'Sewa lapangan';
   static const potongan = 'Potongan';
 
+  // ---------- Aktivitas publik / privat (T-64, AB-21) ----------
+  static const visibilitas = 'Visibilitas';
+  static const keteranganPrivat =
+      'Kode akses dibuat otomatis setelah disimpan. Aktivitas privat tidak '
+      'tampil di daftar, hanya bisa dibuka lewat kode.';
+  static const keteranganPublik = 'Tampil di daftar Cari Rekan untuk semua.';
+  static const labelPrivat = 'Privat';
+  static const kodeAkses = 'Kode akses';
+  static const bagikanKodeAkses = 'Kode akses';
+  static const punyaKode = 'Punya kode?';
+  static const judulMasukkanKode = 'Masukkan Kode Aktivitas';
+  static const hintKode = 'Mis. AB3K9X';
+  static const bukaAktivitas = 'Buka';
+  static const kodeTidakDitemukan = 'Kode tidak ditemukan.';
+  static const judulAktivitasPrivatDibuat = 'Aktivitas Privat Dibuat';
+  static const isiAktivitasPrivatDibuat =
+      'Bagikan kode ini ke temanmu. Hanya yang punya kode yang bisa membuka '
+      'aktivitasnya.';
+  static const salinKode = 'Salin';
+  static const kodeDisalin = 'Kode disalin.';
+  static const selesaiTombol = 'Selesai';
+
   // ---------- Ubah jadwal booking (T-62, AB-20) ----------
   static const ubahJadwal = 'Ubah Jadwal';
   static const simpanJadwalBaru = 'Simpan Jadwal Baru';

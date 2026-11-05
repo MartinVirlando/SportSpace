@@ -12,6 +12,8 @@ AktivitasBermainModel _aktivitas({
   String? tingkat = AppTingkat.menengah,
   int biaya = 0,
   String? catatan,
+  String visibilitas = AppVisibilitas.publik,
+  String? kodeAkses,
 }) {
   return AktivitasBermainModel(
     aktivitasId: 'a1',
@@ -30,6 +32,8 @@ AktivitasBermainModel _aktivitas({
     tingkatKemampuan: tingkat,
     biayaPerOrang: biaya,
     catatan: catatan,
+    visibilitas: visibilitas,
+    kodeAkses: kodeAkses,
   );
 }
 
@@ -174,6 +178,41 @@ void main() {
         teksBagikanAktivitas(_aktivitas(catatan: '   ')),
         isNot(contains('Catatan')),
       );
+    });
+  });
+
+  group('teksBagikanAktivitas — kode akses aktivitas privat (T-64)', () {
+    test('privat + sertakanKode → kode ikut dibagikan', () {
+      final teks = teksBagikanAktivitas(
+        _aktivitas(visibilitas: AppVisibilitas.privat, kodeAkses: 'AB3K9X'),
+        sertakanKode: true,
+      );
+      expect(teks, contains('AB3K9X'));
+      expect(teks, contains('Kode akses'));
+    });
+
+    test('privat tanpa sertakanKode → kode TIDAK bocor', () {
+      final teks = teksBagikanAktivitas(
+        _aktivitas(visibilitas: AppVisibilitas.privat, kodeAkses: 'AB3K9X'),
+      );
+      expect(teks, isNot(contains('AB3K9X')));
+      expect(teks, isNot(contains('Kode akses')));
+    });
+
+    test('publik tidak pernah memuat kode walau sertakanKode true', () {
+      final teks = teksBagikanAktivitas(
+        _aktivitas(kodeAkses: 'AB3K9X'),
+        sertakanKode: true,
+      );
+      expect(teks, isNot(contains('AB3K9X')));
+    });
+
+    test('privat tanpa kode tersimpan tidak crash dan tidak ada baris kode', () {
+      final teks = teksBagikanAktivitas(
+        _aktivitas(visibilitas: AppVisibilitas.privat),
+        sertakanKode: true,
+      );
+      expect(teks, isNot(contains('Kode akses')));
     });
   });
 

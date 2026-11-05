@@ -15,6 +15,13 @@ import '../constants/app_aktivitas.dart';
 /// [jenis] dan [tingkat] bernilai `semua` berarti tanpa penyaringan.
 /// Aktivitas lama yang belum punya `tingkatKemampuan` (`null`) hanya lolos
 /// kalau [tingkat] == [AppTingkat.semua].
+///
+/// Aktivitas PRIVAT (v1.5, T-64, AB-21) SELALU disingkirkan: ia hanya bisa
+/// dibuka lewat kode akses, tidak pernah tampil di daftar. Penyaringan ini
+/// sengaja di klien, bukan `where visibilitas == 'publik'` di query:
+/// Firestore tidak mengembalikan dokumen yang tidak punya field itu, jadi
+/// seluruh aktivitas lama (sebelum v1.5) akan ikut hilang dari daftar.
+/// Dokumen lama dibaca `publik` oleh `fromFirestore`, jadi lolos di sini.
 List<AktivitasBermainModel> saringAktivitas(
   List<AktivitasBermainModel> daftar, {
   String jenis = AppJenisAktivitas.semua,
@@ -25,6 +32,7 @@ List<AktivitasBermainModel> saringAktivitas(
         jenis == AppJenisAktivitas.semua || a.jenisAktivitas == jenis;
     final cocokTingkat =
         tingkat == AppTingkat.semua || a.tingkatKemampuan == tingkat;
-    return cocokJenis && cocokTingkat;
+    final publik = a.visibilitas != AppVisibilitas.privat;
+    return publik && cocokJenis && cocokTingkat;
   }).toList();
 }
