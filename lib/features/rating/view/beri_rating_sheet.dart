@@ -26,7 +26,7 @@ Future<bool?> showBeriRatingSheet(
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.warna.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -147,7 +147,7 @@ class _BeriRatingBodyState extends State<_BeriRatingBody> {
         children: [
           Text(
             sudahPernahMenilai ? AppStrings.ubahRating : AppStrings.beriRating,
-            style: AppTextStyles.judulSeksi,
+            style: AppTextStyles.judulSeksi(context),
           ),
           const SizedBox(height: 16),
           switch (vm.kondisiRatingLama) {
@@ -177,9 +177,9 @@ class _BeriRatingBodyState extends State<_BeriRatingBody> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (sudahPernahMenilai) ...[
-            const Text(
+            Text(
               AppStrings.ratingSudahAda,
-              style: AppTextStyles.metaLapangan,
+              style: AppTextStyles.metaLapangan(context),
             ),
             const SizedBox(height: 8),
           ],
@@ -261,16 +261,16 @@ class _GagalMuatRatingLama extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
+        Icon(
           Icons.error_outline,
           size: 40,
-          color: AppColors.textSecondary,
+          color: context.warna.textSecondary,
         ),
         const SizedBox(height: 8),
         Text(
           pesan,
           textAlign: TextAlign.center,
-          style: AppTextStyles.metaLapangan,
+          style: AppTextStyles.metaLapangan(context),
         ),
         const SizedBox(height: 8),
         TextButton(

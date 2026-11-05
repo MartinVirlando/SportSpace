@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/services/pengingat_service.dart';
+import '../../../core/theme/mode_tema.dart';
 import '../../../core/utils/pengingat_jadwal.dart';
 import '../../../models/booking_model.dart';
 import '../../../repositories/pengaturan_repository.dart';
 
-/// ViewModel pengaturan aplikasi (Profil) — v1.5. Saat ini mengurus
-/// pengingat jadwal booking (T-67, PRD AB-23).
+/// ViewModel pengaturan aplikasi (Profil) — v1.5. Mengurus pengingat jadwal
+/// booking (T-67, PRD AB-23) dan mode tampilan terang/gelap (PRD AB-24).
 ///
 /// ATURAN LAPISAN: TIDAK `import cloud_firestore`. Pilihan disimpan lewat
 /// [PengaturanRepository] (di HP), notifikasi dijadwalkan lewat
@@ -27,7 +28,41 @@ class PengaturanViewModel extends ChangeNotifier {
     required PengingatService pengingat,
   })  : _repository = repository,
         _pengingat = pengingat,
-        _pengingatAktif = repository.pengingatAktif;
+        _pengingatAktif = repository.pengingatAktif,
+        _modeTema = repository.modeTema;
+
+  // ---------- Mode tampilan (AB-24) ----------
+
+  ModeTema _modeTema;
+
+  /// Pilihan mode tampilan. Dibaca `main.dart` untuk `MaterialApp.themeMode`
+  /// — begitu berubah, seluruh aplikasi berganti tema.
+  ModeTema get modeTema => _modeTema;
+
+  /// Mengganti mode tampilan: tampil dulu, simpan kemudian. Kalau
+  /// penyimpanan gagal, pilihan tetap berlaku sampai aplikasi ditutup dan
+  /// pengguna diberi tahu (bukan dibatalkan diam-diam).
+  Future<void> ubahModeTema(ModeTema mode) async {
+    if (mode == _modeTema) return;
+    _modeTema = mode;
+    _pesanErrorTema = null;
+    notifyListeners();
+
+    try {
+      await _repository.simpanModeTema(mode);
+    } catch (_) {
+      _pesanErrorTema = AppStrings.errGagalSimpanModeTema;
+      notifyListeners();
+    }
+  }
+
+  String? _pesanErrorTema;
+
+  /// Galat penyimpanan mode tampilan; terpisah dari [pesanError] milik
+  /// pengingat supaya keduanya tidak saling menghapus.
+  String? get pesanErrorTema => _pesanErrorTema;
+
+  // ---------- Pengingat jadwal (T-67) ----------
 
   bool _pengingatAktif;
 

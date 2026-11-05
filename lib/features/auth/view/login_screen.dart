@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final sedangProses = context.watch<AuthViewModel>().sedangProses;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(
@@ -75,12 +75,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 64),
                 const Text('⚽', style: TextStyle(fontSize: 40)),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   AppStrings.namaAplikasi,
-                  style: AppTextStyles.sambutan,
+                  style: AppTextStyles.sambutan(context),
                 ),
                 const SizedBox(height: 4),
-                const Text(AppStrings.tagline, style: AppTextStyles.lokasi),
+                Text(AppStrings.tagline, style: AppTextStyles.lokasi(context)),
                 const SizedBox(height: 40),
                 TextFormField(
                   controller: _surelCtrl,

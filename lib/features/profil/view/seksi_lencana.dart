@@ -41,10 +41,10 @@ class SeksiLencana extends StatelessWidget {
                 if (snapBooking.hasError ||
                     snapAktivitas.hasError ||
                     snapFavorit.hasError) {
-                  return const _Kerangka(
+                  return _Kerangka(
                     isi: Text(
                       AppStrings.errGagalMuatLencana,
-                      style: AppTextStyles.metaLapangan,
+                      style: AppTextStyles.metaLapangan(context),
                     ),
                   );
                 }
@@ -117,13 +117,13 @@ class _Kerangka extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               AppStrings.judulLencana,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             if (keterangan != null) ...[
               const SizedBox(width: 8),
-              Text(keterangan!, style: AppTextStyles.metaLapangan),
+              Text(keterangan!, style: AppTextStyles.metaLapangan(context)),
             ],
           ],
         ),
@@ -148,9 +148,9 @@ class _KartuLencana extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
           border: lencana.diraih
               ? Border.all(color: AppColors.primary, width: 1.2)
               : null,
@@ -168,14 +168,14 @@ class _KartuLencana extends StatelessWidget {
                 children: [
                   Text(
                     lencana.nama,
-                    style: AppTextStyles.namaLapangan,
+                    style: AppTextStyles.namaLapangan(context),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     lencana.syarat,
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

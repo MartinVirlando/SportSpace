@@ -50,13 +50,13 @@ class _DetailAktivitasBody extends StatelessWidget {
     final vm = context.watch<DetailAktivitasViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           AppStrings.detailAktivitas,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
       ),
       body: SafeArea(
@@ -148,25 +148,25 @@ class _Isi extends StatelessWidget {
                   children: [
                     Text(
                       AppSports.labelDari(aktivitas.jenisOlahraga),
-                      style: AppTextStyles.sambutan,
+                      style: AppTextStyles.sambutan(context),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '📍 ${aktivitas.namaLapangan}',
-                      style: AppTextStyles.metaLapangan,
+                      style: AppTextStyles.metaLapangan(context),
                     ),
                     Text(
                       '🕐 ${Formatter.tanggalDanJam(aktivitas.waktu)}',
-                      style: AppTextStyles.metaLapangan,
+                      style: AppTextStyles.metaLapangan(context),
                     ),
                     const SizedBox(height: 6),
                     BarisLabelAktivitas(aktivitas: aktivitas),
                     // Biaya hanya informasi — tidak ada pembayaran di aplikasi.
                     if (aktivitas.biayaPerOrang > 0) ...[
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         AppStrings.bantuBiayaPerOrang,
-                        style: AppTextStyles.metaLapangan,
+                        style: AppTextStyles.metaLapangan(context),
                       ),
                     ],
                   ],
@@ -180,7 +180,7 @@ class _Isi extends StatelessWidget {
           ],
           if (aktivitas.catatan != null && aktivitas.catatan!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(aktivitas.catatan!, style: AppTextStyles.namaLapangan),
+            Text(aktivitas.catatan!, style: AppTextStyles.namaLapangan(context)),
           ],
           const SizedBox(height: 20),
           ClipRRect(
@@ -188,7 +188,7 @@ class _Isi extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progres.clamp(0.0, 1.0),
               minHeight: 8,
-              backgroundColor: AppColors.surfaceVariant,
+              backgroundColor: context.warna.surfaceVariant,
               valueColor: const AlwaysStoppedAnimation(AppColors.primary),
             ),
           ),
@@ -196,7 +196,7 @@ class _Isi extends StatelessWidget {
           Text(
             '${aktivitas.jumlahPemainSaatIni}/'
             '${aktivitas.jumlahPemainDibutuhkan} ${AppStrings.satuanPemain}',
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           ),
           const SizedBox(height: 12),
           // v1.4 (T-63) — bagikan ringkasan aktivitas lewat WhatsApp.
@@ -217,7 +217,7 @@ class _Isi extends StatelessWidget {
             ),
           ),
           const Divider(height: 32),
-          const Text(AppStrings.daftarPeserta, style: AppTextStyles.judulSeksi),
+          Text(AppStrings.daftarPeserta, style: AppTextStyles.judulSeksi(context)),
           const SizedBox(height: 10),
           _BarisPeserta(nama: aktivitas.namaPembuat, pembuat: true),
           for (final p in pesertaDiterima)
@@ -291,13 +291,13 @@ class _BarisPeserta extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 14,
-            backgroundColor: AppColors.surfaceVariant,
-            child: Icon(Icons.person, size: 16, color: AppColors.textSecondary),
+            backgroundColor: context.warna.surfaceVariant,
+            child: Icon(Icons.person, size: 16, color: context.warna.textSecondary),
           ),
           const SizedBox(width: 10),
-          Text(nama, style: AppTextStyles.namaLapangan),
+          Text(nama, style: AppTextStyles.namaLapangan(context)),
           if (pembuat) ...[
             const SizedBox(width: 8),
             Container(
@@ -335,12 +335,12 @@ class _SeksiPermintaanMasuk extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(AppStrings.permintaanMasuk, style: AppTextStyles.judulSeksi),
+        Text(AppStrings.permintaanMasuk, style: AppTextStyles.judulSeksi(context)),
         const SizedBox(height: 10),
         if (permintaan.isEmpty)
-          const Text(
+          Text(
             AppStrings.kosongPermintaan,
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           )
         else
           for (final p in permintaan)
@@ -503,7 +503,7 @@ class _BarisPermintaanState extends State<_BarisPermintaan> {
           Expanded(
             child: Text(
               widget.permintaan.namaUser,
-              style: AppTextStyles.namaLapangan,
+              style: AppTextStyles.namaLapangan(context),
             ),
           ),
           if (_sedangProses)
@@ -691,15 +691,15 @@ class _LabelStatus extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: context.warna.surfaceVariant,
         borderRadius: BorderRadius.circular(AppSizes.radiusChip),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(ikon, size: 18, color: AppColors.textSecondary),
+          Icon(ikon, size: 18, color: context.warna.textSecondary),
           const SizedBox(width: 8),
-          Text(teks, style: AppTextStyles.namaLapangan),
+          Text(teks, style: AppTextStyles.namaLapangan(context)),
         ],
       ),
     );
@@ -725,11 +725,11 @@ class _Pesan extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(ikon, size: 48, color: AppColors.textSecondary),
+            Icon(ikon, size: 48, color: context.warna.textSecondary),
             const SizedBox(height: 12),
             Text(
               judul,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
               textAlign: TextAlign.center,
             ),
             if (keterangan.isNotEmpty) ...[
@@ -737,7 +737,7 @@ class _Pesan extends StatelessWidget {
               Text(
                 keterangan,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.lokasi,
+                style: AppTextStyles.lokasi(context),
               ),
             ],
           ],
@@ -759,15 +759,15 @@ class _BarisKodeAkses extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Row(
         children: [
           const Icon(Icons.lock_outline, size: 16, color: AppColors.primary),
           const SizedBox(width: 8),
-          const Text(AppStrings.kodeAkses, style: AppTextStyles.metaLapangan),
+          Text(AppStrings.kodeAkses, style: AppTextStyles.metaLapangan(context)),
           const SizedBox(width: 12),
           SelectableText(
             kode,

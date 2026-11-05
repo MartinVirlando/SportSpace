@@ -254,15 +254,15 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
     final vm = context.watch<FormLapanganViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
         title: Text(
           _modeEdit
               ? AppStrings.editLapanganJudul
               : AppStrings.tambahLapanganJudul,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
       ),
       body: SafeArea(
@@ -358,9 +358,9 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   AppStrings.jenisOlahraga,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -387,7 +387,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                       }),
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: aktif ? Colors.white : AppColors.textPrimary,
+                        color: aktif ? Colors.white : context.warna.textPrimary,
                       ),
                     );
                   }).toList(),
@@ -457,7 +457,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                     ),
                   ),
                 const SizedBox(height: 20),
-                const Text(AppStrings.fasilitas, style: AppTextStyles.judulSeksi),
+                Text(AppStrings.fasilitas, style: AppTextStyles.judulSeksi(context)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -476,7 +476,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                       }),
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: aktif ? Colors.white : AppColors.textPrimary,
+                        color: aktif ? Colors.white : context.warna.textPrimary,
                       ),
                     );
                   }).toList(),
@@ -486,9 +486,9 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       AppStrings.produkTambahanJudul,
-                      style: AppTextStyles.judulSeksi,
+                      style: AppTextStyles.judulSeksi(context),
                     ),
                     TextButton.icon(
                       onPressed: _produk.length >= BatasProduk.jumlahProdukMaksimal
@@ -504,15 +504,15 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   AppStrings.keteranganProdukTambahan,
-                  style: AppTextStyles.metaLapangan,
+                  style: AppTextStyles.metaLapangan(context),
                 ),
                 const SizedBox(height: 8),
                 if (_produk.isEmpty)
-                  const Text(
+                  Text(
                     AppStrings.produkMasihKosong,
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   ),
                 for (var i = 0; i < _produk.length; i++)
                   // Key dari objek controller supaya baris yang dihapus di
@@ -548,7 +548,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                         onPressed: () => _hapusProduk(i),
                         tooltip: AppStrings.hapusProduk,
                         icon: const Icon(Icons.delete_outline),
-                        color: AppColors.textSecondary,
+                        color: context.warna.textSecondary,
                       ),
                     ],
                   ),
@@ -611,15 +611,15 @@ class _TombolPilihJam extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.surfaceVariant, width: 1.5),
+          border: Border.all(color: context.warna.surfaceVariant, width: 1.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppTextStyles.metaLapangan),
+            Text(label, style: AppTextStyles.metaLapangan(context)),
             const SizedBox(height: 2),
-            Text(nilai, style: AppTextStyles.namaLapangan),
+            Text(nilai, style: AppTextStyles.namaLapangan(context)),
           ],
         ),
       ),

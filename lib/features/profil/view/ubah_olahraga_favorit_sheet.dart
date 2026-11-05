@@ -19,7 +19,7 @@ Future<void> showUbahOlahragaFavoritSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.warna.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -87,7 +87,7 @@ class _UbahOlahragaFavoritBodyState extends State<_UbahOlahragaFavoritBody> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(AppStrings.olahragaFavorit, style: AppTextStyles.judulSeksi),
+          Text(AppStrings.olahragaFavorit, style: AppTextStyles.judulSeksi(context)),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
@@ -106,7 +106,7 @@ class _UbahOlahragaFavoritBodyState extends State<_UbahOlahragaFavoritBody> {
                 }),
                 selectedColor: AppColors.primary,
                 labelStyle: TextStyle(
-                  color: aktif ? Colors.white : AppColors.textPrimary,
+                  color: aktif ? Colors.white : context.warna.textPrimary,
                 ),
               );
             }).toList(),

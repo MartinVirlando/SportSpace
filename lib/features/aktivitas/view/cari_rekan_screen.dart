@@ -32,7 +32,7 @@ class CariRekanScreen extends StatelessWidget {
     final vm = context.watch<AktivitasViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const BuatAktivitasScreen()),
@@ -174,7 +174,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      color: context.warna.surface,
       padding: const EdgeInsets.fromLTRB(
         AppSizes.marginLayar,
         12,
@@ -183,8 +183,8 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
-            child: Text(AppStrings.cariRekan, style: AppTextStyles.sambutan),
+          Expanded(
+            child: Text(AppStrings.cariRekan, style: AppTextStyles.sambutan(context)),
           ),
           // v1.5 (T-64): buka aktivitas privat lewat kode.
           TextButton.icon(
@@ -279,7 +279,7 @@ class _KartuAktivitas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final warna = _warnaOlahraga(aktivitas.jenisOlahraga);
+    final warna = _warnaOlahraga(context, aktivitas.jenisOlahraga);
     final progres = aktivitas.jumlahPemainDibutuhkan == 0
         ? 0.0
         : aktivitas.jumlahPemainSaatIni / aktivitas.jumlahPemainDibutuhkan;
@@ -295,9 +295,9 @@ class _KartuAktivitas extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -332,20 +332,20 @@ class _KartuAktivitas extends StatelessWidget {
                                 Text(
                                   '${aktivitas.namaPembuat} · '
                                   '${AppSports.labelDari(aktivitas.jenisOlahraga)}',
-                                  style: AppTextStyles.namaLapangan,
+                                  style: AppTextStyles.namaLapangan(context),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '📍 ${aktivitas.namaLapangan}',
-                                  style: AppTextStyles.metaLapangan,
+                                  style: AppTextStyles.metaLapangan(context),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
                                   '🕐 ${Formatter.tanggalDanJam(aktivitas.waktu)}',
-                                  style: AppTextStyles.metaLapangan,
+                                  style: AppTextStyles.metaLapangan(context),
                                 ),
                                 const SizedBox(height: 6),
                                 BarisLabelAktivitas(aktivitas: aktivitas),
@@ -392,7 +392,7 @@ class _KartuAktivitas extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: progres.clamp(0.0, 1.0),
                           minHeight: 6,
-                          backgroundColor: AppColors.surfaceVariant,
+                          backgroundColor: context.warna.surfaceVariant,
                           valueColor: AlwaysStoppedAnimation(warna),
                         ),
                       ),
@@ -400,7 +400,7 @@ class _KartuAktivitas extends StatelessWidget {
                       Text(
                         '${aktivitas.jumlahPemainSaatIni}/'
                         '${aktivitas.jumlahPemainDibutuhkan} ${AppStrings.satuanPemain}',
-                        style: AppTextStyles.metaLapangan,
+                        style: AppTextStyles.metaLapangan(context),
                       ),
                     ],
                   ),
@@ -413,7 +413,7 @@ class _KartuAktivitas extends StatelessWidget {
     );
   }
 
-  Color _warnaOlahraga(String kode) {
+  Color _warnaOlahraga(BuildContext context, String kode) {
     switch (kode) {
       case AppSports.futsal:
         return AppColors.futsal;
@@ -424,7 +424,7 @@ class _KartuAktivitas extends StatelessWidget {
       case AppSports.miniSoccer:
         return AppColors.miniSoccer;
       default:
-        return AppColors.surfaceVariant;
+        return context.warna.surfaceVariant;
     }
   }
 }
@@ -448,11 +448,11 @@ class _Pesan extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(ikon, size: 48, color: AppColors.textSecondary),
+            Icon(ikon, size: 48, color: context.warna.textSecondary),
             const SizedBox(height: 12),
             Text(
               judul,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
               textAlign: TextAlign.center,
             ),
             if (keterangan.isNotEmpty) ...[
@@ -460,7 +460,7 @@ class _Pesan extends StatelessWidget {
               Text(
                 keterangan,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.lokasi,
+                style: AppTextStyles.lokasi(context),
               ),
             ],
           ],

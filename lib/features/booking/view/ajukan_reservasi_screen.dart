@@ -282,13 +282,13 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
     final vm = context.watch<BookingViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
         title: Text(
           _modeUbah ? AppStrings.ubahJadwal : AppStrings.ajukanReservasi,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
       ),
       body: SafeArea(
@@ -297,21 +297,21 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(widget.lapangan.nama, style: AppTextStyles.namaLapangan),
+              Text(widget.lapangan.nama, style: AppTextStyles.namaLapangan(context)),
               const SizedBox(height: 4),
               Text(
                 '${widget.lapangan.jamBuka} – ${widget.lapangan.jamTutup}',
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
               const SizedBox(height: 20),
-              const Text(AppStrings.tanggal, style: AppTextStyles.judulSeksi),
+              Text(AppStrings.tanggal, style: AppTextStyles.judulSeksi(context)),
               const SizedBox(height: 8),
               _TombolPilihTanggal(
                 tanggal: _tanggal,
                 onTap: _pilihTanggal,
               ),
               const SizedBox(height: 20),
-              const Text(AppStrings.durasi, style: AppTextStyles.judulSeksi),
+              Text(AppStrings.durasi, style: AppTextStyles.judulSeksi(context)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -326,13 +326,13 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
                     }),
                     selectedColor: AppColors.primary,
                     labelStyle: TextStyle(
-                      color: aktif ? Colors.white : AppColors.textPrimary,
+                      color: aktif ? Colors.white : context.warna.textPrimary,
                     ),
                   );
                 }).toList(),
               ),
               const SizedBox(height: 20),
-              const Text(AppStrings.jamMulai, style: AppTextStyles.judulSeksi),
+              Text(AppStrings.jamMulai, style: AppTextStyles.judulSeksi(context)),
               const SizedBox(height: 8),
               _DaftarJamMulai(
                 tanggalDipilih: _tanggal != null,
@@ -351,9 +351,9 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
               // Mode Ubah Jadwal: produk tidak bisa diubah, jadi tidak ditawarkan.
               if (!_modeUbah && widget.lapangan.produkTambahan.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   AppStrings.produkTambahanOpsional,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 const SizedBox(height: 8),
                 for (var i = 0; i < _jumlahProduk.length; i++)
@@ -428,7 +428,7 @@ class _TombolPilihTanggal extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.surfaceVariant, width: 1.5),
+          border: Border.all(color: context.warna.surfaceVariant, width: 1.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -438,9 +438,9 @@ class _TombolPilihTanggal extends StatelessWidget {
               tanggal == null
                   ? AppStrings.pilihTanggal
                   : Formatter.tanggal(tanggal!),
-              style: AppTextStyles.namaLapangan,
+              style: AppTextStyles.namaLapangan(context),
             ),
-            const Icon(Icons.calendar_today, size: 16, color: AppColors.textSecondary),
+            Icon(Icons.calendar_today, size: 16, color: context.warna.textSecondary),
           ],
         ),
       ),
@@ -468,24 +468,24 @@ class _DaftarJamMulai extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!tanggalDipilih) {
-      return const Text(
+      return Text(
         AppStrings.errPilihTanggalDulu,
-        style: AppTextStyles.metaLapangan,
+        style: AppTextStyles.metaLapangan(context),
       );
     }
     if (vm.kondisiSlot == KondisiSlot.memuat) {
       return const LinearProgressIndicator();
     }
     if (vm.kondisiSlot == KondisiSlot.gagal) {
-      return const Text(
+      return Text(
         AppStrings.errGagalMuat,
-        style: AppTextStyles.metaLapangan,
+        style: AppTextStyles.metaLapangan(context),
       );
     }
     if (jamTersedia.isEmpty) {
-      return const Text(
+      return Text(
         AppStrings.kosongJamTersedia,
-        style: AppTextStyles.metaLapangan,
+        style: AppTextStyles.metaLapangan(context),
       );
     }
 
@@ -502,11 +502,11 @@ class _DaftarJamMulai extends StatelessWidget {
           selected: aktif,
           onSelected: penuh ? null : (_) => onPilih(jam),
           selectedColor: AppColors.primary,
-          disabledColor: AppColors.surfaceVariant,
+          disabledColor: context.warna.surfaceVariant,
           labelStyle: TextStyle(
             color: penuh
-                ? AppColors.textSecondary
-                : (aktif ? Colors.white : AppColors.textPrimary),
+                ? context.warna.textSecondary
+                : (aktif ? Colors.white : context.warna.textPrimary),
           ),
         );
       }).toList(),
@@ -533,9 +533,9 @@ class _KotakEstimasi extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,7 +558,7 @@ class _KotakEstimasi extends StatelessWidget {
               ),
             const Divider(height: 16),
           ],
-          const Text(AppStrings.totalEstimasi, style: AppTextStyles.metaLapangan),
+          Text(AppStrings.totalEstimasi, style: AppTextStyles.metaLapangan(context)),
           const SizedBox(height: 4),
           Text(
             totalHarga == null ? '—' : Formatter.rupiah(totalHarga),
@@ -569,9 +569,9 @@ class _KotakEstimasi extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             AppStrings.estimasiDibayarDiLokasi,
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           ),
         ],
       ),
@@ -594,10 +594,10 @@ class _BarisRincian extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyles.metaLapangan),
+          Text(label, style: AppTextStyles.metaLapangan(context)),
           Text(
             nilai,
-            style: AppTextStyles.metaLapangan.copyWith(color: warna),
+            style: AppTextStyles.metaLapangan(context).copyWith(color: warna),
           ),
         ],
       ),
@@ -629,10 +629,10 @@ class _BarisProdukPesan extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(produk.nama, style: AppTextStyles.namaLapangan),
+                Text(produk.nama, style: AppTextStyles.namaLapangan(context)),
                 Text(
                   Formatter.rupiah(produk.harga),
-                  style: AppTextStyles.metaLapangan,
+                  style: AppTextStyles.metaLapangan(context),
                 ),
               ],
             ),
@@ -646,7 +646,7 @@ class _BarisProdukPesan extends StatelessWidget {
             child: Text(
               '$jumlah',
               textAlign: TextAlign.center,
-              style: AppTextStyles.namaLapangan,
+              style: AppTextStyles.namaLapangan(context),
             ),
           ),
           IconButton(

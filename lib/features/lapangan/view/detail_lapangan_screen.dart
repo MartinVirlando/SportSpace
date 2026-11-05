@@ -60,9 +60,9 @@ class DetailLapanganScreen extends StatelessWidget {
     // jaga dengan spinner, bukan asumsi selalu ada.
     final user = context.read<AuthViewModel>().user;
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.warna.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     final userId = user.userId;
@@ -92,7 +92,7 @@ class _DetailLapanganBody extends StatelessWidget {
     final vm = context.watch<DetailLapanganViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       body: switch (vm.kondisi) {
         KondisiDetail.memuat => const _Pemuatan(),
         KondisiDetail.gagal => _Kesalahan(
@@ -145,21 +145,21 @@ class _Kesalahan extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.error_outline,
                     size: 48,
-                    color: AppColors.textSecondary,
+                    color: context.warna.textSecondary,
                   ),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     AppStrings.errGagalMuat,
-                    style: AppTextStyles.judulSeksi,
+                    style: AppTextStyles.judulSeksi(context),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     pesan,
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.lokasi,
+                    style: AppTextStyles.lokasi(context),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
@@ -212,9 +212,9 @@ class _Isi extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(lapangan.nama, style: _judulLayar),
+                Text(lapangan.nama, style: _judulLayar(context)),
                 const SizedBox(height: 6),
-                Text(_barisRating(lapangan), style: AppTextStyles.lokasi),
+                Text(_barisRating(lapangan), style: AppTextStyles.lokasi(context)),
                 _BarisBadge(lapangan: lapangan),
                 const SizedBox(height: 16),
                 _BarisAlamat(lapangan: lapangan),
@@ -233,7 +233,7 @@ class _Isi extends StatelessWidget {
                   isi: HargaLapangan(
                     lapangan: lapangan,
                     ringkas: false,
-                    gayaHarga: AppTextStyles.namaLapangan,
+                    gayaHarga: AppTextStyles.namaLapangan(context),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -274,9 +274,9 @@ class _Isi extends StatelessWidget {
                           minimumSize: const Size(0, 0),
                         ),
                         icon: const Icon(Icons.chat_outlined, size: 14),
-                        label: const Text(
+                        label: Text(
                           AppStrings.hubungiViaWhatsApp,
-                          style: AppTextStyles.metaLapangan,
+                          style: AppTextStyles.metaLapangan(context),
                         ),
                       ),
                     ),
@@ -305,9 +305,9 @@ class _Isi extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       AppStrings.ulasanPengguna,
-                      style: AppTextStyles.judulSeksi,
+                      style: AppTextStyles.judulSeksi(context),
                     ),
                     TextButton(
                       onPressed: () => _bukaFormRating(context, lapangan),
@@ -336,11 +336,12 @@ class _Isi extends StatelessWidget {
     );
   }
 
-  static const _judulLayar = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
-  );
+  // Fungsi, bukan `static const`: warnanya bergantung pada tema (mode gelap).
+  TextStyle _judulLayar(BuildContext context) => TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: context.warna.textPrimary,
+      );
 
   String _barisRating(LapanganModel l) {
     if (l.jumlahRating == 0) return AppStrings.belumAdaUlasan;
@@ -418,15 +419,15 @@ class _DaftarUlasan extends StatelessWidget {
         if (snapshot.hasError) {
           return Text(
             snapshot.error.toString().replaceFirst('Exception: ', ''),
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
 
         final ulasan = snapshot.data ?? const [];
         if (ulasan.isEmpty) {
-          return const Text(
+          return Text(
             AppStrings.belumAdaUlasan,
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
 
@@ -475,9 +476,9 @@ class _KartuUlasan extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,10 +486,10 @@ class _KartuUlasan extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(rating.namaUser, style: AppTextStyles.namaLapangan),
+              Text(rating.namaUser, style: AppTextStyles.namaLapangan(context)),
               Text(
                 Formatter.tanggal(rating.tanggal),
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
             ],
           ),
@@ -499,7 +500,7 @@ class _KartuUlasan extends StatelessWidget {
           ),
           if (rating.ulasanTeks != null && rating.ulasanTeks!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(rating.ulasanTeks!, style: AppTextStyles.metaLapangan),
+            Text(rating.ulasanTeks!, style: AppTextStyles.metaLapangan(context)),
           ],
           if (sudahDibalas) ...[
             const SizedBox(height: 10),
@@ -507,7 +508,7 @@ class _KartuUlasan extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: context.warna.surfaceVariant,
                 borderRadius: BorderRadius.circular(AppSizes.radiusChip),
               ),
               child: Column(
@@ -518,22 +519,22 @@ class _KartuUlasan extends StatelessWidget {
                     children: [
                       Text(
                         AppStrings.balasanPemilik,
-                        style: AppTextStyles.metaLapangan.copyWith(
+                        style: AppTextStyles.metaLapangan(context).copyWith(
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: context.warna.textPrimary,
                         ),
                       ),
                       if (rating.balasanPada != null)
                         Text(
                           Formatter.tanggal(rating.balasanPada!),
-                          style: AppTextStyles.metaLapangan,
+                          style: AppTextStyles.metaLapangan(context),
                         ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     rating.balasanMitra!,
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   ),
                 ],
               ),
@@ -602,7 +603,7 @@ class _Hero extends StatelessWidget {
               imageUrl: lapangan.fotoURL.first,
               fit: BoxFit.cover,
               placeholder: (_, __) =>
-                  Container(color: AppColors.surfaceVariant),
+                  Container(color: context.warna.surfaceVariant),
               errorWidget: (_, __, ___) =>
                   _BlokWarnaHero(olahraga: olahragaUtama),
             )
@@ -647,7 +648,7 @@ class _BlokWarnaHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _warnaOlahraga(olahraga),
+      color: _warnaOlahraga(context, olahraga),
       alignment: Alignment.center,
       child: Text(
         AppSports.ikonDari(olahraga),
@@ -656,7 +657,7 @@ class _BlokWarnaHero extends StatelessWidget {
     );
   }
 
-  Color _warnaOlahraga(String kode) {
+  Color _warnaOlahraga(BuildContext context, String kode) {
     switch (kode) {
       case AppSports.futsal:
         return AppColors.futsal;
@@ -667,7 +668,7 @@ class _BlokWarnaHero extends StatelessWidget {
       case AppSports.miniSoccer:
         return AppColors.miniSoccer;
       default:
-        return AppColors.surfaceVariant;
+        return context.warna.surfaceVariant;
     }
   }
 }
@@ -685,11 +686,11 @@ class _TombolBulat extends StatelessWidget {
       child: Container(
         width: 36,
         height: 36,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
+        decoration: BoxDecoration(
+          color: context.warna.surface,
           shape: BoxShape.circle,
         ),
-        child: Icon(ikon, size: 18, color: AppColors.textPrimary),
+        child: Icon(ikon, size: 18, color: context.warna.textPrimary),
       ),
     );
   }
@@ -741,7 +742,7 @@ class _Badge extends StatelessWidget {
       ),
       child: Text(
         teks,
-        style: AppTextStyles.metaLapangan.copyWith(
+        style: AppTextStyles.metaLapangan(context).copyWith(
           color: AppColors.primary,
           fontWeight: FontWeight.w600,
         ),
@@ -787,14 +788,14 @@ class _TombolFavorit extends StatelessWidget {
           child: Container(
             width: 36,
             height: 36,
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
+            decoration: BoxDecoration(
+              color: context.warna.surface,
               shape: BoxShape.circle,
             ),
             child: Icon(
               difavoritkan ? Icons.favorite : Icons.favorite_border,
               size: 18,
-              color: difavoritkan ? AppColors.primary : AppColors.textPrimary,
+              color: difavoritkan ? AppColors.primary : context.warna.textPrimary,
             ),
           ),
         );
@@ -834,7 +835,7 @@ class _BarisAlamat extends StatelessWidget {
             const Text('📍', style: TextStyle(fontSize: 14)),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
+              child: Text(lapangan.alamat, style: AppTextStyles.metaLapangan(context)),
             ),
             TextButton(
               onPressed: () {
@@ -853,9 +854,9 @@ class _BarisAlamat extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 minimumSize: const Size(0, 0),
               ),
-              child: const Text(
+              child: Text(
                 AppStrings.lihatDiPeta,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
             ),
           ],
@@ -873,9 +874,9 @@ class _BarisAlamat extends StatelessWidget {
                 minimumSize: const Size(0, 0),
               ),
               icon: const Icon(Icons.map_outlined, size: 14),
-              label: const Text(
+              label: Text(
                 AppStrings.bukaGoogleMaps,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
             ),
           ),
@@ -910,10 +911,10 @@ class _BarisInfo extends StatelessWidget {
         const SizedBox(width: 14),
         SizedBox(
           width: 90,
-          child: Text(label, style: AppTextStyles.metaLapangan),
+          child: Text(label, style: AppTextStyles.metaLapangan(context)),
         ),
         Expanded(
-          child: isi ?? Text(nilai, style: AppTextStyles.namaLapangan),
+          child: isi ?? Text(nilai, style: AppTextStyles.namaLapangan(context)),
         ),
       ],
     );

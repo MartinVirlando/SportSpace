@@ -61,14 +61,14 @@ class ChipFilter extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: aktif ? AppColors.primary : AppColors.surface,
+          color: aktif ? AppColors.primary : context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusChip),
-          boxShadow: aktif ? null : AppColors.shadowChip,
+          boxShadow: aktif ? null : context.warna.shadowChip,
         ),
         child: Text(
           label,
           style: AppTextStyles.chip.copyWith(
-            color: aktif ? Colors.white : AppColors.textPrimary,
+            color: aktif ? Colors.white : context.warna.textPrimary,
             fontWeight: aktif ? FontWeight.w600 : FontWeight.normal,
           ),
         ),

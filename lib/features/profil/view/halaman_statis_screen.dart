@@ -16,21 +16,21 @@ class HalamanStatisScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: Text(judul, style: AppTextStyles.judulSeksi),
+        title: Text(judul, style: AppTextStyles.judulSeksi(context)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSizes.marginLayar),
           child: Text(
             isi,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               height: 1.6,
-              color: AppColors.textPrimary,
+              color: context.warna.textPrimary,
             ),
           ),
         ),

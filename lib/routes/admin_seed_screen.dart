@@ -71,13 +71,13 @@ class _AdminSeedBody extends StatelessWidget {
     final user = context.watch<AuthViewModel>().user;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           AppStrings.adminSeedJudul,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
       ),
       body: SafeArea(
@@ -86,9 +86,9 @@ class _AdminSeedBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 AppStrings.adminSeedKeterangan,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
               const SizedBox(height: 24),
               ElevatedButton(

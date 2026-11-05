@@ -39,7 +39,7 @@ Future<void> showUbahProfilSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.warna.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -179,7 +179,7 @@ class _UbahProfilBodyState extends State<_UbahProfilBody> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(AppStrings.editProfil, style: AppTextStyles.judulSeksi),
+            Text(AppStrings.editProfil, style: AppTextStyles.judulSeksi(context)),
             const SizedBox(height: 16),
             Center(
               child: Column(
@@ -214,7 +214,7 @@ class _UbahProfilBodyState extends State<_UbahProfilBody> {
                               color: AppColors.primary,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppColors.surface,
+                                color: context.warna.surface,
                                 width: 2,
                               ),
                             ),

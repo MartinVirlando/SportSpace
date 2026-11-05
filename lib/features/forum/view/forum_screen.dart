@@ -40,11 +40,11 @@ class _ForumBody extends StatelessWidget {
     final vm = context.watch<ForumViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(AppStrings.forum, style: AppTextStyles.judulSeksi),
+        title: Text(AppStrings.forum, style: AppTextStyles.judulSeksi(context)),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
@@ -135,18 +135,18 @@ class _KartuPost extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(post.namaUser, style: AppTextStyles.namaLapangan),
+            Text(post.namaUser, style: AppTextStyles.namaLapangan(context)),
             const SizedBox(height: 4),
             Text(
               post.teks,
-              style: AppTextStyles.metaLapangan,
+              style: AppTextStyles.metaLapangan(context),
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
@@ -168,19 +168,19 @@ class _KartuPost extends StatelessWidget {
               children: [
                 Text(
                   Formatter.tanggalDanJam(post.createdAt),
-                  style: AppTextStyles.metaLapangan,
+                  style: AppTextStyles.metaLapangan(context),
                 ),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.chat_bubble_outline,
                       size: 14,
-                      color: AppColors.textSecondary,
+                      color: context.warna.textSecondary,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '${post.jumlahKomentar}',
-                      style: AppTextStyles.metaLapangan,
+                      style: AppTextStyles.metaLapangan(context),
                     ),
                   ],
                 ),
@@ -212,11 +212,11 @@ class _Pesan extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(ikon, size: 48, color: AppColors.textSecondary),
+            Icon(ikon, size: 48, color: context.warna.textSecondary),
             const SizedBox(height: 12),
             Text(
               judul,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
               textAlign: TextAlign.center,
             ),
             if (keterangan.isNotEmpty) ...[
@@ -224,7 +224,7 @@ class _Pesan extends StatelessWidget {
               Text(
                 keterangan,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.lokasi,
+                style: AppTextStyles.lokasi(context),
               ),
             ],
           ],

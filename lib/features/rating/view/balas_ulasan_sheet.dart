@@ -23,7 +23,7 @@ Future<bool?> showBalasUlasanSheet(
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.warna.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -105,12 +105,12 @@ class _BalasUlasanBodyState extends State<_BalasUlasanBody> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               AppStrings.judulBalasUlasan,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             const SizedBox(height: 4),
-            Text(widget.namaPengulas, style: AppTextStyles.metaLapangan),
+            Text(widget.namaPengulas, style: AppTextStyles.metaLapangan(context)),
             const SizedBox(height: 12),
             TextFormField(
               controller: _teksCtrl,

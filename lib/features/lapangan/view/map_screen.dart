@@ -46,7 +46,7 @@ class _MapScreenState extends State<MapScreen> {
     final vm = context.watch<MapViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       body: SafeArea(child: _Isi(vm: vm)),
     );
   }
@@ -324,10 +324,10 @@ class _TombolRecenter extends StatelessWidget {
       child: Container(
         width: 40,
         height: 40,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
+        decoration: BoxDecoration(
+          color: context.warna.surface,
           shape: BoxShape.circle,
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
         ),
         child: const Icon(
           Icons.my_location,
@@ -350,10 +350,10 @@ class _KontrolZoom extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-        boxShadow: AppColors.shadowKartu,
+      decoration: BoxDecoration(
+        color: context.warna.surface,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        boxShadow: context.warna.shadowKartu,
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
@@ -419,7 +419,7 @@ class _PenandaLapangan extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: _warnaOlahraga(olahragaUtama),
+        color: _warnaOlahraga(context, olahragaUtama),
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2),
         boxShadow: const [
@@ -434,7 +434,7 @@ class _PenandaLapangan extends StatelessWidget {
     );
   }
 
-  Color _warnaOlahraga(String kode) {
+  Color _warnaOlahraga(BuildContext context, String kode) {
     switch (kode) {
       case AppSports.futsal:
         return AppColors.futsal;
@@ -445,7 +445,7 @@ class _PenandaLapangan extends StatelessWidget {
       case AppSports.miniSoccer:
         return AppColors.miniSoccer;
       default:
-        return AppColors.surfaceVariant;
+        return context.warna.surfaceVariant;
     }
   }
 }
@@ -463,9 +463,9 @@ class _KartuRingkas extends StatelessWidget {
       margin: const EdgeInsets.all(AppSizes.marginLayar),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Row(
         children: [
@@ -475,7 +475,7 @@ class _KartuRingkas extends StatelessWidget {
               children: [
                 Text(
                   lapangan.nama,
-                  style: AppTextStyles.namaLapangan.copyWith(fontSize: 14),
+                  style: AppTextStyles.namaLapangan(context).copyWith(fontSize: 14),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -484,7 +484,7 @@ class _KartuRingkas extends StatelessWidget {
                   lapangan.jarakKm != null
                       ? Formatter.jarak(lapangan.jarakKm!)
                       : '',
-                  style: AppTextStyles.metaLapangan,
+                  style: AppTextStyles.metaLapangan(context),
                 ),
                 const SizedBox(height: 4),
                 // v1.5 (T-65): ikut menampilkan promo bila ada.
@@ -523,13 +523,13 @@ class _SpandukLokasiDefault extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
-      child: const Text(
+      child: Text(
         AppStrings.spandukLokasiDefault,
-        style: AppTextStyles.metaLapangan,
+        style: AppTextStyles.metaLapangan(context),
       ),
     );
   }
@@ -546,11 +546,11 @@ class _SpandukKosong extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
-      child: Text(teks, style: AppTextStyles.metaLapangan),
+      child: Text(teks, style: AppTextStyles.metaLapangan(context)),
     );
   }
 }
@@ -568,25 +568,25 @@ class _KolomPencarianPeta extends StatelessWidget {
     return Container(
       height: AppSizes.tinggiPencarian,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusPencarian),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          const Icon(Icons.search, size: 18, color: AppColors.textSecondary),
+          Icon(Icons.search, size: 18, color: context.warna.textSecondary),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
               focusNode: focusNode,
               onChanged: onBerubah,
               style: const TextStyle(fontSize: 13),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: AppStrings.cariLapangan,
                 hintStyle: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: context.warna.textSecondary,
                 ),
                 border: InputBorder.none,
                 isDense: true,
@@ -617,13 +617,13 @@ class _SaranPencarian extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
         ),
-        child: const Text(
+        child: Text(
           AppStrings.kosongHasilPencarian,
-          style: AppTextStyles.metaLapangan,
+          style: AppTextStyles.metaLapangan(context),
         ),
       );
     }
@@ -631,9 +631,9 @@ class _SaranPencarian extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(maxHeight: 280),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: ListView.separated(
         shrinkWrap: true,
@@ -649,22 +649,22 @@ class _SaranPencarian extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.location_on_outlined,
                     size: 18,
-                    color: AppColors.textSecondary,
+                    color: context.warna.textSecondary,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l.nama, style: AppTextStyles.namaLapangan),
+                        Text(l.nama, style: AppTextStyles.namaLapangan(context)),
                         Text(
                           l.alamat,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.metaLapangan,
+                          style: AppTextStyles.metaLapangan(context),
                         ),
                       ],
                     ),
@@ -702,14 +702,14 @@ class _Pesan extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(ikon, size: 48, color: AppColors.textSecondary),
+            Icon(ikon, size: 48, color: context.warna.textSecondary),
             const SizedBox(height: 12),
-            Text(judul, style: AppTextStyles.judulSeksi),
+            Text(judul, style: AppTextStyles.judulSeksi(context)),
             const SizedBox(height: 6),
             Text(
               keterangan,
               textAlign: TextAlign.center,
-              style: AppTextStyles.lokasi,
+              style: AppTextStyles.lokasi(context),
             ),
             if (labelTombol != null) ...[
               const SizedBox(height: 20),

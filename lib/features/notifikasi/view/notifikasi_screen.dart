@@ -39,9 +39,9 @@ class NotifikasiScreen extends StatelessWidget {
     // null (mis. jendela logout) supaya tidak crash lewat `!`.
     final user = context.read<AuthViewModel>().user;
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.warna.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     final userId = user.userId;
@@ -102,12 +102,12 @@ class _NotifikasiBody extends StatelessWidget {
     final vm = context.watch<NotifikasiViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
         title:
-            const Text(AppStrings.notifikasi, style: AppTextStyles.judulSeksi),
+            Text(AppStrings.notifikasi, style: AppTextStyles.judulSeksi(context)),
       ),
       body: SafeArea(
         child: StreamBuilder<List<NotifikasiModel>>(
@@ -194,9 +194,9 @@ class _KartuNotifikasi extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,7 +213,7 @@ class _KartuNotifikasi extends StatelessWidget {
               )
             else
               const SizedBox(width: 16),
-            Icon(_ikon, size: 20, color: AppColors.textSecondary),
+            Icon(_ikon, size: 20, color: context.warna.textSecondary),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -222,17 +222,17 @@ class _KartuNotifikasi extends StatelessWidget {
                   Text(
                     item.judul,
                     style: item.sudahDibaca
-                        ? AppTextStyles.namaLapangan
-                        : AppTextStyles.namaLapangan.copyWith(
+                        ? AppTextStyles.namaLapangan(context)
+                        : AppTextStyles.namaLapangan(context).copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                   ),
                   const SizedBox(height: 2),
-                  Text(item.pesan, style: AppTextStyles.metaLapangan),
+                  Text(item.pesan, style: AppTextStyles.metaLapangan(context)),
                   const SizedBox(height: 4),
                   Text(
                     Formatter.tanggalDanJam(item.dibuatPada),
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   ),
                 ],
               ),
@@ -263,11 +263,11 @@ class _Pesan extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(ikon, size: 48, color: AppColors.textSecondary),
+            Icon(ikon, size: 48, color: context.warna.textSecondary),
             const SizedBox(height: 12),
             Text(
               judul,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
               textAlign: TextAlign.center,
             ),
             if (keterangan.isNotEmpty) ...[
@@ -275,7 +275,7 @@ class _Pesan extends StatelessWidget {
               Text(
                 keterangan,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.lokasi,
+                style: AppTextStyles.lokasi(context),
               ),
             ],
           ],

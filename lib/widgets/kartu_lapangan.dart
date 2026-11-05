@@ -35,9 +35,9 @@ class KartuLapangan extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
         ),
         // clipBehavior memastikan sudut thumbnail ikut membulat
         // mengikuti radius kartu.
@@ -59,7 +59,7 @@ class KartuLapangan extends StatelessWidget {
                           Expanded(
                             child: Text(
                               lapangan.nama,
-                              style: AppTextStyles.namaLapangan,
+                              style: AppTextStyles.namaLapangan(context),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -73,12 +73,12 @@ class KartuLapangan extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         lapangan.alamat,
-                        style: AppTextStyles.metaLapangan,
+                        style: AppTextStyles.metaLapangan(context),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
-                      Text(_barisMeta(), style: AppTextStyles.metaLapangan),
+                      Text(_barisMeta(), style: AppTextStyles.metaLapangan(context)),
                       const SizedBox(height: 6),
                       // Figma menulis "Rp 120k/jam" — versi ringkas. Sejak
                       // v1.5 (T-65) ikut menampilkan promo bila ada.
@@ -143,7 +143,7 @@ class _Thumbnail extends StatelessWidget {
         // tinggi terlepas dari orientasi foto masing-masing lapangan.
         height: lebar,
         fit: BoxFit.cover,
-        placeholder: (_, __) => Container(color: AppColors.surfaceVariant),
+        placeholder: (_, __) => Container(color: context.warna.surfaceVariant),
         // Foto gagal dimuat bukan alasan untuk merusak kartu —
         // jatuh balik ke blok warna.
         errorWidget: (_, __, ___) =>
@@ -166,7 +166,7 @@ class _BlokWarna extends StatelessWidget {
     return Container(
       width: lebar,
       height: lebar,
-      color: _warnaOlahraga(olahraga),
+      color: _warnaOlahraga(context, olahraga),
       alignment: Alignment.center,
       child: Text(
         AppSports.ikonDari(olahraga),
@@ -175,7 +175,7 @@ class _BlokWarna extends StatelessWidget {
     );
   }
 
-  Color _warnaOlahraga(String kode) {
+  Color _warnaOlahraga(BuildContext context, String kode) {
     switch (kode) {
       case AppSports.futsal:
         return AppColors.futsal;
@@ -186,7 +186,7 @@ class _BlokWarna extends StatelessWidget {
       case AppSports.miniSoccer:
         return AppColors.miniSoccer;
       default:
-        return AppColors.surfaceVariant;
+        return context.warna.surfaceVariant;
     }
   }
 }
@@ -210,7 +210,7 @@ class _TombolFavorit extends StatelessWidget {
         child: Icon(
           aktif ? Icons.favorite : Icons.favorite_border,
           size: 18,
-          color: aktif ? AppColors.primary : AppColors.textSecondary,
+          color: aktif ? AppColors.primary : context.warna.textSecondary,
         ),
       ),
     );

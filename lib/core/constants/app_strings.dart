@@ -242,6 +242,15 @@ class AppStrings {
       'supaya pengingat muncul.';
   static const errGagalAturPengingat = 'Gagal mengatur pengingat. Coba lagi.';
 
+  // Mode tampilan — v1.5, PRD AB-24.
+  static const modeTampilan = 'Mode tampilan';
+  static const modeTerang = 'Terang';
+  static const modeGelap = 'Gelap';
+  static const modeSistem = 'Ikuti HP';
+  static const errGagalSimpanModeTema =
+      'Pilihan tampilan belum tersimpan dan akan kembali ke bawaan saat '
+      'aplikasi dibuka lagi.';
+
   // Balasan mitra terhadap ulasan — v1.5 (T-66), PRD AB-22.
   static const balas = 'Balas';
   static const ubahBalasan = 'Ubah balasan';

@@ -60,9 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // `user!` di sini bisa crash — jaga dengan spinner, bukan asumsi.
     final user = context.read<AuthViewModel>().user;
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.warna.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     final userId = user.userId;
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
         userId: userId,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.warna.background,
         body: SafeArea(
           child: Column(
             children: [
@@ -273,7 +273,7 @@ class _Header extends StatelessWidget {
     final nama = user?.nama ?? '';
 
     return Container(
-      color: AppColors.surface,
+      color: context.warna.surface,
       padding: const EdgeInsets.fromLTRB(
         AppSizes.marginLayar,
         12,
@@ -286,11 +286,11 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${AppStrings.sapaan}, $nama 👋', style: AppTextStyles.sambutan),
+                Text('${AppStrings.sapaan}, $nama 👋', style: AppTextStyles.sambutan(context)),
                 const SizedBox(height: 2),
-                const Text(
+                Text(
                   '📍 ${AppStrings.wilayahPenelitian}',
-                  style: AppTextStyles.lokasi,
+                  style: AppTextStyles.lokasi(context),
                 ),
               ],
             ),
@@ -336,7 +336,7 @@ class _IkonLonceng extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.notifications_none),
-              color: AppColors.textPrimary,
+              color: context.warna.textPrimary,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
               ),
@@ -383,23 +383,23 @@ class _KolomPencarian extends StatelessWidget {
       child: Container(
         height: AppSizes.tinggiPencarian,
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
+          color: context.warna.surfaceVariant,
           borderRadius: BorderRadius.circular(AppSizes.radiusPencarian),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
-            const Icon(Icons.search, size: 18, color: AppColors.textSecondary),
+            Icon(Icons.search, size: 18, color: context.warna.textSecondary),
             const SizedBox(width: 8),
             Expanded(
               child: TextField(
                 onChanged: onBerubah,
                 style: const TextStyle(fontSize: 13),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: AppStrings.cariLapangan,
                   hintStyle: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: context.warna.textSecondary,
                   ),
                   border: InputBorder.none,
                   isDense: true,
@@ -419,7 +419,7 @@ class _KolomPencarian extends StatelessWidget {
                   size: 18,
                   color: hanyaFavorit
                       ? AppColors.primary
-                      : AppColors.textSecondary,
+                      : context.warna.textSecondary,
                 ),
               ),
             ),
@@ -438,7 +438,7 @@ class _KolomPencarian extends StatelessWidget {
                       size: 18,
                       color: adaFilterLanjutan
                           ? AppColors.primary
-                          : AppColors.textSecondary,
+                          : context.warna.textSecondary,
                     ),
                     if (adaFilterLanjutan)
                       Positioned(
@@ -480,12 +480,12 @@ class _SpandukLokasiDefault extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: context.warna.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const Text(
+      child: Text(
         AppStrings.spandukLokasiDefault,
-        style: AppTextStyles.metaLapangan,
+        style: AppTextStyles.metaLapangan(context),
       ),
     );
   }
@@ -515,14 +515,14 @@ class _Pesan extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(ikon, size: 48, color: AppColors.textSecondary),
+            Icon(ikon, size: 48, color: context.warna.textSecondary),
             const SizedBox(height: 12),
-            Text(judul, style: AppTextStyles.judulSeksi),
+            Text(judul, style: AppTextStyles.judulSeksi(context)),
             const SizedBox(height: 6),
             Text(
               keterangan,
               textAlign: TextAlign.center,
-              style: AppTextStyles.lokasi,
+              style: AppTextStyles.lokasi(context),
             ),
             if (labelTombol != null) ...[
               const SizedBox(height: 20),

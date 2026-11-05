@@ -17,7 +17,7 @@ Future<void> showUbahLokasiDefaultSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.warna.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -127,7 +127,7 @@ class _UbahLokasiDefaultBodyState extends State<_UbahLokasiDefaultBody> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(AppStrings.lokasiDefault, style: AppTextStyles.judulSeksi),
+            Text(AppStrings.lokasiDefault, style: AppTextStyles.judulSeksi(context)),
             const SizedBox(height: 16),
             TextFormField(
               controller: _namaCtrl,
@@ -146,7 +146,7 @@ class _UbahLokasiDefaultBodyState extends State<_UbahLokasiDefaultBody> {
                         ? AppStrings.belumDiatur
                         : '${_latitude!.toStringAsFixed(6)}, '
                             '${_longitude!.toStringAsFixed(6)}',
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   ),
                 ),
                 TextButton.icon(

@@ -75,11 +75,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final sedangProses = context.watch<AuthViewModel>().sedangProses;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(AppStrings.daftar, style: AppTextStyles.judulSeksi),
+        title: Text(AppStrings.daftar, style: AppTextStyles.judulSeksi(context)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -135,9 +135,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Validators.konfirmasiKataSandi(v, _kataSandiCtrl.text),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   AppStrings.perannya,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 const SizedBox(height: 8),
                 SegmentedButton<String>(

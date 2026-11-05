@@ -56,7 +56,7 @@ class HargaLapangan extends StatelessWidget {
       children: [
         Text(
           _format(lapangan.harga),
-          style: AppTextStyles.metaLapangan.copyWith(
+          style: AppTextStyles.metaLapangan(context).copyWith(
             decoration: TextDecoration.lineThrough,
           ),
         ),

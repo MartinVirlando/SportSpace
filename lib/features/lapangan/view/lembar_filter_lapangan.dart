@@ -20,7 +20,7 @@ Future<void> showLembarFilterLapangan(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.warna.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -58,9 +58,9 @@ class _LembarFilterBody extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   AppStrings.filterUrutkan,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 TextButton(
                   onPressed: vm.adaFilterLanjutan
@@ -71,7 +71,7 @@ class _LembarFilterBody extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            const Text(AppStrings.urutkan, style: AppTextStyles.namaLapangan),
+            Text(AppStrings.urutkan, style: AppTextStyles.namaLapangan(context)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -84,7 +84,7 @@ class _LembarFilterBody extends StatelessWidget {
                       context.read<HomeViewModel>().ubahUrutan(urutan),
                   selectedColor: AppColors.primary,
                   labelStyle: TextStyle(
-                    color: aktif ? Colors.white : AppColors.textPrimary,
+                    color: aktif ? Colors.white : context.warna.textPrimary,
                   ),
                 );
               }).toList(),
@@ -92,20 +92,20 @@ class _LembarFilterBody extends StatelessWidget {
             const SizedBox(height: 8),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
+              title: Text(
                 AppStrings.bukaSekarang,
-                style: AppTextStyles.namaLapangan,
+                style: AppTextStyles.namaLapangan(context),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 AppStrings.keteranganBukaSekarang,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
               value: vm.bukaSekarang,
               activeThumbColor: AppColors.primary,
               onChanged: context.read<HomeViewModel>().ubahBukaSekarang,
             ),
             const SizedBox(height: 8),
-            const Text(AppStrings.fasilitas, style: AppTextStyles.namaLapangan),
+            Text(AppStrings.fasilitas, style: AppTextStyles.namaLapangan(context)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -120,7 +120,7 @@ class _LembarFilterBody extends StatelessWidget {
                   selectedColor: AppColors.primary,
                   checkmarkColor: Colors.white,
                   labelStyle: TextStyle(
-                    color: aktif ? Colors.white : AppColors.textPrimary,
+                    color: aktif ? Colors.white : context.warna.textPrimary,
                   ),
                 );
               }).toList(),

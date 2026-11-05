@@ -38,9 +38,9 @@ class DashboardMitraScreen extends StatelessWidget {
     // null (mis. jendela logout) supaya tidak crash lewat `!`.
     final user = context.read<AuthViewModel>().user;
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.warna.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     final pemilikId = user.userId;
@@ -64,13 +64,13 @@ class _DashboardMitraBody extends StatelessWidget {
     final vm = context.watch<DashboardMitraViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           AppStrings.dashboardMitra,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
       ),
       body: SafeArea(
@@ -80,9 +80,9 @@ class _DashboardMitraBody extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   AppStrings.lapanganSaya,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 TextButton.icon(
                   onPressed: () => Navigator.of(context).push(
@@ -109,14 +109,14 @@ class _DashboardMitraBody extends StatelessWidget {
                 if (snapshot.hasError) {
                   return Text(
                     snapshot.error.toString().replaceFirst('Exception: ', ''),
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   );
                 }
                 final daftar = snapshot.data ?? const [];
                 if (daftar.isEmpty) {
-                  return const Text(
+                  return Text(
                     AppStrings.kosongLapanganMitra,
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   );
                 }
                 return Column(
@@ -130,9 +130,9 @@ class _DashboardMitraBody extends StatelessWidget {
               },
             ),
             const Divider(height: 40),
-            const Text(
+            Text(
               AppStrings.bookingMasuk,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             const SizedBox(height: 10),
             StreamBuilder<List<BookingModel>>(
@@ -144,14 +144,14 @@ class _DashboardMitraBody extends StatelessWidget {
                 if (snapshot.hasError) {
                   return Text(
                     snapshot.error.toString().replaceFirst('Exception: ', ''),
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   );
                 }
                 final daftar = snapshot.data ?? const [];
                 if (daftar.isEmpty) {
-                  return const Text(
+                  return Text(
                     AppStrings.kosongBookingMasuk,
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   );
                 }
                 return Column(
@@ -189,9 +189,9 @@ class _KartuLapanganMitra extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
         ),
         child: Column(
           children: [
@@ -208,9 +208,9 @@ class _KartuLapanganMitra extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(lapangan.nama, style: AppTextStyles.namaLapangan),
+                      Text(lapangan.nama, style: AppTextStyles.namaLapangan(context)),
                       const SizedBox(height: 2),
-                      Text(lapangan.alamat, style: AppTextStyles.metaLapangan),
+                      Text(lapangan.alamat, style: AppTextStyles.metaLapangan(context)),
                     ],
                   ),
                 ),
@@ -219,7 +219,7 @@ class _KartuLapanganMitra extends StatelessWidget {
                   style: AppTextStyles.harga,
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
+                Icon(Icons.chevron_right, size: 18, color: context.warna.textSecondary),
               ],
             ),
             // v1.5 (T-59) — membuka L-19 untuk memblokir/membuka jam.
@@ -232,9 +232,9 @@ class _KartuLapanganMitra extends StatelessWidget {
                   ),
                 ),
                 icon: const Icon(Icons.event_busy_outlined, size: 14),
-                label: const Text(
+                label: Text(
                   AppStrings.aturSlot,
-                  style: AppTextStyles.metaLapangan,
+                  style: AppTextStyles.metaLapangan(context),
                 ),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
@@ -321,9 +321,9 @@ class _BarisBookingState extends State<_BarisBooking> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,7 +332,7 @@ class _BarisBookingState extends State<_BarisBooking> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(b.namaLapangan, style: AppTextStyles.namaLapangan),
+                child: Text(b.namaLapangan, style: AppTextStyles.namaLapangan(context)),
               ),
               Text(Formatter.rupiah(b.totalHarga), style: AppTextStyles.harga),
             ],
@@ -340,14 +340,14 @@ class _BarisBookingState extends State<_BarisBooking> {
           const SizedBox(height: 4),
           Text(
             '${b.namaUser} · ${b.tanggal} · ${b.jamMulai}–${b.jamSelesai}',
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           ),
           // v1.5 (T-60): produk tambahan yang dipesan, mis. "+ Sewa Bola ×2".
           if (b.produkTambahan.isNotEmpty) ...[
             const SizedBox(height: 2),
             Text(
               '+ ${ringkasProduk(b.produkTambahan)}',
-              style: AppTextStyles.metaLapangan,
+              style: AppTextStyles.metaLapangan(context),
             ),
           ],
           const SizedBox(height: 10),
@@ -383,7 +383,7 @@ class _BarisBookingState extends State<_BarisBooking> {
               ],
             )
           else
-            Text(_labelStatus(context), style: AppTextStyles.metaLapangan),
+            Text(_labelStatus(context), style: AppTextStyles.metaLapangan(context)),
         ],
       ),
     );

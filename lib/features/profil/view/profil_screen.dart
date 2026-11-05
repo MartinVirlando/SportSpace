@@ -54,9 +54,9 @@ class ProfilScreen extends StatelessWidget {
     // null (mis. jendela logout) supaya tidak crash lewat `!`.
     final user = context.read<AuthViewModel>().user;
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.warna.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     final userId = user.userId;
@@ -111,19 +111,19 @@ class _ProfilBody extends StatelessWidget {
     // dan navigasi ke LoginScreen selesai — tampilkan spinner, bukan layar
     // putih polos, supaya tidak ada kondisi tanpa penanda apa pun.
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.warna.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
         title:
-            const Text(AppStrings.tabProfil, style: AppTextStyles.judulSeksi),
+            Text(AppStrings.tabProfil, style: AppTextStyles.judulSeksi(context)),
       ),
       body: SafeArea(
         child: ListView(
@@ -140,16 +140,16 @@ class _ProfilBody extends StatelessWidget {
             const SizedBox(height: 20),
             _SeksiLokasiDefault(lokasiDefault: user.lokasiDefault),
             const Divider(height: 36),
-            const Text(
+            Text(
               AppStrings.riwayatPemesanan,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             const SizedBox(height: 10),
             _SeksiRiwayatBooking(vm: vm),
             const Divider(height: 36),
-            const Text(
+            Text(
               AppStrings.aktivitasSaya,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             const SizedBox(height: 10),
             _SeksiAktivitasSaya(vm: vm, userId: user.userId),
@@ -243,11 +243,11 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(user.nama, style: AppTextStyles.sambutan),
+              Text(user.nama, style: AppTextStyles.sambutan(context)),
               const SizedBox(height: 2),
-              Text(user.surel, style: AppTextStyles.metaLapangan),
+              Text(user.surel, style: AppTextStyles.metaLapangan(context)),
               if (user.nomorTelepon.isNotEmpty)
-                Text(user.nomorTelepon, style: AppTextStyles.metaLapangan),
+                Text(user.nomorTelepon, style: AppTextStyles.metaLapangan(context)),
             ],
           ),
         ),
@@ -414,9 +414,9 @@ class _KotakAngka extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Column(
         children: [
@@ -436,7 +436,7 @@ class _KotakAngka extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 2),
-          Text(label, style: AppTextStyles.metaLapangan),
+          Text(label, style: AppTextStyles.metaLapangan(context)),
         ],
       ),
     );
@@ -456,9 +456,9 @@ class _SeksiOlahragaFavorit extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               AppStrings.olahragaFavorit,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             TextButton(
               onPressed: () => showUbahOlahragaFavoritSheet(
@@ -475,9 +475,9 @@ class _SeksiOlahragaFavorit extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         olahragaFavorit.isEmpty
-            ? const Text(
+            ? Text(
                 AppStrings.belumDipilih,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               )
             : Wrap(
                 spacing: 8,
@@ -488,7 +488,7 @@ class _SeksiOlahragaFavorit extends StatelessWidget {
                         label: Text(
                           '${AppSports.ikonDari(kode)} ${AppSports.labelDari(kode)}',
                         ),
-                        backgroundColor: AppColors.surfaceVariant,
+                        backgroundColor: context.warna.surfaceVariant,
                       ),
                     )
                     .toList(),
@@ -511,9 +511,9 @@ class _SeksiLokasiDefault extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               AppStrings.lokasiDefault,
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             TextButton(
               onPressed: () => showUbahLokasiDefaultSheet(context),
@@ -528,7 +528,7 @@ class _SeksiLokasiDefault extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           (lokasiDefault?['nama'] as String?) ?? AppStrings.belumDiatur,
-          style: AppTextStyles.metaLapangan,
+          style: AppTextStyles.metaLapangan(context),
         ),
       ],
     );
@@ -551,14 +551,14 @@ class _SeksiRiwayatBooking extends StatelessWidget {
         if (snapshot.hasError) {
           return Text(
             snapshot.error.toString().replaceFirst('Exception: ', ''),
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
         final daftar = snapshot.data ?? const [];
         if (daftar.isEmpty) {
-          return const Text(
+          return Text(
             AppStrings.kosongRiwayatBooking,
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
         return Column(
@@ -679,9 +679,9 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -692,7 +692,7 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
               Expanded(
                 child: Text(
                   widget.booking.namaLapangan,
-                  style: AppTextStyles.namaLapangan,
+                  style: AppTextStyles.namaLapangan(context),
                 ),
               ),
               Text(
@@ -705,14 +705,14 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
           Text(
             '${widget.booking.tanggal} · ${widget.booking.jamMulai}–'
             '${widget.booking.jamSelesai}',
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           ),
           // v1.5 (T-60): produk tambahan yang dipesan, mis. "+ Sewa Bola ×2".
           if (widget.booking.produkTambahan.isNotEmpty) ...[
             const SizedBox(height: 2),
             Text(
               '+ ${ringkasProduk(widget.booking.produkTambahan)}',
-              style: AppTextStyles.metaLapangan,
+              style: AppTextStyles.metaLapangan(context),
             ),
           ],
           const SizedBox(height: 4),
@@ -721,7 +721,7 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
             children: [
               Text(
                 _label(statusTampilan),
-                style: AppTextStyles.metaLapangan.copyWith(
+                style: AppTextStyles.metaLapangan(context).copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
                 ),
@@ -789,14 +789,14 @@ class _SeksiAktivitasSaya extends StatelessWidget {
         if (snapshot.hasError) {
           return Text(
             snapshot.error.toString().replaceFirst('Exception: ', ''),
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
         final daftar = snapshot.data ?? const [];
         if (daftar.isEmpty) {
-          return const Text(
+          return Text(
             AppStrings.kosongAktivitasSaya,
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
         return Column(
@@ -834,9 +834,9 @@ class _KartuAktivitasSaya extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.warna.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-          boxShadow: AppColors.shadowKartu,
+          boxShadow: context.warna.shadowKartu,
         ),
         child: Row(
           children: [
@@ -849,11 +849,11 @@ class _KartuAktivitasSaya extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(aktivitas.namaLapangan, style: AppTextStyles.namaLapangan),
+                  Text(aktivitas.namaLapangan, style: AppTextStyles.namaLapangan(context)),
                   const SizedBox(height: 2),
                   Text(
                     Formatter.tanggalDanJam(aktivitas.waktu),
-                    style: AppTextStyles.metaLapangan,
+                    style: AppTextStyles.metaLapangan(context),
                   ),
                 ],
               ),
@@ -894,12 +894,12 @@ class _TileMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(ikon, color: warna ?? AppColors.textSecondary),
+      leading: Icon(ikon, color: warna ?? context.warna.textSecondary),
       title: Text(
         label,
-        style: AppTextStyles.namaLapangan.copyWith(color: warna),
+        style: AppTextStyles.namaLapangan(context).copyWith(color: warna),
       ),
-      trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
+      trailing: Icon(Icons.chevron_right, size: 18, color: context.warna.textSecondary),
       onTap: onTap,
     );
   }

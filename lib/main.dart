@@ -4,10 +4,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
-import 'core/constants/app_colors.dart';
 import 'core/constants/app_strings.dart';
 import 'core/services/location_service.dart';
 import 'core/services/pengingat_service.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/mode_tema.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
 import 'features/lapangan/viewmodel/home_viewmodel.dart';
 import 'features/pengaturan/viewmodel/pengaturan_viewmodel.dart';
@@ -92,28 +93,33 @@ class SportSpaceApp extends StatelessWidget {
           ),
         ),
       ],
-      child: MaterialApp(
-        title: AppStrings.namaAplikasi,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-          scaffoldBackgroundColor: AppColors.background,
+      // `Selector` hanya membangun ulang MaterialApp kalau MODE TAMPILAN
+      // berubah — bukan setiap kali pengaturan lain (mis. pengingat) berubah.
+      child: Selector<PengaturanViewModel, ModeTema>(
+        selector: (_, pengaturan) => pengaturan.modeTema,
+        builder: (context, modeTema, _) => MaterialApp(
+          title: AppStrings.namaAplikasi,
+          debugShowCheckedModeBanner: false,
+          // Mode terang/gelap (v1.5, PRD AB-24). Flutter memilih salah satu
+          // dari tiga pilihan pengguna: terang, gelap, atau ikut pengaturan HP.
+          theme: AppTheme.terang(),
+          darkTheme: AppTheme.gelap(),
+          themeMode: AppTheme.themeModeDari(modeTema),
+          // Bahasa antarmuka bawaan Flutter (dialog pilih tanggal/jam, tombol
+          // "Batal"/"OK", nama hari & bulan di kalender) dikunci ke bahasa
+          // Indonesia. Tanpa ini, widget bawaan seperti showDatePicker()
+          // memakai bahasa Inggris ("Select date", "Cancel") — melanggar
+          // PRD §12 poin 4. Ini BUKAN fitur multi-bahasa: hanya satu bahasa
+          // yang didukung.
+          locale: const Locale('id', 'ID'),
+          supportedLocales: const [Locale('id', 'ID')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const SplashScreen(),
         ),
-        // Bahasa antarmuka bawaan Flutter (dialog pilih tanggal/jam, tombol
-        // "Batal"/"OK", nama hari & bulan di kalender) dikunci ke bahasa
-        // Indonesia. Tanpa ini, widget bawaan seperti showDatePicker()
-        // memakai bahasa Inggris ("Select date", "Cancel") — melanggar
-        // PRD §12 poin 4. Ini BUKAN fitur multi-bahasa: hanya satu bahasa
-        // yang didukung.
-        locale: const Locale('id', 'ID'),
-        supportedLocales: const [Locale('id', 'ID')],
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        home: const SplashScreen(),
       ),
     );
   }

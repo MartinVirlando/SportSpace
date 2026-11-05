@@ -217,13 +217,13 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
     final vm = context.watch<BuatAktivitasViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           AppStrings.buatAktivitas,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
       ),
       body: SafeArea(
@@ -234,7 +234,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(AppStrings.olahraga, style: AppTextStyles.judulSeksi),
+                Text(AppStrings.olahraga, style: AppTextStyles.judulSeksi(context)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -253,16 +253,16 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                       onSelected: (_) => setState(() => _olahraga = kode),
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: aktif ? Colors.white : AppColors.textPrimary,
+                        color: aktif ? Colors.white : context.warna.textPrimary,
                       ),
                     );
                   }).toList(),
                 ),
                 const SizedBox(height: 20),
                 // v1.4 (T-54) — Main Bareng atau Sparring.
-                const Text(
+                Text(
                   AppStrings.jenisAktivitas,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -275,16 +275,16 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                       onSelected: (_) => setState(() => _jenis = kode),
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: aktif ? Colors.white : AppColors.textPrimary,
+                        color: aktif ? Colors.white : context.warna.textPrimary,
                       ),
                     );
                   }).toList(),
                 ),
                 const SizedBox(height: 20),
                 // v1.5 (T-64) — Publik (bawaan) atau Privat.
-                const Text(
+                Text(
                   AppStrings.visibilitas,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -297,7 +297,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                       onSelected: (_) => setState(() => _visibilitas = kode),
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: aktif ? Colors.white : AppColors.textPrimary,
+                        color: aktif ? Colors.white : context.warna.textPrimary,
                       ),
                     );
                   }).toList(),
@@ -307,13 +307,13 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                   _visibilitas == AppVisibilitas.privat
                       ? AppStrings.keteranganPrivat
                       : AppStrings.keteranganPublik,
-                  style: AppTextStyles.metaLapangan,
+                  style: AppTextStyles.metaLapangan(context),
                 ),
                 const SizedBox(height: 20),
                 // v1.4 (T-55) — Pemula / Menengah / Mahir, wajib dipilih.
-                const Text(
+                Text(
                   AppStrings.tingkatKemampuan,
-                  style: AppTextStyles.judulSeksi,
+                  style: AppTextStyles.judulSeksi(context),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -329,7 +329,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                       }),
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: aktif ? Colors.white : AppColors.textPrimary,
+                        color: aktif ? Colors.white : context.warna.textPrimary,
                       ),
                     );
                   }).toList(),
@@ -343,7 +343,7 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
                     ),
                   ),
                 const SizedBox(height: 20),
-                const Text(AppStrings.lapangan, style: AppTextStyles.judulSeksi),
+                Text(AppStrings.lapangan, style: AppTextStyles.judulSeksi(context)),
                 const SizedBox(height: 8),
                 _DropdownLapangan(
                   vm: vm,
@@ -457,10 +457,10 @@ class _DropdownLapangan extends StatelessWidget {
       case KondisiDaftarLapangan.gagal:
         return Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 AppStrings.errGagalMuatDaftarLapangan,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
             ),
             TextButton(
@@ -472,9 +472,9 @@ class _DropdownLapangan extends StatelessWidget {
         );
       case KondisiDaftarLapangan.berhasil:
         if (vm.daftarLapangan.isEmpty) {
-          return const Text(
+          return Text(
             AppStrings.kosongDaftarLapangan,
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
         return DropdownButtonFormField<String>(
@@ -513,15 +513,15 @@ class _TombolPilih extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.surfaceVariant, width: 1.5),
+          border: Border.all(color: context.warna.surfaceVariant, width: 1.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppTextStyles.metaLapangan),
+            Text(label, style: AppTextStyles.metaLapangan(context)),
             const SizedBox(height: 2),
-            Text(nilai, style: AppTextStyles.namaLapangan),
+            Text(nilai, style: AppTextStyles.namaLapangan(context)),
           ],
         ),
       ),

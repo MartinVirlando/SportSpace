@@ -122,6 +122,21 @@ Pemilik produk menyetujui T-67 dan memberi izin package baru yang gratis (5 Nove
 - **Bawaan menyala**, bisa dimatikan di Profil. Dialog izin notifikasi Android 13+ diminta **sekali per sesi** saat ada pengingat yang perlu dijadwalkan, dan selalu diminta ketika pengguna menyalakan saklar secara sengaja.
 - **Waktu setempat.** Jam mulai booking dibaca sebagai waktu HP; zona waktu tidak dikonversi (aplikasi hanya untuk Indonesia).
 
+### Tambahan v1.5 (5 November 2026, sore) — T-68 Mode gelap
+
+Pemilik produk meminta mode gelap dengan pengaturannya di Profil (5 November 2026). **Mode gelap sebelumnya ada di daftar "di luar ruang lingkup" (§2.2 dan `CLAUDE.md`); daftar itu diperbarui.** Tidak ada package baru (memakai `shared_preferences` dari T-67), tidak ada koleksi baru, tidak ada perubahan Security Rules.
+
+| # | Tugas | Perubahan | Bagian yang terdampak |
+|---|---|---|---|
+| 9 | **T-68** | **Mode tampilan Terang / Gelap / Ikuti HP**: pemilih di bagian Pengaturan pada Profil, pilihan tersimpan di HP, berlaku seketika di seluruh aplikasi. Bawaan Terang | §2.2, §5, §7 AB-24, §8 L-13, §11 BB-96–100 |
+
+**Keputusan yang diambil** (dicatat supaya bisa dijelaskan):
+- **Bawaan Terang**, bukan "Ikuti HP": tampilan tetap sama dengan Figma dan tangkapan layar di skripsi, dan pengguna yang HP-nya bermode gelap tidak tiba-tiba melihat tampilan berbeda.
+- **Mode terang tidak diubah sama sekali.** Nilai warna terang disalin persis dari konstanta lama ke `AppPalette.terang` dan dijaga oleh tes.
+- **Cara kerja (Flutter):** warna yang berbeda per mode dipindah ke `ThemeExtension` (`AppPalette`) dan dibaca lewat `context.warna`. Konstanta lama di `AppColors` (latar, permukaan, teks) **dihapus**, bukan dibiarkan, supaya setiap pemakaian yang terlewat menjadi galat kompilasi — bukan warna terang yang diam-diam muncul di mode gelap.
+
+> ⚠️ **Keterbatasan yang diakui (Bab 5).** (1) **Peta tetap terang**: ubin OpenStreetMap yang dipakai `flutter_map` tidak punya versi gelap; kolom pencarian dan tombol di atasnya mengikuti mode. (2) **Layar sambut bawaan Android (putih) tetap muncul sesaat** saat aplikasi dimulai, sebelum Flutter berjalan: layar native itu tidak bisa membaca pilihan mode di dalam aplikasi.
+
 > ⚠️ **Keterbatasan yang diakui (Bab 5).** Pengingat baru dijadwalkan ketika aplikasi **terbuka** dan melihat booking sudah dikonfirmasi. Kalau mitra mengonfirmasi saat aplikasi pengguna tertutup, pengingat baru terjadwal saat aplikasi dibuka berikutnya — jika itu sudah lewat waktu pengingatnya, tidak ada pengingat. Mengatasinya butuh push dari server (FCM), yang dilarang.
 
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
@@ -255,11 +270,11 @@ Fitur di bawah ini terdengar masuk akal tapi **di luar ruang lingkup**. Jangan b
 
 - Aplikasi iOS atau web
 - Chat / pesan antar pengguna — **Forum (v1.3) bukan chat**: isinya post publik dan komentar di bawahnya, tanpa pesan pribadi dan tanpa percakapan real-time antar dua orang
-- Mode gelap, multi-bahasa (i18n), onboarding slider
+- Multi-bahasa (i18n) dan onboarding slider. (**Mode gelap** pernah ada di daftar ini; dimasukkan sejak v1.5 atas permintaan pemilik produk — lihat §7 AB-24.)
 - Statistik atau grafik di dashboard mitra
 - Upload foto oleh pengguna ke penyimpanan server (Storage). Dua pengecualian, keduanya disimpan Base64 langsung di dokumen Firestore: foto profil (v1.2) dan gambar post forum (v1.3) — lihat §12b
 - Lupa password / verifikasi email
-- Halaman pengaturan yang fungsional (Bahasa, Kebijakan Privasi, Bantuan, Tentang) — **cukup halaman statis**
+- Halaman pengaturan yang fungsional (Bahasa, Kebijakan Privasi, Bantuan, Tentang) — **cukup halaman statis** **Pengecualian v1.5:** bagian "Pengaturan" di Profil berisi dua kontrol yang berfungsi — mode tampilan (AB-24) dan pengingat jadwal (AB-23). Bahasa, Kebijakan Privasi, Bantuan, dan Tentang tetap halaman statis.
 - Laporan keuangan lapangan
 - **Rating antar-pengguna** — lihat §12c
 
@@ -363,6 +378,10 @@ lib/
     services/
       location_service.dart    # bungkus geolocator
       pengingat_service.dart   # v1.5 — bungkus flutter_local_notifications (AB-23)
+    theme/                     # v1.5 — mode gelap (AB-24)
+      app_palette.dart         # ThemeExtension warna per mode + context.warna
+      app_theme.dart           # ThemeData terang dan gelap (di-cache), pemetaan ModeTema → ThemeMode
+      mode_tema.dart           # enum Terang / Gelap / Ikuti HP + kode untuk disimpan
 
   models/
     user_model.dart
@@ -975,6 +994,25 @@ Notifikasi: judul **"Sebentar lagi waktunya main!"**, isi **"{nama lapangan} · 
 - **Konfigurasi Android:** desugaring (`isCoreLibraryDesugaringEnabled` + `desugar_jdk_libs`) di `build.gradle.kts`; izin `RECEIVE_BOOT_COMPLETED` dan dua receiver di `AndroidManifest.xml` (menjadwalkan ulang setelah HP restart atau aplikasi diperbarui); `POST_NOTIFICATIONS` ditambahkan plugin.
 - **Penyimpanan pilihan:** `PengaturanRepository` (`shared_preferences`) — milik perangkat, bukan akun, sehingga tidak masuk Firestore dan tidak mengubah ERD.
 
+### AB-24 · Mode tampilan terang / gelap — **v1.5 (T-68)**
+
+```
+Profil → Pengaturan → "Mode tampilan": SegmentedButton Terang | Gelap | Ikuti HP
+pilih → PengaturanViewModel.ubahModeTema(mode):
+          ganti state + notifyListeners   → main.dart (Selector) membangun ulang MaterialApp
+          simpan ke PengaturanRepository  (shared_preferences, kunci "mode_tema")
+MaterialApp: theme = AppTheme.terang(), darkTheme = AppTheme.gelap(),
+             themeMode = Terang→light | Gelap→dark | Ikuti HP→system
+Dibuka kembali → mode dibaca di main() SEBELUM runApp, jadi frame pertama sudah benar.
+```
+
+- **Warna per mode** ada di `AppPalette` (`core/theme/app_palette.dart`): `background`, `surface`, `surfaceVariant`, `textPrimary`, `textSecondary`, `textTertiary`, `mapBackground`, `mapGrid`, `shadowKartu`, `shadowChip`. Dibaca lewat `context.warna.X`. Gaya teks berwarna berupa fungsi: `AppTextStyles.judulSeksi(context)`. Warna yang sama di kedua mode (hijau merek `#1FA54E`, pastel olahraga) tetap di `AppColors`.
+- **Mode gelap:** latar `#121212`, permukaan `#1E1E1E`, teks utama `#EDEDED`, teks sekunder `#A3A3A3`. Kontras teks utama minimal 7:1 dan teks sekunder minimal 4,5:1 di atas semua latar (WCAG 2.1 AA/AAA) — dihitung dan dijaga oleh tes. Permukaan Material (dialog, bilah navigasi, lembar bawah) memakai abu netral, bukan abu kehijauan bawaan `fromSeed`. Bayangan kartu dikosongkan.
+- **Nilai tersimpan yang tidak dikenal** dibaca sebagai Terang (`ModeTema.dariKode`), bukan galat. Kalau penyimpanan gagal, pilihan tetap berlaku sampai aplikasi ditutup dan pengguna diberi tahu.
+- **Tema `ThemeData` dibuat sekali** dan di-cache: `MaterialApp` dibangun ulang tiap `PengaturanViewModel` berubah, dan `ThemeData` baru tiap kali membuat Flutter menggambar ulang seluruh pohon.
+- **Aturan untuk layar baru:** jangan menulis `Color(0x…)` atau `Colors.white`/`Colors.black` untuk latar atau teks; pakai `context.warna`. `Colors.white` hanya boleh sebagai warna teks/ikon DI ATAS hijau merek.
+- **Tanpa query, tanpa Security Rules, tanpa package baru.** Tidak mengubah ERD.
+
 ---
 
 ## 8. Spesifikasi Layar
@@ -1071,7 +1109,7 @@ Dibuka dari tab **Profil**.
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
 | Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan. **v1.5:** pada syarat yang sama muncul juga tombol **"Ubah Jadwal"** (T-62, AB-20), dan produk tambahan yang dipesan ditampilkan sebagai baris "+ Sewa Bola ×2" (T-60) |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
-| Pengaturan | **v1.5 (T-67)** — saklar **"Pengingat jadwal"** (AB-23), bawaan menyala. Kalau saklar menyala tetapi Android belum mengizinkan notifikasi, tampil petunjuk berwarna oranye; kalau gagal mengatur pengingat, tampil pesan galat berwarna merah. Pilihan disimpan di HP |
+| Pengaturan | **v1.5 (T-68)** — pemilih **"Mode tampilan"** Terang / Gelap / Ikuti HP (AB-24), bawaan Terang, berlaku seketika. **v1.5 (T-67)** — saklar **"Pengingat jadwal"** (AB-23), bawaan menyala. Kalau saklar menyala tetapi Android belum mengizinkan notifikasi, tampil petunjuk berwarna oranye; kalau gagal mengatur pengingat, tampil pesan galat berwarna merah. Pilihan disimpan di HP |
 | Menu statis | Bantuan, Kebijakan Privasi, Tentang — halaman statis saja |
 | Dashboard Mitra | Hanya muncul jika `role == "mitra"` |
 | Keluar | Logout; **v1.5:** membatalkan pengingat jadwal yang belum muncul lebih dulu (AB-23) |
@@ -1423,6 +1461,11 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-93** | **Lebih dari 20 booking dikonfirmasi di masa depan** *(T-67)* | **Hanya 20 pengingat terdekat yang dijadwalkan** |
 | **BB-94** | **Matikan lalu nyalakan saklar "Pengingat jadwal"; izin notifikasi belum diberikan** *(T-67)* | **Mati: semua pengingat dibatalkan. Nyala: dijadwalkan ulang. Saat izin belum ada, menyalakan saklar memunculkan dialog izin Android, dan selama belum diizinkan tampil petunjuk oranye** |
 | **BB-95** | **Batalkan booking, atau keluar akun** *(T-67)* | **Pengingat booking itu hilang; keluar akun membatalkan semua pengingat yang belum muncul** |
+| **BB-96** | **Pasang aplikasi baru (atau nilai tersimpan rusak), buka Profil → Pengaturan** *(T-68)* | **Mode tampilan terpilih "Terang"; nilai tidak dikenal dibaca Terang, tidak crash** |
+| **BB-97** | **Mode Terang dibandingkan dengan tampilan sebelum T-68** *(T-68)* | **Semua layar tampil sama: warna latar, kartu, dan teks tidak berubah** |
+| **BB-98** | **Pilih "Gelap"; buka Home, Map, Teman, Profil, Forum, Detail Lapangan, form reservasi, lembar rating/filter/Edit Profil, Notifikasi, Dashboard Mitra, Atur Slot, Form Lapangan, Login, Daftar** *(T-68)* | **Berganti seketika di layar yang sama tanpa kembali ke awal; tidak ada teks yang sulit dibaca, tidak ada kartu atau latar putih yang tertinggal, dialog dan pemilih tanggal ikut gelap** |
+| **BB-99** | **Pilih "Gelap", tutup aplikasi sepenuhnya, buka lagi** *(T-68)* | **Tetap Gelap sejak layar pertama (tidak berkedip terang di Flutter), pilihan di Profil tetap "Gelap"** |
+| **BB-100** | **Pilih "Ikuti HP", lalu ganti tema sistem HP terang ↔ gelap** *(T-68)* | **Aplikasi ikut berganti tanpa dibuka ulang** |
 
 ---
 
@@ -1637,8 +1680,9 @@ Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
 | 49 | ERD Bab 3 / Tabel 3.10 | Entitas `Lapangan` +`diskonPersen`, +`produkTambahan` (larik). Entitas `Booking` +`produkTambahan` (larik). Entitas `AktivitasBermain` +`visibilitas`, +`kodeAkses` (selain tiga atribut v1.4). Sesuai §6.2, §6.3, §6.6. **Gambar ERD (M1) setelah semua ini final** |
 | 50 | Bab 3.2 / pembahasan pengurutan hasil pencarian | AB-02 tetap benar: urutan **bawaan** murni jarak. Tambahkan satu kalimat bahwa pengguna boleh memilih urutan rating atau populer, dan itu tidak mengubah rancangan Haversine |
 | 51 | Bab 4 | Tambahkan ke paragraf fitur tambahan (#46): filter dan urut Home, blokir slot, promo, produk tambahan, ubah jadwal, aktivitas privat |
-| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-95 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-100 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
 | 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Balasan mitra (T-66, sudah dikerjakan) tidak bisa dihapus dan tidak memberi notifikasi ke pengguna. Pengingat jadwal (T-67, sudah dikerjakan) hanya terjadwal saat aplikasi terbuka dan boleh terlambat beberapa menit karena alarm tidak-tepat-waktu |
+| 56 | Bab 1 batasan masalah (jika menyebut mode gelap) dan Bab 3 perancangan antarmuka | Mode gelap (T-68) kini ada; Bab 3 menyatakan tampilan mengikuti Figma yang hanya punya mode terang. Tulis bahwa mode terang = Figma dan mode gelap = turunan, dengan palet di §AB-24. Peta tetap terang (keterbatasan, Bab 5) |
 | 55 | Bab 3 teknologi / Bab 4 implementasi (daftar package) | Tiga package baru: `flutter_local_notifications`, `timezone`, `shared_preferences` (§4). Notifikasi ini **lokal di HP**, bukan Firebase Cloud Messaging — penting dijelaskan karena Bab 3 menyatakan notifikasi dibuat in-app lewat Firestore listener. Konfigurasi Android (desugaring, izin, receiver) ikut berubah |
 | 54 | Bab 3 ERD dan 3.3.2 (atribut `rating`) | Entitas `rating` bertambah dua atribut: `balasanMitra` dan `balasanPada` (T-66). Gambar ERD sebaiknya dibuat setelah atribut ini final, atau keduanya disebut "tambahan di luar rancangan awal". Security Rules `rating` juga berubah (dua jalur `update`, §9) |
 

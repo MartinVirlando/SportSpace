@@ -30,9 +30,9 @@ class AturSlotScreen extends StatelessWidget {
     // logout) supaya tidak crash lewat `!`.
     final user = context.read<AuthViewModel>().user;
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.warna.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -91,13 +91,13 @@ class _AturSlotBody extends StatelessWidget {
     final vm = context.watch<AturSlotViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           AppStrings.judulAturSlot,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
       ),
       body: SafeArea(
@@ -106,19 +106,19 @@ class _AturSlotBody extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(vm.lapangan.nama, style: AppTextStyles.namaLapangan),
+              Text(vm.lapangan.nama, style: AppTextStyles.namaLapangan(context)),
               const SizedBox(height: 4),
               Text(
                 '${vm.lapangan.jamBuka} – ${vm.lapangan.jamTutup}',
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 AppStrings.keteranganAturSlot,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
               const SizedBox(height: 20),
-              const Text(AppStrings.tanggal, style: AppTextStyles.judulSeksi),
+              Text(AppStrings.tanggal, style: AppTextStyles.judulSeksi(context)),
               const SizedBox(height: 8),
               InkWell(
                 onTap: () => _pilihTanggal(context),
@@ -129,7 +129,7 @@ class _AturSlotBody extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   decoration: BoxDecoration(
                     border:
-                        Border.all(color: AppColors.surfaceVariant, width: 1.5),
+                        Border.all(color: context.warna.surfaceVariant, width: 1.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -139,19 +139,19 @@ class _AturSlotBody extends StatelessWidget {
                         vm.tanggal == null
                             ? AppStrings.pilihTanggal
                             : Formatter.tanggal(vm.tanggal!),
-                        style: AppTextStyles.namaLapangan,
+                        style: AppTextStyles.namaLapangan(context),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.calendar_today,
                         size: 16,
-                        color: AppColors.textSecondary,
+                        color: context.warna.textSecondary,
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(AppStrings.jam, style: AppTextStyles.judulSeksi),
+              Text(AppStrings.jam, style: AppTextStyles.judulSeksi(context)),
               const SizedBox(height: 8),
               _DaftarJam(vm: vm, onTekanJam: (jam) => _tekanJam(context, jam)),
             ],
@@ -174,9 +174,9 @@ class _DaftarJam extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (vm.kondisi) {
       case KondisiAturSlot.belumPilihTanggal:
-        return const Text(
+        return Text(
           AppStrings.pilihTanggalDulu,
-          style: AppTextStyles.metaLapangan,
+          style: AppTextStyles.metaLapangan(context),
         );
 
       case KondisiAturSlot.memuat:
@@ -185,10 +185,10 @@ class _DaftarJam extends StatelessWidget {
       case KondisiAturSlot.gagal:
         return Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 AppStrings.errGagalMuat,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               ),
             ),
             TextButton(
@@ -201,9 +201,9 @@ class _DaftarJam extends StatelessWidget {
       case KondisiAturSlot.berhasil:
         final daftar = vm.daftarJam;
         if (daftar.isEmpty) {
-          return const Text(
+          return Text(
             AppStrings.kosongJamOperasional,
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
         return Wrap(
@@ -252,20 +252,20 @@ class _ChipJam extends StatelessWidget {
     switch (status) {
       case StatusSlotMitra.kosong:
         teks = _label;
-        latar = AppColors.surface;
-        warnaTeks = AppColors.textPrimary;
+        latar = context.warna.surface;
+        warnaTeks = context.warna.textPrimary;
       case StatusSlotMitra.diblokir:
         teks = '$_label · ${AppStrings.slotDiblokirLabel}';
         latar = Colors.orange.shade100;
         warnaTeks = Colors.orange.shade900;
       case StatusSlotMitra.dipesan:
         teks = '$_label · ${AppStrings.slotDipesanLabel}';
-        latar = AppColors.surfaceVariant;
-        warnaTeks = AppColors.textSecondary;
+        latar = context.warna.surfaceVariant;
+        warnaTeks = context.warna.textSecondary;
       case StatusSlotMitra.lewat:
         teks = '$_label · ${AppStrings.slotLewatLabel}';
-        latar = AppColors.surfaceVariant;
-        warnaTeks = AppColors.textSecondary;
+        latar = context.warna.surfaceVariant;
+        warnaTeks = context.warna.textSecondary;
     }
 
     return ActionChip(

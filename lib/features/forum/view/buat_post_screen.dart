@@ -172,13 +172,13 @@ class _BuatPostBodyState extends State<_BuatPostBody> {
     final bytes = _gambarBytes;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
         title: Text(
           _modeEdit ? AppStrings.editPost : AppStrings.buatPost,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
         actions: [
           TextButton(

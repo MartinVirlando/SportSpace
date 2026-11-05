@@ -139,13 +139,13 @@ class _DetailPostBodyState extends State<_DetailPostBody> {
     final apakahPemilik = user != null && user.userId == _post.userId;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.warna.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.warna.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           AppStrings.detailPost,
-          style: AppTextStyles.judulSeksi,
+          style: AppTextStyles.judulSeksi(context),
         ),
         actions: [
           if (apakahPemilik)
@@ -227,13 +227,13 @@ class _IsiPost extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(post.namaUser, style: AppTextStyles.namaLapangan),
+        Text(post.namaUser, style: AppTextStyles.namaLapangan(context)),
         const SizedBox(height: 2),
         Text(
           post.dieditPada == null
               ? Formatter.tanggalDanJam(post.createdAt)
               : '${Formatter.tanggalDanJam(post.createdAt)} ${AppStrings.tandaDiedit}',
-          style: AppTextStyles.metaLapangan,
+          style: AppTextStyles.metaLapangan(context),
         ),
         if (post.teks.isNotEmpty) ...[
           const SizedBox(height: 10),
@@ -273,7 +273,7 @@ class _SeksiKomentar extends StatelessWidget {
         if (snapshot.hasError) {
           return Text(
             snapshot.error.toString().replaceFirst('Exception: ', ''),
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           );
         }
         final daftar = snapshot.data ?? const [];
@@ -283,13 +283,13 @@ class _SeksiKomentar extends StatelessWidget {
           children: [
             Text(
               '${AppStrings.komentar} (${daftar.length})',
-              style: AppTextStyles.judulSeksi,
+              style: AppTextStyles.judulSeksi(context),
             ),
             const SizedBox(height: 10),
             if (daftar.isEmpty)
-              const Text(
+              Text(
                 AppStrings.kosongKomentar,
-                style: AppTextStyles.metaLapangan,
+                style: AppTextStyles.metaLapangan(context),
               )
             else
               for (final k in daftar) ...[
@@ -314,20 +314,20 @@ class _KartuKomentar extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.warna.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
-        boxShadow: AppColors.shadowKartu,
+        boxShadow: context.warna.shadowKartu,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(komentar.namaUser, style: AppTextStyles.namaLapangan),
+          Text(komentar.namaUser, style: AppTextStyles.namaLapangan(context)),
           const SizedBox(height: 2),
           Text(komentar.teks),
           const SizedBox(height: 4),
           Text(
             Formatter.tanggalDanJam(komentar.createdAt),
-            style: AppTextStyles.metaLapangan,
+            style: AppTextStyles.metaLapangan(context),
           ),
         ],
       ),
@@ -350,7 +350,7 @@ class _KolomKomentar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.surface,
+      color: context.warna.surface,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
