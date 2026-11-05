@@ -286,7 +286,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Belum |
 | T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 | Rencana (PRD v1.4) |
 | T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Belum |
-| T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Rencana (PRD v1.4) |
+| T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 46 tes hijau); BB-58–59 belum diuji di perangkat |
 | T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Belum |
 | T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Belum |
 | T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 | Belum |

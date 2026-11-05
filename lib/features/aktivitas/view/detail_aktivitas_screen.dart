@@ -5,6 +5,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
+import '../../../core/utils/tautan_eksternal.dart';
+import '../../../core/utils/whatsapp.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/permintaan_gabung_model.dart';
 import '../../../models/user_model.dart';
@@ -180,6 +182,20 @@ class _Isi extends StatelessWidget {
             '${aktivitas.jumlahPemainDibutuhkan} ${AppStrings.satuanPemain}',
             style: AppTextStyles.metaLapangan,
           ),
+          const SizedBox(height: 12),
+          // v1.4 (T-63) — bagikan ringkasan aktivitas lewat WhatsApp.
+          OutlinedButton.icon(
+            onPressed: () => _bagikan(context, aktivitas),
+            icon: const Icon(Icons.share_outlined, size: 18),
+            label: const Text(AppStrings.bagikanKeWhatsApp),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSizes.radiusChip),
+              ),
+            ),
+          ),
           const Divider(height: 32),
           const Text(AppStrings.daftarPeserta, style: AppTextStyles.judulSeksi),
           const SizedBox(height: 10),
@@ -206,6 +222,21 @@ class _Isi extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Buka WhatsApp dengan teks ringkasan aktivitas (PRD AB-15, T-63, BB-58).
+Future<void> _bagikan(
+  BuildContext context,
+  AktivitasBermainModel aktivitas,
+) async {
+  final berhasil = await bukaTautanEksternal(
+    tautanBagikanWhatsApp(teksBagikanAktivitas(aktivitas)),
+  );
+  if (!berhasil && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(AppStrings.gagalBukaWhatsApp)),
     );
   }
 }

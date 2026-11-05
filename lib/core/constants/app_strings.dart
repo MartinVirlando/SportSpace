@@ -97,6 +97,24 @@ class AppStrings {
   static const ajukanReservasi = 'Ajukan Reservasi';
   static const bukaGoogleMaps = 'Buka di Google Maps';
   static const gagalBukaTautan = 'Tidak bisa membuka tautan peta.';
+
+  // ---------- Bagikan & WhatsApp (T-61, T-63, AB-15) ----------
+  static const bagikan = 'Bagikan';
+  static const bagikanKeWhatsApp = 'Bagikan ke WhatsApp';
+  static const gagalBukaWhatsApp = 'Tidak bisa membuka WhatsApp.';
+  static const bagikanJudulAktivitas =
+      'Yuk main bareng lewat Sport Space! 🏟️';
+  static const bagikanJudulLapangan =
+      'Rekomendasi lapangan dari Sport Space 🏟️';
+  static const bagikanLapangan = 'Lapangan';
+  static const bagikanAlamat = 'Alamat';
+  static const bagikanWaktu = 'Waktu';
+  static const bagikanPemain = 'Pemain';
+  static const bagikanBiaya = 'Biaya';
+  static const bagikanCatatan = 'Catatan';
+  static const bagikanJamBuka = 'Jam buka';
+  static const bagikanOlahraga = 'Olahraga';
+  static const bagikanPeta = 'Peta';
   static const ulasanPengguna = 'Ulasan Pengguna';
   static const belumAdaUlasan = 'Belum ada ulasan';
   static const badgeMitra = '✅ Mitra Terdaftar';

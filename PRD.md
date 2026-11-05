@@ -293,6 +293,7 @@ lib/
       validators.dart          # validasi form
       lencana.dart             # v1.4 — aturan lencana (AB-14), fungsi murni
       whatsapp.dart            # v1.4 — normalisasi nomor + teks bagikan (AB-15), fungsi murni
+      tautan_eksternal.dart    # v1.4 — buka tautan di luar aplikasi (url_launcher), dipakai tombol Bagikan/WhatsApp
     services/
       location_service.dart    # bungkus geolocator
 

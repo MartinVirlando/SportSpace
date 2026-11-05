@@ -7,6 +7,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
+import '../../../core/utils/tautan_eksternal.dart';
+import '../../../core/utils/whatsapp.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../models/rating_model.dart';
 import '../../../repositories/favorit_repository.dart';
@@ -428,6 +430,18 @@ class _KartuUlasan extends StatelessWidget {
   }
 }
 
+/// Buka WhatsApp dengan teks ringkasan lapangan (PRD AB-15, T-63, BB-59).
+Future<void> _bagikan(BuildContext context, LapanganModel lapangan) async {
+  final berhasil = await bukaTautanEksternal(
+    tautanBagikanWhatsApp(teksBagikanLapangan(lapangan)),
+  );
+  if (!berhasil && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(AppStrings.gagalBukaWhatsApp)),
+    );
+  }
+}
+
 class _Hero extends StatelessWidget {
   final LapanganModel lapangan;
 
@@ -464,7 +478,17 @@ class _Hero extends StatelessWidget {
                     ikon: Icons.arrow_back,
                     onTap: () => Navigator.of(context).pop(),
                   ),
-                  _TombolFavorit(lapangan: lapangan),
+                  Row(
+                    children: [
+                      // v1.4 (T-63) — bagikan ringkasan lapangan ke WhatsApp.
+                      _TombolBulat(
+                        ikon: Icons.share_outlined,
+                        onTap: () => _bagikan(context, lapangan),
+                      ),
+                      const SizedBox(width: 8),
+                      _TombolFavorit(lapangan: lapangan),
+                    ],
+                  ),
                 ],
               ),
             ),
