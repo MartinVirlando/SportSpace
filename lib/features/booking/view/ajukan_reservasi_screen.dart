@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
+import '../../../core/utils/harga.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/booking_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
@@ -132,7 +133,8 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
     final daftarJam = [
       for (var jam = _jamMulai!; jam < jamSelesai; jam++) jam,
     ];
-    final totalHarga = vm.hitungTotalHarga(widget.lapangan, daftarJam);
+    // Total setelah promo (AB-18) — inilah yang disimpan ke booking.totalHarga.
+    final totalHarga = vm.hitungRincian(widget.lapangan, daftarJam).total;
 
     final booking = await vm.ajukanReservasi(
       lapanganId: widget.lapangan.lapanganId,
@@ -239,8 +241,8 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
               ),
               const Divider(height: 40),
               _KotakEstimasi(
-                totalHarga: _tanggal != null && _jamMulai != null
-                    ? vm.hitungTotalHarga(widget.lapangan, [
+                rincian: _tanggal != null && _jamMulai != null
+                    ? vm.hitungRincian(widget.lapangan, [
                         for (var jam = _jamMulai!;
                             jam < _jamMulai! + _durasi;
                             jam++)
@@ -380,12 +382,18 @@ class _DaftarJamMulai extends StatelessWidget {
 }
 
 class _KotakEstimasi extends StatelessWidget {
-  final int? totalHarga;
+  /// `null` selama tanggal atau jam belum dipilih.
+  final RincianHarga? rincian;
 
-  const _KotakEstimasi({required this.totalHarga});
+  const _KotakEstimasi({required this.rincian});
 
   @override
   Widget build(BuildContext context) {
+    final totalHarga = rincian?.total;
+    // Rincian hanya perlu tampil kalau memang ada potongan (AB-18); tanpa
+    // promo kotaknya persis seperti sebelum v1.5.
+    final adaPotongan = rincian != null && rincian!.potongan > 0;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -397,10 +405,22 @@ class _KotakEstimasi extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (adaPotongan) ...[
+            _BarisRincian(
+              label: AppStrings.sewaLapangan,
+              nilai: Formatter.rupiah(rincian!.sewaAsli),
+            ),
+            _BarisRincian(
+              label: AppStrings.potongan,
+              nilai: '− ${Formatter.rupiah(rincian!.potongan)}',
+              warna: Colors.red.shade700,
+            ),
+            const Divider(height: 16),
+          ],
           const Text(AppStrings.totalEstimasi, style: AppTextStyles.metaLapangan),
           const SizedBox(height: 4),
           Text(
-            totalHarga == null ? '—' : Formatter.rupiah(totalHarga!),
+            totalHarga == null ? '—' : Formatter.rupiah(totalHarga),
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -411,6 +431,32 @@ class _KotakEstimasi extends StatelessWidget {
           const Text(
             AppStrings.estimasiDibayarDiLokasi,
             style: AppTextStyles.metaLapangan,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Satu baris rincian di kotak estimasi (label di kiri, nilai di kanan).
+class _BarisRincian extends StatelessWidget {
+  final String label;
+  final String nilai;
+  final Color? warna;
+
+  const _BarisRincian({required this.label, required this.nilai, this.warna});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: AppTextStyles.metaLapangan),
+          Text(
+            nilai,
+            style: AppTextStyles.metaLapangan.copyWith(color: warna),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -55,6 +56,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
   final _hargaCtrl = TextEditingController();
   final _fotoCtrl = TextEditingController();
   final _kontakCtrl = TextEditingController();
+  final _diskonCtrl = TextEditingController(); // v1.5 (T-65)
 
   final Set<String> _jenisOlahraga = {};
   final Set<String> _fasilitas = {};
@@ -78,6 +80,8 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
       _hargaCtrl.text = l.harga.toString();
       _fotoCtrl.text = l.fotoURL.isEmpty ? '' : l.fotoURL.first;
       _kontakCtrl.text = l.nomorTelepon;
+      // 0 berarti tanpa promo: kolom dikosongkan, bukan menampilkan "0".
+      _diskonCtrl.text = l.diskonPersen > 0 ? l.diskonPersen.toString() : '';
       _jenisOlahraga.addAll(l.jenisOlahraga);
       _fasilitas.addAll(l.fasilitas);
       _jamBuka = _parseJam(l.jamBuka);
@@ -99,6 +103,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
     _hargaCtrl.dispose();
     _fotoCtrl.dispose();
     _kontakCtrl.dispose();
+    _diskonCtrl.dispose();
     super.dispose();
   }
 
@@ -179,6 +184,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             fasilitas: _fasilitas.toList(),
             fotoURL: fotoURL,
             nomorTelepon: _kontakCtrl.text.trim(),
+            diskonPersen: int.tryParse(_diskonCtrl.text.trim()) ?? 0,
           )
         : await vm.tambahLapangan(
             nama: _namaCtrl.text.trim(),
@@ -192,6 +198,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             fasilitas: _fasilitas.toList(),
             fotoURL: fotoURL,
             nomorTelepon: _kontakCtrl.text.trim(),
+            diskonPersen: int.tryParse(_diskonCtrl.text.trim()) ?? 0,
             pemilikId: user.userId,
           );
 
@@ -369,6 +376,20 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                     hintText: AppStrings.hintHarga,
                   ),
                   validator: Validators.harga,
+                ),
+                const SizedBox(height: 16),
+                // v1.5 (T-65) — promo: persen diskon untuk sewa lapangan.
+                TextFormField(
+                  controller: _diskonCtrl,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(
+                    labelText: AppStrings.diskonPersenOpsional,
+                    hintText: AppStrings.hintDiskon,
+                    helperText: AppStrings.bantuDiskon,
+                    suffixText: '%',
+                  ),
+                  validator: Validators.diskonPersen,
                 ),
                 const SizedBox(height: 16),
                 Row(

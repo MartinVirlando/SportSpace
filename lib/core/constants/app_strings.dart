@@ -98,6 +98,16 @@ class AppStrings {
   static const bukaGoogleMaps = 'Buka di Google Maps';
   static const gagalBukaTautan = 'Tidak bisa membuka tautan peta.';
 
+  // ---------- Promo / diskon (T-65, AB-18) ----------
+  static const diskonPersenOpsional = 'Diskon (%) (opsional)';
+  static const hintDiskon = 'Kosongkan kalau tanpa promo';
+  static const bantuDiskon = 'Hanya untuk sewa lapangan, 0–90.';
+  static const errDiskonAngka = 'Diskon harus berupa angka.';
+  static const errDiskonRentang = 'Diskon antara 0 dan 90 persen.';
+  static String labelDiskon(int persen) => 'Diskon $persen%';
+  static const sewaLapangan = 'Sewa lapangan';
+  static const potongan = 'Potongan';
+
   // ---------- Atur Slot mitra (L-19, T-59, AB-17) ----------
   static const aturSlot = 'Atur Slot';
   static const judulAturSlot = 'Atur Slot';

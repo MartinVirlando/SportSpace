@@ -37,6 +37,7 @@ class FormLapanganViewModel extends ChangeNotifier {
     required List<String> fasilitas,
     required List<String> fotoURL,
     String nomorTelepon = '',
+    int diskonPersen = 0,
     required String pemilikId,
   }) async {
     _sedangProses = true;
@@ -56,6 +57,7 @@ class FormLapanganViewModel extends ChangeNotifier {
         fasilitas: fasilitas,
         fotoURL: fotoURL,
         nomorTelepon: nomorTelepon,
+        diskonPersen: diskonPersen,
         pemilikId: pemilikId,
       );
       _sedangProses = false;
@@ -88,6 +90,7 @@ class FormLapanganViewModel extends ChangeNotifier {
     required List<String> fasilitas,
     required List<String> fotoURL,
     String nomorTelepon = '',
+    int diskonPersen = 0,
   }) async {
     _sedangProses = true;
     _pesanError = null;
@@ -107,6 +110,7 @@ class FormLapanganViewModel extends ChangeNotifier {
         fasilitas: fasilitas,
         fotoURL: fotoURL,
         nomorTelepon: nomorTelepon,
+        diskonPersen: diskonPersen,
       );
       _sedangProses = false;
       notifyListeners();

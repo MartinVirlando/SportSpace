@@ -14,6 +14,7 @@ import '../../../models/rating_model.dart';
 import '../../../repositories/favorit_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
 import '../../../repositories/rating_repository.dart';
+import '../../../widgets/harga_lapangan.dart';
 import '../../../routes/app_routes.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../booking/view/ajukan_reservasi_screen.dart';
@@ -216,7 +217,13 @@ class _Isi extends StatelessWidget {
                 _BarisInfo(
                   ikon: '💰',
                   label: AppStrings.harga,
-                  nilai: '${Formatter.rupiah(lapangan.harga)} / ${AppStrings.satuanJam}',
+                  nilai: '',
+                  // v1.5 (T-65): harga dengan promo bila ada.
+                  isi: HargaLapangan(
+                    lapangan: lapangan,
+                    ringkas: false,
+                    gayaHarga: AppTextStyles.namaLapangan,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 _BarisInfo(
@@ -782,10 +789,15 @@ class _BarisInfo extends StatelessWidget {
   final String label;
   final String nilai;
 
+  /// Kalau diisi, dipakai menggantikan teks [nilai] (mis. harga berpromo
+  /// yang butuh teks dicoret dan label).
+  final Widget? isi;
+
   const _BarisInfo({
     required this.ikon,
     required this.label,
     required this.nilai,
+    this.isi,
   });
 
   @override
@@ -800,7 +812,7 @@ class _BarisInfo extends StatelessWidget {
           child: Text(label, style: AppTextStyles.metaLapangan),
         ),
         Expanded(
-          child: Text(nilai, style: AppTextStyles.namaLapangan),
+          child: isi ?? Text(nilai, style: AppTextStyles.namaLapangan),
         ),
       ],
     );

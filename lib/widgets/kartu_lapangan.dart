@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_sports.dart';
 import '../core/constants/app_strings.dart';
-import '../core/utils/formatter.dart';
 import '../models/lapangan_model.dart';
+import 'harga_lapangan.dart';
 
 /// Kartu satu lapangan di daftar Home (L-04).
 ///
@@ -80,11 +80,9 @@ class KartuLapangan extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(_barisMeta(), style: AppTextStyles.metaLapangan),
                       const SizedBox(height: 6),
-                      Text(
-                        // Figma menulis "Rp 120k/jam" — versi ringkas.
-                        '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
-                        style: AppTextStyles.harga,
-                      ),
+                      // Figma menulis "Rp 120k/jam" — versi ringkas. Sejak
+                      // v1.5 (T-65) ikut menampilkan promo bila ada.
+                      HargaLapangan(lapangan: lapangan),
                     ],
                   ),
                 ),

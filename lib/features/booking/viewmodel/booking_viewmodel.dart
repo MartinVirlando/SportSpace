@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/utils/harga.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/booking_repository.dart';
@@ -58,20 +59,11 @@ class BookingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Estimasi total harga (AB-08) — `harga × jumlah jam`, atau jumlah
-  /// `hargaSlot` per jam bila lapangan punya harga per periode.
-  ///
-  /// Periode ditentukan dari jam mulainya masing-masing: pagi (< 12),
-  /// siang (12–17), malam (≥ 18) — pembagian sederhana yang cukup untuk
-  /// data seed (`SEED-DATA.md`), bukan aturan bisnis dari PRD.
-  int hitungTotalHarga(LapanganModel lapangan, List<int> daftarJam) {
-    final hargaSlot = lapangan.hargaSlot;
-    if (hargaSlot == null) return lapangan.harga * daftarJam.length;
-
-    return daftarJam.fold<int>(0, (total, jam) {
-      final periode = jam < 12 ? 'pagi' : (jam < 18 ? 'siang' : 'malam');
-      return total + (hargaSlot[periode] ?? lapangan.harga);
-    });
+  /// Rincian estimasi harga (AB-08, AB-18): sewa asli, potongan promo, dan
+  /// total. Perhitungannya fungsi murni di `core/utils/harga.dart`
+  /// (sebelumnya ada di sini); ViewModel hanya meneruskannya ke View.
+  RincianHarga hitungRincian(LapanganModel lapangan, List<int> daftarJam) {
+    return hitungRincianHarga(lapangan: lapangan, daftarJam: daftarJam);
   }
 
   /// Mengembalikan [BookingModel] kalau berhasil, `null` kalau gagal —

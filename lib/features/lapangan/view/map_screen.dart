@@ -9,6 +9,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/lapangan_model.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../../widgets/harga_lapangan.dart';
 import '../viewmodel/map_viewmodel.dart';
 import 'detail_lapangan_screen.dart';
 
@@ -486,10 +487,8 @@ class _KartuRingkas extends StatelessWidget {
                   style: AppTextStyles.metaLapangan,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
-                  style: AppTextStyles.harga,
-                ),
+                // v1.5 (T-65): ikut menampilkan promo bila ada.
+                HargaLapangan(lapangan: lapangan),
               ],
             ),
           ),

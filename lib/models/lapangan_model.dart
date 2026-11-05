@@ -42,6 +42,11 @@ class LapanganModel {
   final int jumlahRating;
   final double ratingRata2;
 
+  /// Persen promo dari mitra — v1.5 (T-65), `0`–`90`, `0` = tanpa promo.
+  /// Dokumen lama dibaca `0`. Diterapkan HANYA pada sewa, bukan produk
+  /// tambahan (PRD AB-18).
+  final int diskonPersen;
+
   /// Jarak dari pengguna dalam km.
   ///
   /// TIDAK disimpan di Firestore — nilainya diisi ViewModel setelah
@@ -70,6 +75,7 @@ class LapanganModel {
     required this.ratingTotal,
     required this.jumlahRating,
     required this.ratingRata2,
+    this.diskonPersen = 0,
     this.jarakKm,
   });
 
@@ -114,6 +120,7 @@ class LapanganModel {
       ratingTotal: (data['ratingTotal'] as num?)?.toInt() ?? 0,
       jumlahRating: (data['jumlahRating'] as num?)?.toInt() ?? 0,
       ratingRata2: (data['ratingRata2'] as num?)?.toDouble() ?? 0.0,
+      diskonPersen: (data['diskonPersen'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -138,6 +145,7 @@ class LapanganModel {
         'ratingTotal': ratingTotal,
         'jumlahRating': jumlahRating,
         'ratingRata2': ratingRata2,
+        'diskonPersen': diskonPersen,
         // `jarakKm` sengaja TIDAK ikut ditulis — dia hasil hitungan,
         // bukan data yang disimpan.
       };
@@ -168,6 +176,7 @@ class LapanganModel {
         ratingTotal: ratingTotal,
         jumlahRating: jumlahRating,
         ratingRata2: ratingRata2,
+        diskonPersen: diskonPersen,
         jarakKm: jarak,
       );
 }

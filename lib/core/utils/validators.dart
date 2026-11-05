@@ -1,5 +1,6 @@
 import '../constants/app_aktivitas.dart';
 import '../constants/app_strings.dart';
+import 'harga.dart';
 
 /// Validasi form. Semua mengembalikan `null` kalau valid, atau pesan
 /// kesalahan berbahasa Indonesia kalau tidak — bentuk yang langsung
@@ -67,6 +68,18 @@ class Validators {
     final angka = int.tryParse(nilai.trim());
     if (angka == null) return AppStrings.errBiayaAngka;
     if (!AppBiaya.valid(angka)) return AppStrings.errBiayaRentang;
+    return null;
+  }
+
+  /// Diskon promo mitra, opsional — PRD L-15, AB-18, v1.5 (T-65), BB-72.
+  /// Kosong dibaca `0` (tanpa promo). Selain itu harus angka bulat 0–90.
+  static String? diskonPersen(String? nilai) {
+    if (nilai == null || nilai.trim().isEmpty) return null; // opsional
+    final angka = int.tryParse(nilai.trim());
+    if (angka == null) return AppStrings.errDiskonAngka;
+    if (angka < 0 || angka > diskonPersenMaksimal) {
+      return AppStrings.errDiskonRentang;
+    }
     return null;
   }
 

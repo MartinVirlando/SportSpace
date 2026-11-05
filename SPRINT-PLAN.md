@@ -288,7 +288,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Rencana (PRD v1.5) |
 | T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 46 tes hijau); BB-58–59 belum diuji di perangkat |
 | T-64 | Aktivitas publik atau privat (`visibilitas`, akses lewat kode) | Sedang | 3 | Rencana (PRD v1.5) |
-| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Rencana (PRD v1.5) |
+| T-65 | Promo atau diskon dari mitra | Kecil–sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 111 tes hijau); BB-70–72 belum diuji di perangkat |
 | T-66 | Mitra membalas ulasan *(ide di luar AYO)* | Kecil | 3 | Tidak dikerjakan (di luar AYO; T-67 butuh package baru) |
 | T-67 | Pengingat jadwal booking, notifikasi lokal *(ide di luar AYO; butuh package baru)* | Sedang | 3 | Tidak dikerjakan (di luar AYO; T-67 butuh package baru) |
 

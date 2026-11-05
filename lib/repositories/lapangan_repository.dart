@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/data/seed_lapangan.dart';
+import '../core/utils/harga.dart';
 import '../models/lapangan_model.dart';
 
 /// Satu-satunya lapisan yang boleh menyentuh Firestore untuk data lapangan.
@@ -135,8 +136,11 @@ class LapanganRepository {
     required List<String> fasilitas,
     required List<String> fotoURL,
     String nomorTelepon = '',
+    int diskonPersen = 0,
     required String pemilikId,
   }) async {
+    _periksaDiskon(diskonPersen);
+
     try {
       final ref = _db.collection('lapangan').doc();
       final lapangan = LapanganModel(
@@ -152,6 +156,7 @@ class LapanganRepository {
         fasilitas: fasilitas,
         fotoURL: fotoURL,
         nomorTelepon: nomorTelepon,
+        diskonPersen: diskonPersen,
         isMitra: true,
         pemilikId: pemilikId,
         sumberData: 'mitra',
@@ -198,7 +203,10 @@ class LapanganRepository {
     required List<String> fasilitas,
     required List<String> fotoURL,
     String nomorTelepon = '',
+    int diskonPersen = 0,
   }) async {
+    _periksaDiskon(diskonPersen);
+
     try {
       await _db.collection('lapangan').doc(lapanganId).update({
         'nama': nama,
@@ -212,12 +220,22 @@ class LapanganRepository {
         'fasilitas': fasilitas,
         'fotoURL': fotoURL,
         'nomorTelepon': nomorTelepon,
+        'diskonPersen': diskonPersen,
       });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw Exception('Tidak punya izin mengubah lapangan ini.');
       }
       throw Exception('Gagal menyimpan perubahan lapangan. Coba lagi.');
+    }
+  }
+
+  /// Pengaman kedua untuk diskon (PRD AB-18): sudah dicek di form
+  /// (`Validators.diskonPersen`), diulang di sini supaya pemanggil lain di
+  /// masa depan tidak bisa menyimpan diskon di luar 0–90.
+  void _periksaDiskon(int diskonPersen) {
+    if (diskonPersen < 0 || diskonPersen > diskonPersenMaksimal) {
+      throw Exception('Diskon harus antara 0 dan $diskonPersenMaksimal persen.');
     }
   }
 
