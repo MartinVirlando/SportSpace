@@ -283,7 +283,7 @@ Rincian, cara, dan alasan tiap usulan ada di `docs/IDE-FITUR-V1.3.md` (riset 19 
 | T-57 | Sort dan filter lanjutan di Home (rating, Populer, fasilitas, "Buka sekarang"; sort harga perlu keputusan ulang karena T-49) | Kecil | 2 | Kode selesai 5 Nov 2026 (analyze, 78 tes hijau); BB-62–66 belum diuji di perangkat |
 | T-58 | Lencana pencapaian di Profil (dihitung dari statistik AB-12) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 36 tes hijau); BB-56–57 belum diuji di perangkat |
 | T-59 | Mitra: blokir slot manual (pakai kunci `slotBooking`) | Sedang | 2 | Kode selesai 5 Nov 2026 (analyze, 91 tes hijau); BB-67–69 belum diuji di perangkat |
-| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Rencana (PRD v1.5) |
+| T-60 | Produk tambahan saat booking (sewa bola, rompi) | Sedang–besar | 3 | Kode selesai 5 Nov 2026 (analyze, 133 tes hijau); BB-73–75 belum diuji di perangkat |
 | T-61 | Tombol WhatsApp di Detail Lapangan (`url_launcher` + `nomorTelepon`) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 55 tes hijau); BB-60–61 belum diuji di perangkat |
 | T-62 | Ubah jadwal booking / reschedule (satu transaction) | Sedang | 2 | Rencana (PRD v1.5) |
 | T-63 | Bagikan aktivitas atau lapangan ke WhatsApp (`wa.me`, tanpa package baru) | Kecil | 1 | Kode selesai 5 Nov 2026 (analyze, 46 tes hijau); BB-58–59 belum diuji di perangkat |

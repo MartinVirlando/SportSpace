@@ -1,6 +1,7 @@
 import '../constants/app_aktivitas.dart';
 import '../constants/app_strings.dart';
 import 'harga.dart';
+import 'produk_tambahan.dart';
 
 /// Validasi form. Semua mengembalikan `null` kalau valid, atau pesan
 /// kesalahan berbahasa Indonesia kalau tidak — bentuk yang langsung
@@ -68,6 +69,31 @@ class Validators {
     final angka = int.tryParse(nilai.trim());
     if (angka == null) return AppStrings.errBiayaAngka;
     if (!AppBiaya.valid(angka)) return AppStrings.errBiayaRentang;
+    return null;
+  }
+
+  /// Nama satu produk tambahan — PRD AB-19, v1.5 (T-60), BB-73. Wajib, 1–30
+  /// karakter setelah `trim`.
+  static String? namaProduk(String? nilai) {
+    final rapi = nilai?.trim() ?? '';
+    if (rapi.isEmpty) return AppStrings.errNamaProdukWajib;
+    if (rapi.length > BatasProduk.namaMaksimal) {
+      return AppStrings.errNamaProdukRentang;
+    }
+    return null;
+  }
+
+  /// Harga satu produk tambahan — PRD AB-19, BB-73. Wajib, angka bulat
+  /// Rp 1–1.000.000.
+  static String? hargaProduk(String? nilai) {
+    if (nilai == null || nilai.trim().isEmpty) {
+      return AppStrings.errHargaProdukWajib;
+    }
+    final angka = int.tryParse(nilai.trim());
+    if (angka == null) return AppStrings.errHargaProdukAngka;
+    if (angka < BatasProduk.hargaMinimal || angka > BatasProduk.hargaMaksimal) {
+      return AppStrings.errHargaProdukRentang;
+    }
     return null;
   }
 

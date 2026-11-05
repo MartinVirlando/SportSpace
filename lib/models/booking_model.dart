@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'produk_tambahan_model.dart';
+
 /// Model booking — PRD Bagian 6.6.
 ///
 /// ATURAN LAPISAN (CLAUDE.md): model hanya berisi data +
@@ -26,6 +28,11 @@ class BookingModel {
   final int totalHarga;
   final DateTime dibuatPada;
 
+  /// Produk tambahan yang dipilih saat booking — v1.5 (T-60). DISALIN dari
+  /// katalog lapangan (bukan rujukan), jadi perubahan harga mitra kemudian
+  /// tidak mengubah booking ini. Booking lama dibaca daftar kosong.
+  final List<ProdukPesananModel> produkTambahan;
+
   const BookingModel({
     required this.bookingId,
     required this.userId,
@@ -39,6 +46,7 @@ class BookingModel {
     required this.status,
     required this.totalHarga,
     required this.dibuatPada,
+    this.produkTambahan = const [],
   });
 
   factory BookingModel.fromFirestore(DocumentSnapshot doc) {
@@ -58,6 +66,10 @@ class BookingModel {
       totalHarga: (data['totalHarga'] as num?)?.toInt() ?? 0,
       dibuatPada:
           (data['dibuatPada'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      produkTambahan: [
+        for (final p in (data['produkTambahan'] as List?) ?? const [])
+          ProdukPesananModel.fromMap(Map<String, dynamic>.from(p as Map)),
+      ],
     );
   }
 
@@ -74,5 +86,6 @@ class BookingModel {
         'status': status,
         'totalHarga': totalHarga,
         'dibuatPada': Timestamp.fromDate(dibuatPada),
+        'produkTambahan': [for (final p in produkTambahan) p.toMap()],
       };
 }

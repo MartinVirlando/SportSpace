@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/data/seed_lapangan.dart';
 import '../core/utils/harga.dart';
+import '../core/utils/produk_tambahan.dart';
 import '../models/lapangan_model.dart';
+import '../models/produk_tambahan_model.dart';
 
 /// Satu-satunya lapisan yang boleh menyentuh Firestore untuk data lapangan.
 ///
@@ -137,9 +139,11 @@ class LapanganRepository {
     required List<String> fotoURL,
     String nomorTelepon = '',
     int diskonPersen = 0,
+    List<ProdukTambahanModel> produkTambahan = const [],
     required String pemilikId,
   }) async {
     _periksaDiskon(diskonPersen);
+    _periksaProduk(produkTambahan);
 
     try {
       final ref = _db.collection('lapangan').doc();
@@ -157,6 +161,7 @@ class LapanganRepository {
         fotoURL: fotoURL,
         nomorTelepon: nomorTelepon,
         diskonPersen: diskonPersen,
+        produkTambahan: produkTambahan,
         isMitra: true,
         pemilikId: pemilikId,
         sumberData: 'mitra',
@@ -204,8 +209,10 @@ class LapanganRepository {
     required List<String> fotoURL,
     String nomorTelepon = '',
     int diskonPersen = 0,
+    List<ProdukTambahanModel> produkTambahan = const [],
   }) async {
     _periksaDiskon(diskonPersen);
+    _periksaProduk(produkTambahan);
 
     try {
       await _db.collection('lapangan').doc(lapanganId).update({
@@ -221,6 +228,7 @@ class LapanganRepository {
         'fotoURL': fotoURL,
         'nomorTelepon': nomorTelepon,
         'diskonPersen': diskonPersen,
+        'produkTambahan': [for (final p in produkTambahan) p.toMap()],
       });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
@@ -237,6 +245,14 @@ class LapanganRepository {
     if (diskonPersen < 0 || diskonPersen > diskonPersenMaksimal) {
       throw Exception('Diskon harus antara 0 dan $diskonPersenMaksimal persen.');
     }
+  }
+
+  /// Pengaman kedua untuk produk tambahan (PRD AB-19, BB-73): maksimal 5
+  /// produk, nama 1–30 karakter, harga Rp 1–1.000.000. Aturannya di
+  /// `core/utils/produk_tambahan.dart`; form sudah memeriksa per kolom.
+  void _periksaProduk(List<ProdukTambahanModel> produkTambahan) {
+    final pesan = periksaDaftarProduk(produkTambahan);
+    if (pesan != null) throw Exception(pesan);
   }
 
   /// Mengambil satu lapangan — dipakai halaman Detail (L-06).

@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/app_slot.dart';
+import '../core/utils/produk_tambahan.dart';
 import '../core/utils/status_booking.dart';
 import '../models/booking_model.dart';
 import '../models/notifikasi_model.dart';
+import '../models/produk_tambahan_model.dart';
 
 /// Satu-satunya lapisan yang boleh menyentuh Firestore untuk data booking.
 ///
@@ -38,7 +40,13 @@ class BookingRepository {
     required String jamMulai,
     required String jamSelesai,
     required int totalHarga,
+    List<ProdukPesananModel> produkTambahan = const [],
   }) async {
+    // Pengaman kedua (PRD AB-19): form L-10 hanya menawarkan jumlah 0–10,
+    // tapi produk yang dikirim pemanggil lain tetap diperiksa di sini.
+    final pesanProduk = periksaPesananProduk(produkTambahan);
+    if (pesanProduk != null) throw Exception(pesanProduk);
+
     final jamAwal = int.parse(jamMulai.split(':')[0]);
     final jamAkhir = int.parse(jamSelesai.split(':')[0]);
     final daftarJam = [for (var jam = jamAwal; jam < jamAkhir; jam++) jam];
@@ -65,6 +73,7 @@ class BookingRepository {
       status: 'MENUNGGU',
       totalHarga: totalHarga,
       dibuatPada: DateTime.now(),
+      produkTambahan: produkTambahan,
     );
 
     try {

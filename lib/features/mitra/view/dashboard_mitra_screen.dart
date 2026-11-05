@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
+import '../../../core/utils/produk_tambahan.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/booking_repository.dart';
@@ -341,6 +342,14 @@ class _BarisBookingState extends State<_BarisBooking> {
             '${b.namaUser} · ${b.tanggal} · ${b.jamMulai}–${b.jamSelesai}',
             style: AppTextStyles.metaLapangan,
           ),
+          // v1.5 (T-60): produk tambahan yang dipesan, mis. "+ Sewa Bola ×2".
+          if (b.produkTambahan.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              '+ ${ringkasProduk(b.produkTambahan)}',
+              style: AppTextStyles.metaLapangan,
+            ),
+          ],
           const SizedBox(height: 10),
           if (b.status == 'MENUNGGU')
             Row(

@@ -6,7 +6,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/utils/harga.dart';
+import '../../../core/utils/produk_tambahan.dart';
 import '../../../models/lapangan_model.dart';
+import '../../../models/produk_tambahan_model.dart';
 import '../../../repositories/booking_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/booking_viewmodel.dart';
@@ -48,6 +50,23 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
   DateTime? _tanggal;
   int? _jamMulai;
   int _durasi = 1;
+
+  /// Jumlah yang dipilih untuk tiap produk di katalog lapangan (indeks sama
+  /// dengan `lapangan.produkTambahan`) — T-60, AB-19. Awal semuanya 0.
+  late final List<int> _jumlahProduk =
+      List<int>.filled(widget.lapangan.produkTambahan.length, 0);
+
+  /// Produk berjumlah > 0, disalin (nama dan harga) dari katalog — inilah
+  /// yang disimpan ke `booking.produkTambahan`.
+  List<ProdukPesananModel> get _produkDipilih => [
+        for (var i = 0; i < _jumlahProduk.length; i++)
+          if (_jumlahProduk[i] > 0)
+            ProdukPesananModel(
+              nama: widget.lapangan.produkTambahan[i].nama,
+              harga: widget.lapangan.produkTambahan[i].harga,
+              jumlah: _jumlahProduk[i],
+            ),
+      ];
 
   int get _jamBukaHour => int.parse(widget.lapangan.jamBuka.split(':')[0]);
 
@@ -134,7 +153,13 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
       for (var jam = _jamMulai!; jam < jamSelesai; jam++) jam,
     ];
     // Total setelah promo (AB-18) — inilah yang disimpan ke booking.totalHarga.
-    final totalHarga = vm.hitungRincian(widget.lapangan, daftarJam).total;
+    final totalHarga = vm
+        .hitungRincian(
+          widget.lapangan,
+          daftarJam,
+          produkDipilih: _produkDipilih,
+        )
+        .total;
 
     final booking = await vm.ajukanReservasi(
       lapanganId: widget.lapangan.lapanganId,
@@ -146,6 +171,7 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
       jamMulai: '${_jamMulai!.toString().padLeft(2, '0')}:00',
       jamSelesai: '${jamSelesai.toString().padLeft(2, '0')}:00',
       totalHarga: totalHarga,
+      produkTambahan: _produkDipilih,
     );
 
     if (!mounted) return;
@@ -239,15 +265,35 @@ class _AjukanReservasiBodyState extends State<_AjukanReservasiBody> {
                 jamDipilih: _jamMulai,
                 onPilih: (jam) => setState(() => _jamMulai = jam),
               ),
+              // v1.5 (T-60) — produk tambahan, hanya kalau lapangan punya.
+              if (widget.lapangan.produkTambahan.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text(
+                  AppStrings.produkTambahanOpsional,
+                  style: AppTextStyles.judulSeksi,
+                ),
+                const SizedBox(height: 8),
+                for (var i = 0; i < _jumlahProduk.length; i++)
+                  _BarisProdukPesan(
+                    produk: widget.lapangan.produkTambahan[i],
+                    jumlah: _jumlahProduk[i],
+                    onUbah: (jumlah) =>
+                        setState(() => _jumlahProduk[i] = jumlah),
+                  ),
+              ],
               const Divider(height: 40),
               _KotakEstimasi(
                 rincian: _tanggal != null && _jamMulai != null
-                    ? vm.hitungRincian(widget.lapangan, [
-                        for (var jam = _jamMulai!;
-                            jam < _jamMulai! + _durasi;
-                            jam++)
-                          jam,
-                      ])
+                    ? vm.hitungRincian(
+                        widget.lapangan,
+                        [
+                          for (var jam = _jamMulai!;
+                              jam < _jamMulai! + _durasi;
+                              jam++)
+                            jam,
+                        ],
+                        produkDipilih: _produkDipilih,
+                      )
                     : null,
               ),
               const SizedBox(height: 24),
@@ -390,9 +436,11 @@ class _KotakEstimasi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final totalHarga = rincian?.total;
-    // Rincian hanya perlu tampil kalau memang ada potongan (AB-18); tanpa
-    // promo kotaknya persis seperti sebelum v1.5.
+    // Rincian hanya perlu tampil kalau ada potongan (AB-18) atau produk
+    // tambahan (AB-19); tanpa keduanya kotaknya persis seperti sebelum v1.5.
     final adaPotongan = rincian != null && rincian!.potongan > 0;
+    final adaProduk = rincian != null && rincian!.totalProduk > 0;
+    final tampilRincian = adaPotongan || adaProduk;
 
     return Container(
       width: double.infinity,
@@ -405,16 +453,22 @@ class _KotakEstimasi extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (adaPotongan) ...[
+          if (tampilRincian) ...[
             _BarisRincian(
               label: AppStrings.sewaLapangan,
               nilai: Formatter.rupiah(rincian!.sewaAsli),
             ),
-            _BarisRincian(
-              label: AppStrings.potongan,
-              nilai: '− ${Formatter.rupiah(rincian!.potongan)}',
-              warna: Colors.red.shade700,
-            ),
+            if (adaPotongan)
+              _BarisRincian(
+                label: AppStrings.potongan,
+                nilai: '− ${Formatter.rupiah(rincian!.potongan)}',
+                warna: Colors.red.shade700,
+              ),
+            if (adaProduk)
+              _BarisRincian(
+                label: AppStrings.tambahanLabel,
+                nilai: '+ ${Formatter.rupiah(rincian!.totalProduk)}',
+              ),
             const Divider(height: 16),
           ],
           const Text(AppStrings.totalEstimasi, style: AppTextStyles.metaLapangan),
@@ -457,6 +511,62 @@ class _BarisRincian extends StatelessWidget {
           Text(
             nilai,
             style: AppTextStyles.metaLapangan.copyWith(color: warna),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Satu produk tambahan dengan pengatur jumlah — PRD L-10, AB-19, BB-74.
+/// Jumlah 0 sampai [BatasProduk.jumlahPerItemMaksimal]; 0 berarti tidak
+/// dipesan dan tidak disimpan.
+class _BarisProdukPesan extends StatelessWidget {
+  final ProdukTambahanModel produk;
+  final int jumlah;
+  final ValueChanged<int> onUbah;
+
+  const _BarisProdukPesan({
+    required this.produk,
+    required this.jumlah,
+    required this.onUbah,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(produk.nama, style: AppTextStyles.namaLapangan),
+                Text(
+                  Formatter.rupiah(produk.harga),
+                  style: AppTextStyles.metaLapangan,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: jumlah > 0 ? () => onUbah(jumlah - 1) : null,
+            icon: const Icon(Icons.remove_circle_outline),
+          ),
+          SizedBox(
+            width: 24,
+            child: Text(
+              '$jumlah',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.namaLapangan,
+            ),
+          ),
+          IconButton(
+            onPressed: jumlah < BatasProduk.jumlahPerItemMaksimal
+                ? () => onUbah(jumlah + 1)
+                : null,
+            icon: const Icon(Icons.add_circle_outline),
           ),
         ],
       ),

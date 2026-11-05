@@ -9,7 +9,9 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/utils/produk_tambahan.dart';
 import '../../../models/lapangan_model.dart';
+import '../../../models/produk_tambahan_model.dart';
 import '../../../repositories/lapangan_repository.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/form_lapangan_viewmodel.dart';
@@ -58,6 +60,9 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
   final _kontakCtrl = TextEditingController();
   final _diskonCtrl = TextEditingController(); // v1.5 (T-65)
 
+  /// Baris produk tambahan (T-60): satu pasang controller nama + harga.
+  final List<_ProdukCtrl> _produk = [];
+
   final Set<String> _jenisOlahraga = {};
   final Set<String> _fasilitas = {};
   TimeOfDay? _jamBuka;
@@ -82,12 +87,35 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
       _kontakCtrl.text = l.nomorTelepon;
       // 0 berarti tanpa promo: kolom dikosongkan, bukan menampilkan "0".
       _diskonCtrl.text = l.diskonPersen > 0 ? l.diskonPersen.toString() : '';
+      for (final p in l.produkTambahan) {
+        _produk.add(_ProdukCtrl(nama: p.nama, harga: p.harga.toString()));
+      }
       _jenisOlahraga.addAll(l.jenisOlahraga);
       _fasilitas.addAll(l.fasilitas);
       _jamBuka = _parseJam(l.jamBuka);
       _jamTutup = _parseJam(l.jamTutup);
     }
   }
+
+  /// Hapus satu baris produk. Controller-nya TIDAK di-dispose saat itu juga:
+  /// kolom teksnya masih terpasang sampai frame berikutnya selesai, dan
+  /// memakai controller yang sudah di-dispose memicu galat Flutter. Dispose
+  /// ditunda sampai setelah frame.
+  void _hapusProduk(int indeks) {
+    final dihapus = _produk[indeks];
+    setState(() => _produk.removeAt(indeks));
+    WidgetsBinding.instance.addPostFrameCallback((_) => dihapus.dispose());
+  }
+
+  /// Isi baris produk menjadi daftar untuk disimpan. Hanya dipanggil
+  /// setelah form lolos validasi, jadi nama tidak kosong dan harga angka.
+  List<ProdukTambahanModel> get _produkTambahan => [
+        for (final p in _produk)
+          ProdukTambahanModel(
+            nama: p.nama.text.trim(),
+            harga: int.parse(p.harga.text.trim()),
+          ),
+      ];
 
   TimeOfDay _parseJam(String hhmm) {
     final bagian = hhmm.split(':');
@@ -104,6 +132,9 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
     _fotoCtrl.dispose();
     _kontakCtrl.dispose();
     _diskonCtrl.dispose();
+    for (final p in _produk) {
+      p.dispose();
+    }
     super.dispose();
   }
 
@@ -185,6 +216,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             fotoURL: fotoURL,
             nomorTelepon: _kontakCtrl.text.trim(),
             diskonPersen: int.tryParse(_diskonCtrl.text.trim()) ?? 0,
+            produkTambahan: _produkTambahan,
           )
         : await vm.tambahLapangan(
             nama: _namaCtrl.text.trim(),
@@ -199,6 +231,7 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
             fotoURL: fotoURL,
             nomorTelepon: _kontakCtrl.text.trim(),
             diskonPersen: int.tryParse(_diskonCtrl.text.trim()) ?? 0,
+            produkTambahan: _produkTambahan,
             pemilikId: user.userId,
           );
 
@@ -448,6 +481,77 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                     );
                   }).toList(),
                 ),
+                const SizedBox(height: 24),
+                // v1.5 (T-60) — katalog produk tambahan, maksimal 5.
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      AppStrings.produkTambahanJudul,
+                      style: AppTextStyles.judulSeksi,
+                    ),
+                    TextButton.icon(
+                      onPressed: _produk.length >= BatasProduk.jumlahProdukMaksimal
+                          ? null
+                          : () => setState(() => _produk.add(_ProdukCtrl())),
+                      icon: const Icon(Icons.add, size: 16),
+                      label: const Text(AppStrings.tambahProduk),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  AppStrings.keteranganProdukTambahan,
+                  style: AppTextStyles.metaLapangan,
+                ),
+                const SizedBox(height: 8),
+                if (_produk.isEmpty)
+                  const Text(
+                    AppStrings.produkMasihKosong,
+                    style: AppTextStyles.metaLapangan,
+                  ),
+                for (var i = 0; i < _produk.length; i++)
+                  // Key dari objek controller supaya baris yang dihapus di
+                  // tengah tidak "menukar" isi baris sesudahnya.
+                  Row(
+                    key: ObjectKey(_produk[i]),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+                          controller: _produk[i].nama,
+                          decoration: const InputDecoration(
+                            labelText: AppStrings.namaProduk,
+                          ),
+                          validator: Validators.namaProduk,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          controller: _produk[i].harga,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          decoration: const InputDecoration(
+                            labelText: AppStrings.hargaProduk,
+                          ),
+                          validator: Validators.hargaProduk,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _hapusProduk(i),
+                        tooltip: AppStrings.hapusProduk,
+                        icon: const Icon(Icons.delete_outline),
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _fotoCtrl,
@@ -520,5 +624,22 @@ class _TombolPilihJam extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Sepasang controller untuk satu baris produk tambahan (nama + harga).
+/// Dikelola `_FormLapanganBodyState` — dibuat saat baris ditambah, dan
+/// di-dispose saat baris dihapus atau form ditutup.
+class _ProdukCtrl {
+  final TextEditingController nama;
+  final TextEditingController harga;
+
+  _ProdukCtrl({String nama = '', String harga = ''})
+      : nama = TextEditingController(text: nama),
+        harga = TextEditingController(text: harga);
+
+  void dispose() {
+    nama.dispose();
+    harga.dispose();
   }
 }

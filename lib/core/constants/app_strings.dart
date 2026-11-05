@@ -108,6 +108,27 @@ class AppStrings {
   static const sewaLapangan = 'Sewa lapangan';
   static const potongan = 'Potongan';
 
+  // ---------- Produk tambahan (T-60, AB-19) ----------
+  static const produkTambahanJudul = 'Produk Tambahan';
+  static const produkTambahanOpsional = 'Tambahan (opsional)';
+  static const keteranganProdukTambahan =
+      'Mis. sewa bola atau rompi. Maksimal 5 produk, dibayar di lokasi.';
+  static const namaProduk = 'Nama produk';
+  static const hargaProduk = 'Harga (Rp)';
+  static const tambahProduk = 'Tambah Produk';
+  static const hapusProduk = 'Hapus produk';
+  static const produkMasihKosong = 'Belum ada produk tambahan.';
+  static const tambahanLabel = 'Tambahan';
+  static const errNamaProdukWajib = 'Nama produk wajib diisi.';
+  static const errNamaProdukRentang = 'Nama produk 1–30 karakter.';
+  static const errHargaProdukWajib = 'Harga produk wajib diisi.';
+  static const errHargaProdukAngka = 'Harga produk harus berupa angka.';
+  static const errHargaProdukRentang =
+      'Harga produk antara Rp 1 dan Rp 1.000.000.';
+  static const errProdukTerlalubanyak = 'Maksimal 5 produk tambahan.';
+  static const errProdukPesananTidakValid =
+      'Produk yang dipilih tidak valid.';
+
   // ---------- Atur Slot mitra (L-19, T-59, AB-17) ----------
   static const aturSlot = 'Atur Slot';
   static const judulAturSlot = 'Atur Slot';

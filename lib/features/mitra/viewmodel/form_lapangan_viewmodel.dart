@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../models/lapangan_model.dart';
+import '../../../models/produk_tambahan_model.dart';
 import '../../../repositories/lapangan_repository.dart';
 
 /// ViewModel untuk form Tambah/Edit Lapangan (L-15).
@@ -38,6 +39,7 @@ class FormLapanganViewModel extends ChangeNotifier {
     required List<String> fotoURL,
     String nomorTelepon = '',
     int diskonPersen = 0,
+    List<ProdukTambahanModel> produkTambahan = const [],
     required String pemilikId,
   }) async {
     _sedangProses = true;
@@ -58,6 +60,7 @@ class FormLapanganViewModel extends ChangeNotifier {
         fotoURL: fotoURL,
         nomorTelepon: nomorTelepon,
         diskonPersen: diskonPersen,
+        produkTambahan: produkTambahan,
         pemilikId: pemilikId,
       );
       _sedangProses = false;
@@ -91,6 +94,7 @@ class FormLapanganViewModel extends ChangeNotifier {
     required List<String> fotoURL,
     String nomorTelepon = '',
     int diskonPersen = 0,
+    List<ProdukTambahanModel> produkTambahan = const [],
   }) async {
     _sedangProses = true;
     _pesanError = null;
@@ -111,6 +115,7 @@ class FormLapanganViewModel extends ChangeNotifier {
         fotoURL: fotoURL,
         nomorTelepon: nomorTelepon,
         diskonPersen: diskonPersen,
+        produkTambahan: produkTambahan,
       );
       _sedangProses = false;
       notifyListeners();

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/utils/harga.dart';
+import '../../../core/utils/produk_tambahan.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/lapangan_model.dart';
+import '../../../models/produk_tambahan_model.dart';
 import '../../../repositories/booking_repository.dart';
 
 /// Kondisi memuat slot terisi untuk tanggal yang dipilih — bukan kondisi
@@ -62,8 +64,19 @@ class BookingViewModel extends ChangeNotifier {
   /// Rincian estimasi harga (AB-08, AB-18): sewa asli, potongan promo, dan
   /// total. Perhitungannya fungsi murni di `core/utils/harga.dart`
   /// (sebelumnya ada di sini); ViewModel hanya meneruskannya ke View.
-  RincianHarga hitungRincian(LapanganModel lapangan, List<int> daftarJam) {
-    return hitungRincianHarga(lapangan: lapangan, daftarJam: daftarJam);
+  ///
+  /// [produkDipilih] (T-60, AB-19) ditambahkan setelah diskon dan tidak
+  /// ikut didiskon.
+  RincianHarga hitungRincian(
+    LapanganModel lapangan,
+    List<int> daftarJam, {
+    List<ProdukPesananModel> produkDipilih = const [],
+  }) {
+    return hitungRincianHarga(
+      lapangan: lapangan,
+      daftarJam: daftarJam,
+      totalProduk: hitungTotalProduk(produkDipilih),
+    );
   }
 
   /// Mengembalikan [BookingModel] kalau berhasil, `null` kalau gagal —
@@ -78,6 +91,7 @@ class BookingViewModel extends ChangeNotifier {
     required String jamMulai,
     required String jamSelesai,
     required int totalHarga,
+    List<ProdukPesananModel> produkTambahan = const [],
   }) async {
     _sedangProses = true;
     _pesanError = null;
@@ -94,6 +108,7 @@ class BookingViewModel extends ChangeNotifier {
         jamMulai: jamMulai,
         jamSelesai: jamSelesai,
         totalHarga: totalHarga,
+        produkTambahan: produkTambahan,
       );
       _sedangProses = false;
       notifyListeners();

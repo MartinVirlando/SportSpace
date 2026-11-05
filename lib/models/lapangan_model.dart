@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'produk_tambahan_model.dart';
+
 /// Model lapangan — PRD Bagian 6.2.
 ///
 /// ATURAN LAPISAN (CLAUDE.md): model hanya berisi data +
@@ -47,6 +49,10 @@ class LapanganModel {
   /// tambahan (PRD AB-18).
   final int diskonPersen;
 
+  /// Katalog produk tambahan — v1.5 (T-60), maksimal 5. Dokumen lama dibaca
+  /// daftar kosong.
+  final List<ProdukTambahanModel> produkTambahan;
+
   /// Jarak dari pengguna dalam km.
   ///
   /// TIDAK disimpan di Firestore — nilainya diisi ViewModel setelah
@@ -76,6 +82,7 @@ class LapanganModel {
     required this.jumlahRating,
     required this.ratingRata2,
     this.diskonPersen = 0,
+    this.produkTambahan = const [],
     this.jarakKm,
   });
 
@@ -121,6 +128,10 @@ class LapanganModel {
       jumlahRating: (data['jumlahRating'] as num?)?.toInt() ?? 0,
       ratingRata2: (data['ratingRata2'] as num?)?.toDouble() ?? 0.0,
       diskonPersen: (data['diskonPersen'] as num?)?.toInt() ?? 0,
+      produkTambahan: [
+        for (final p in (data['produkTambahan'] as List?) ?? const [])
+          ProdukTambahanModel.fromMap(Map<String, dynamic>.from(p as Map)),
+      ],
     );
   }
 
@@ -146,6 +157,7 @@ class LapanganModel {
         'jumlahRating': jumlahRating,
         'ratingRata2': ratingRata2,
         'diskonPersen': diskonPersen,
+        'produkTambahan': [for (final p in produkTambahan) p.toMap()],
         // `jarakKm` sengaja TIDAK ikut ditulis — dia hasil hitungan,
         // bukan data yang disimpan.
       };
@@ -177,6 +189,7 @@ class LapanganModel {
         jumlahRating: jumlahRating,
         ratingRata2: ratingRata2,
         diskonPersen: diskonPersen,
+        produkTambahan: produkTambahan,
         jarakKm: jarak,
       );
 }
