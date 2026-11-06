@@ -236,6 +236,18 @@ Dipicu cek manual satu-per-satu 30 data seed lapangan terhadap Google Maps (buka
 Diverifikasi langsung di emulator (`sport_space_avd`) via `adb`/`uiautomator` terhadap Firestore produksi sungguhan: (1) urutan jarak di Home sekarang cocok persis dengan hitungan ulang manual (The Good Padel Club 0,95 km → Hey Beach Padel Club 1,89 km → Sabnani Football 3,69 km → KM7 Mini Soccer 3,77 km → Stadiums Futsal 3,92 km); (2) pencarian "Raw" menampilkan "Raw Futsal & Badminton" dengan jarak yang sudah memakai koordinat terkoreksi; (3) tombol "Buka di Google Maps" ditekan pada Sabnani Football dan berhasil membuka **aplikasi Google Maps asli** (bukan browser) tepat ke lokasinya; (4) baris Kontak tampil dengan nomor telepon yang benar. `flutter analyze` bersih, pemeriksaan lapisan MVVM bersih, `flutter test` hijau. **Belum diverifikasi di perangkat Android nyata** sesuai Definisi Selesai §12 poin 1 — juga belum dicek manual satu-per-satu ke-27 lapangan lain yang tidak diubah datanya (hanya ditambah `nomorTelepon`/`tautanMaps`) di luar 5 yang sudah dilihat langsung di atas.
 
 
+### Rapikan akhir T-28 (6 November 2026)
+
+| # | Perubahan | Bagian yang terdampak |
+|---|---|---|
+| 1 | **Filter Cari Rekan dipadatkan.** Filter jenis dan tingkat pindah dari dua baris chip ke lembar bawah "Filter Aktivitas"; ikon Filter berada di ujung kanan baris chip olahraga, dengan titik hijau dan baris ringkasan saat aktif. Reset hanya untuk jenis dan tingkat. Aturan penyaringan tidak berubah | L-07, BB-51, BB-53 |
+| 2 | **Lencana Langganan Lapangan hanya menghitung booking `DIKONFIRMASI`/`SELESAI`** (semula semua status, sehingga bisa diraih dengan memesan lalu membatalkan). Pemesan Pertama tetap menghitung semua status | AB-14 |
+| 3 | **Tanggal booking ditampilkan lewat `Formatter.tanggalDariTeks()`** ("Jum, 27 Nov 2026") di Riwayat Pemesanan, Booking Masuk, dan teks notifikasi ubah jadwal, bukan `2026-11-27` mentah | L-12, L-13, L-14, AB-20 |
+| 4 | **Kartu lapangan di Dashboard Mitra menampilkan pil "Diskon X%"** bila promo aktif | L-14, AB-18 |
+| 5 | **Keyboard tidak muncul lagi setelah lembar Filter & Urutkan Home ditutup**; pesan galat harga produk di form mitra tidak lagi terpotong | L-04, L-15 |
+
+Tidak ada perubahan skema, index, package, maupun Security Rules.
+
 ### Koreksi teknis (7–19 Oktober 2026) — penyelarasan dengan skripsi `Highlight_2` + Definisi Selesai
 
 | # | Perubahan | Bagian yang terdampak |
@@ -845,12 +857,12 @@ Lencana **tidak disimpan** di Firestore. Ia diturunkan di klien dari tiga angka 
 | Lencana | Syarat |
 |---|---|
 | Pemesan Pertama | Booking ≥ 1 |
-| Langganan Lapangan | Booking ≥ 5 |
+| Langganan Lapangan | Booking terkonfirmasi (`DIKONFIRMASI` atau `SELESAI`) ≥ 5 |
 | Rekan Bermain | Aktivitas ≥ 1 |
 | Penggerak Komunitas | Aktivitas ≥ 5 |
 | Kolektor Favorit | Favorit ≥ 3 |
 
-Lencana yang belum diraih tetap tampil **redup** beserta syaratnya, supaya pengguna tahu apa yang harus dilakukan. Judul seksi menampilkan jumlah yang sudah diraih (mis. `2/5`); saat angka belum termuat tampil spinner, dan bila salah satu aliran gagal tampil "Lencana belum bisa dimuat." Kondisi "kosong" tidak ada karena kelima lencana selalu tampil. Aturan penghitungannya satu fungsi murni di `core/utils/lencana.dart` agar bisa diuji otomatis. Catatan: angka "Booking" di AB-12 menghitung semua status (termasuk `DITOLAK` dan `DIBATALKAN`); lencana mengikuti angka itu apa adanya, sebagai penyederhanaan yang disengaja.
+Lencana yang belum diraih tetap tampil **redup** beserta syaratnya, supaya pengguna tahu apa yang harus dilakukan. Judul seksi menampilkan jumlah yang sudah diraih (mis. `2/5`); saat angka belum termuat tampil spinner, dan bila salah satu aliran gagal tampil "Lencana belum bisa dimuat." Kondisi "kosong" tidak ada karena kelima lencana selalu tampil. Aturan penghitungannya satu fungsi murni di `core/utils/lencana.dart` agar bisa diuji otomatis. Catatan: angka "Booking" di AB-12 menghitung semua status (termasuk `DITOLAK` dan `DIBATALKAN`); **Pemesan Pertama** mengikuti angka itu apa adanya. **Langganan Lapangan** diubah pada T-28 (6 November 2026) agar hanya menghitung booking `DIKONFIRMASI`/`SELESAI`, karena dengan semua status lencana bisa diraih dengan memesan lalu membatalkan lima kali. Jadi lencana kini memakai satu angka tambahan yang diturunkan dari aliran riwayat booking yang sama (tanpa baca Firestore baru).
 
 ### AB-15 · Bagikan dan hubungi lewat WhatsApp — **v1.4 (T-61, T-63)**
 
@@ -1124,7 +1136,7 @@ Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10),
 ### L-07 · Cari Rekan
 Dibuka dari tab **Teman**. Tab filter olahraga — **lima chip termasuk "Semua", dan Mini Soccer wajib ada** (Figma baru punya tiga). Daftar kartu aktivitas berisi nama pembuat, olahraga, nama lapangan, tanggal & jam, dan `jumlahPemainSaatIni/jumlahPemainDibutuhkan` dengan progress bar; tombol **Gabung** per kartu; FAB untuk membuat aktivitas baru (L-08). Aktivitas yang sudah `PENUH` atau waktunya lewat tidak ditampilkan.
 
-**v1.4 (T-54, T-55, T-56):** di bawah chip olahraga ada dua baris chip filter tambahan. Baris **jenis** (Semua / Main Bareng / Sparring) dan baris **tingkat** (Semua tingkat / Pemula / Menengah / Mahir). Keduanya menyaring **di klien** dari daftar yang sudah diambil, jadi tidak butuh index baru, dan boleh dikombinasikan dengan chip olahraga. Aktivitas lama tanpa `tingkatKemampuan` hanya tampil di "Semua tingkat". Kartu memuat label jenis, label tingkat (bila ada), dan biaya ("Gratis" atau "Rp 25.000 / orang"). Kondisi kosong akibat filter memakai pesan tersendiri: "Tidak ada aktivitas yang cocok dengan filter."
+**v1.4 (T-54, T-55, T-56):** filter tambahan **jenis** (Semua / Main Bareng / Sparring) dan **tingkat** (Semua tingkat / Pemula / Menengah / Mahir). *Letaknya diubah pada T-28 (6 November 2026): semula dua baris chip di bawah chip olahraga, kini ada di lembar bawah "Filter Aktivitas" yang dibuka ikon Filter di ujung kanan baris chip olahraga, sehingga layar hanya memakai satu baris. Titik hijau pada ikon menandai ada filter aktif; saat itu muncul baris ringkasan "Filter: Sparring · Pemula" di bawah chip. Tombol Reset di lembar hanya mengembalikan jenis dan tingkat, bukan olahraga. Perubahan murni tampilan — aturan penyaringan tidak berubah.* Keduanya menyaring **di klien** dari daftar yang sudah diambil, jadi tidak butuh index baru, dan boleh dikombinasikan dengan chip olahraga. Aktivitas lama tanpa `tingkatKemampuan` hanya tampil di "Semua tingkat". Kartu memuat label jenis, label tingkat (bila ada), dan biaya ("Gratis" atau "Rp 25.000 / orang"). Kondisi kosong akibat filter memakai pesan tersendiri: "Tidak ada aktivitas yang cocok dengan filter."
 
 **v1.5 (T-64):** aktivitas **privat tidak tampil** di daftar ini (disaring di klien). Di header ada tombol **"Punya kode?"** yang membuka dialog isian kode; kode yang cocok membuka L-09, kode yang tidak cocok menampilkan "Kode tidak ditemukan." (AB-21).
 
@@ -1476,9 +1488,9 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-48** | **Pemilik post memilih Hapus Post dan mengonfirmasi** | **Post dan seluruh komentarnya terhapus, hilang dari daftar** |
 | **BB-49** | **Pengguna B mencoba mengubah isi atau menghapus post pengguna A** | **Ditolak Security Rules** |
 | **BB-50** | **Buat aktivitas dengan jenis Sparring** *(T-54)* | **Dokumen tersimpan dengan `jenisAktivitas = "sparring"`; kartu di Cari Rekan dan Detail Aktivitas berlabel Sparring** |
-| **BB-51** | **Pilih chip jenis "Sparring" di Cari Rekan** *(T-54)* | **Hanya aktivitas Sparring yang tampil. Aktivitas lama (tanpa field jenis) hanya muncul di "Semua" dan "Main Bareng"** |
+| **BB-51** | **Pilih jenis "Sparring" di lembar Filter Aktivitas pada Cari Rekan** *(T-54)* | **Hanya aktivitas Sparring yang tampil. Aktivitas lama (tanpa field jenis) hanya muncul di "Semua" dan "Main Bareng"** |
 | **BB-52** | **Buat aktivitas tanpa memilih tingkat kemampuan** *(T-55)* | **Ditolak dengan pesan validasi, dokumen tidak dibuat** |
-| **BB-53** | **Pilih chip tingkat "Pemula" di Cari Rekan** *(T-55)* | **Hanya aktivitas bertingkat Pemula yang tampil. Aktivitas lama (tanpa tingkat) hanya muncul di "Semua tingkat"** |
+| **BB-53** | **Pilih tingkat "Pemula" di lembar Filter Aktivitas pada Cari Rekan** *(T-55)* | **Hanya aktivitas bertingkat Pemula yang tampil. Aktivitas lama (tanpa tingkat) hanya muncul di "Semua tingkat"** |
 | **BB-54** | **Buat aktivitas dengan biaya dikosongkan** *(T-56)* | **`biayaPerOrang = 0`, kartu dan Detail Aktivitas menampilkan "Gratis"** |
 | **BB-55** | **Buat aktivitas dengan biaya 25000; lalu coba biaya negatif atau di atas 1.000.000** *(T-56)* | **25000 tampil "Rp 25.000 / orang". Biaya negatif, di atas batas, atau bukan angka ditolak dengan pesan validasi** |
 | **BB-56** | **Buka Profil akun baru tanpa booking, aktivitas, dan favorit** *(T-58)* | **Kelima lencana tampil redup beserta syaratnya** |
@@ -1753,6 +1765,7 @@ Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
 | 55 | Bab 3 teknologi / Bab 4 implementasi (daftar package) | Tiga package baru: `flutter_local_notifications`, `timezone`, `shared_preferences` (§4). Notifikasi ini **lokal di HP**, bukan Firebase Cloud Messaging — penting dijelaskan karena Bab 3 menyatakan notifikasi dibuat in-app lewat Firestore listener. Konfigurasi Android (desugaring, izin, receiver) ikut berubah |
 | 54 | Bab 3 ERD dan 3.3.2 (atribut `rating`) | Entitas `rating` bertambah dua atribut: `balasanMitra` dan `balasanPada` (T-66). Gambar ERD sebaiknya dibuat setelah atribut ini final, atau keduanya disebut "tambahan di luar rancangan awal". Security Rules `rating` juga berubah (dua jalur `update`, §9) |
 | 57 | Bab 4 pengujian / Bab 5 keterbatasan | Uji end-to-end di emulator (6 November 2026) tidak menemukan bug, dan build rilis (`flutter build apk --release`) berjalan normal termasuk penjadwalan pengingat. Yang **belum** diuji dan sebaiknya disebut sebagai keterbatasan: HP fisik, mode hemat daya, dan BB-77 (butuh dua perangkat). Rincian ada di `SPRINT-PLAN.md` bagian "Uji end-to-end 6 November 2026" |
+| 58 | Bab 4 tangkapan layar dan Bab 3 antarmuka | Tangkapan layar Cari Rekan harus memperlihatkan **satu baris chip olahraga + ikon Filter** dan lembar "Filter Aktivitas" (bukan tiga baris chip seperti di PRD sebelum 6 November 2026). Lencana Langganan Lapangan kini mensyaratkan booking terkonfirmasi — sesuaikan bila Bab 3 atau Bab 4 menyebut syarat lencana. Tidak ada perubahan ERD |
 
 **Draf isi Bab 2.5 baru (siap salin, sesuaikan sesuai kebutuhan):** — ⚠️ *digantikan 7 Oktober 2026: versi final di `Highlight_2` tidak lagi menyebut observasi langsung maupun konfirmasi telepon, lihat "Putaran revisi 2" di bawah.*
 
