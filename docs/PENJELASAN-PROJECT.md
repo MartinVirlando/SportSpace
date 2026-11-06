@@ -16,6 +16,9 @@ Project ini adalah aplikasi Android untuk mencari lapangan olahraga dan rekan be
 - Intl: format tanggal dan rupiah.
 - Cached Network Image: menampilkan foto dari URL.
 - Image Picker: memilih foto profil dari galeri.
+- URL Launcher: membuka WhatsApp dan Google Maps di luar aplikasi.
+- Flutter Local Notifications + Timezone: pengingat jadwal booking yang dibunyikan oleh HP sendiri (bukan push dari server, bukan Firebase Cloud Messaging).
+- Shared Preferences: menyimpan pengaturan di HP (saklar pengingat dan mode tampilan terang/gelap).
 
 ## 2. Arsitektur Aplikasi
 
@@ -126,9 +129,10 @@ Titik awal aplikasi Flutter. File ini:
 1. menyiapkan Flutter;
 2. menginisialisasi Firebase;
 3. memuat format tanggal Indonesia;
-4. memasang Provider;
-5. membuat tema aplikasi;
-6. menampilkan `SplashScreen`.
+4. menyiapkan pengaturan di HP dan pengingat jadwal (sebelum `runApp`, supaya pilihan pengguna sudah terbaca di frame pertama);
+5. memasang Provider;
+6. membuat tema aplikasi: tema terang dan gelap, dipilih oleh `Selector` sesuai pilihan mode tampilan;
+7. menampilkan `SplashScreen`.
 
 Contoh syntax:
 
@@ -160,7 +164,7 @@ Folder `core` berisi kode umum yang bisa digunakan oleh banyak fitur.
 
 ### `lib/core/constants/app_colors.dart`
 
-Menyimpan warna, ukuran, bayangan, dan style teks aplikasi.
+Menyimpan warna **yang sama di mode terang dan gelap** (hijau merek, warna pastel olahraga), ukuran (`AppSizes`), dan gaya teks (`AppTextStyles`).
 
 Tujuannya agar warna tidak ditulis berulang-ulang di banyak widget.
 
@@ -177,6 +181,27 @@ class AppColors {
 - `static`: bisa dipanggil melalui nama class.
 - `const`: nilainya tetap.
 - `AppColors._()`: constructor private agar class hanya digunakan sebagai kumpulan konstanta.
+
+**Sejak mode gelap (v1.5)**, warna yang berbeda per mode (latar, permukaan, teks) tidak lagi `static const` di sini, karena konstanta tidak bisa memilih nilai menurut tema yang aktif. Warna itu dibaca lewat `context.warna`:
+
+```dart
+Container(color: context.warna.surface)
+Text('Judul', style: AppTextStyles.judulSeksi(context))
+```
+
+`AppTextStyles.judulSeksi` dan kawan-kawannya kini **fungsi** yang menerima `context`, bukan konstanta. Ukuran dan ketebalan hurufnya tidak berubah.
+
+### `lib/core/theme/`
+
+Folder untuk mode terang/gelap:
+
+- `app_palette.dart`: `AppPalette`, sebuah `ThemeExtension` (cara resmi Flutter menambahkan warna buatan sendiri ke tema). Berisi dua palet, `terang` (nilai asli dari Figma) dan `gelap`, plus jalan pintas `context.warna`.
+- `app_theme.dart`: membuat `ThemeData` terang dan gelap (dibuat sekali lalu dipakai ulang) dan menerjemahkan pilihan pengguna ke `ThemeMode` Flutter.
+- `mode_tema.dart`: enum `ModeTema` (terang, gelap, ikuti HP) beserta kode teks yang disimpan di HP.
+
+Cara kerjanya: `MaterialApp` memilih `theme` atau `darkTheme`; widget yang memanggil `context.warna` otomatis digambar ulang ketika tema berganti.
+
+> Aturan untuk layar baru: jangan menulis `Color(0x...)`, `Colors.white`, atau `Colors.black` untuk latar dan teks. Pakai `context.warna`. `Colors.white` hanya boleh sebagai warna teks atau ikon DI ATAS hijau merek. Lihat layar baru di kedua mode.
 
 ### `lib/core/constants/app_sports.dart`
 
@@ -234,6 +259,17 @@ Tanggung jawabnya:
 - menangani lokasi yang ditolak;
 - memberikan fallback ke lokasi default.
 
+### `lib/core/services/pengingat_service.dart`
+
+Membungkus package `flutter_local_notifications` untuk pengingat jadwal booking (v1.5). Tanggung jawabnya:
+
+- menyiapkan plugin dan kanal notifikasi Android;
+- memeriksa dan meminta izin notifikasi (Android 13+);
+- menjadwalkan ulang SEMUA pengingat (yang lama dibatalkan, yang baru dijadwalkan);
+- membatalkan semua pengingat saat keluar akun.
+
+Notifikasinya dijadwalkan dan dibunyikan oleh HP, tanpa server. Karena memakai alarm tidak-tepat-waktu, pengingat bisa terlambat beberapa menit.
+
 ### `lib/core/utils/haversine.dart`
 
 Menghitung jarak antara dua koordinat GPS menggunakan rumus Haversine manual.
@@ -281,6 +317,28 @@ String? validasiNama(String? value) {
 ### `lib/core/utils/status_booking.dart`
 
 Menentukan status tampilan booking berdasarkan tanggal dan jam, misalnya booking selesai atau masih aktif.
+
+### Fungsi murni lainnya di `lib/core/utils/`
+
+Sejak v1.4, logika yang bisa dipisahkan dari tampilan ditulis sebagai **fungsi murni**: hanya menerima data dan mengembalikan hasil, tanpa Firestore dan tanpa membaca jam sendiri (jam disuntikkan sebagai parameter). Itu membuatnya bisa diuji otomatis di folder `test/`.
+
+| Berkas | Isi |
+|---|---|
+| `lencana.dart` | lima lencana pencapaian di Profil |
+| `whatsapp.dart` | normalisasi nomor dan teks bagikan ke WhatsApp |
+| `jam_buka.dart` | apakah lapangan sedang buka (filter "Buka sekarang") |
+| `urut_lapangan.dart` | urut Rating/Populer dan filter fasilitas di Home |
+| `ganti_lapangan.dart` | mengganti satu kartu lapangan di daftar Home setelah rating baru |
+| `harga.dart`, `produk_tambahan.dart` | diskon, produk tambahan, dan total booking |
+| `slot_mitra.dart` | status jam di layar Atur Slot milik mitra |
+| `ubah_jadwal.dart` | rencana kunci slot saat booking dijadwal ulang |
+| `kode_akses.dart` | pembangkit kode aktivitas privat |
+| `saring_aktivitas.dart` | filter jenis dan tingkat di Cari Rekan |
+| `stream_terakhir.dart` | membuat stream siaran Firestore mengulang nilai terakhir untuk pelanggan yang terlambat |
+| `waktu_booking.dart` | membaca jam mulai booking menjadi `DateTime` |
+| `pengingat_jadwal.dart` | menentukan pengingat mana yang dijadwalkan (hanya booking dikonfirmasi, 60 menit sebelum mulai) |
+| `cari_rekan_booking.dart` | kapan tombol "Cari rekan" tampil dan nilai awal form dari booking |
+| `riwayat_aktivitas.dart` | memisahkan aktivitas mendatang dan riwayat main |
 
 ## 5. Folder `lib/models`
 
@@ -335,7 +393,7 @@ Pola ini aman jika Firestore mengembalikan `int` atau `double`.
 - `aktivitas_bermain_model.dart`: aktivitas bermain.
 - `booking_model.dart`: reservasi.
 - `favorit_model.dart`: lapangan favorit.
-- `rating_model.dart`: rating dan ulasan.
+- `rating_model.dart`: rating dan ulasan, termasuk balasan mitra (`balasanMitra`, `balasanPada`) sejak v1.5.
 - `notifikasi_model.dart`: notifikasi aplikasi.
 - `permintaan_gabung_model.dart`: permintaan bergabung ke aktivitas.
 
@@ -395,6 +453,16 @@ Transaction dipakai agar dua pengguna tidak dapat mengambil slot yang sama secar
 ### `rating_repository.dart`
 
 Menyimpan rating dan memperbarui rata-rata rating secara atomic menggunakan transaction.
+
+Sejak v1.5 juga:
+
+- `ambilRatingSaya`: membaca rating lama pengguna supaya lembar "Ubah Rating" terisi nilai lamanya;
+- `balasUlasan`: mitra pemilik lapangan membalas ulasan (satu `update` pada dokumen rating);
+- `beriRating` memakai `update` (bukan `set`) pada dokumen yang sudah ada, supaya balasan mitra tidak terhapus saat pengguna mengubah ratingnya.
+
+### `pengaturan_repository.dart`
+
+Menyimpan pengaturan di **HP** (bukan Firestore) lewat `shared_preferences`: saklar pengingat jadwal dan mode tampilan. Berbeda dari repository lain, ia tidak menyentuh Firestore.
 
 ### `favorit_repository.dart`
 
@@ -817,3 +885,30 @@ grep -rl "package:cloud_firestore" lib/ | grep -Ev "^lib/(repositories|models)/"
 ```
 
 Perintah tersebut seharusnya tidak mengeluarkan file View atau ViewModel, karena hanya Repository dan Model yang boleh mengimpor Firestore.
+
+## 15. Peta Fitur v1.4–v1.5
+
+Fitur tambahan terinspirasi aplikasi AYO, dan di mana kodenya. Spesifikasi lengkapnya ada di `PRD.md` (bagian AB-14 sampai AB-26).
+
+| Fitur | Tugas | Kode utama |
+|---|---|---|
+| Jenis aktivitas, tingkat, biaya per orang | T-54, T-55, T-56 | `buat_aktivitas_screen.dart`, `saring_aktivitas.dart`, `app_aktivitas.dart` |
+| Lencana pencapaian | T-58 | `lencana.dart`, `seksi_lencana.dart` |
+| Bagikan dan hubungi lewat WhatsApp | T-61, T-63 | `whatsapp.dart`, `tautan_eksternal.dart` |
+| Urut dan saring lanjutan di Home | T-57 | `urut_lapangan.dart`, `lembar_filter_lapangan.dart`, `home_viewmodel.dart` |
+| Blokir slot oleh mitra | T-59 | `atur_slot_screen.dart`, `slot_mitra.dart` |
+| Promo dan produk tambahan | T-65, T-60 | `harga.dart`, `produk_tambahan.dart`, `produk_tambahan_model.dart` |
+| Ubah jadwal booking | T-62 | `ubah_jadwal.dart`, `booking_repository.dart` |
+| Aktivitas publik atau privat | T-64 | `kode_akses.dart`, `detail_aktivitas_screen.dart` |
+| Mitra membalas ulasan | T-66 | `rating_repository.dart`, `balas_ulasan_sheet.dart`, aturan `rating` di `firestore.rules` |
+| Pengingat jadwal booking | T-67 | `pengingat_service.dart`, `pengingat_jadwal.dart`, `pengaturan_viewmodel.dart` |
+| Mode gelap | T-68 | `core/theme/`, `seksi_pengaturan.dart` |
+| Cari rekan dari booking | T-69 | `cari_rekan_booking.dart`, `buat_aktivitas_screen.dart` |
+| Riwayat main | T-70 | `riwayat_aktivitas.dart`, `profil_screen.dart` |
+| Lembar rating terisi ulasan lama, kartu Home ikut berubah | perbaikan | `beri_rating_sheet.dart`, `ganti_lapangan.dart` |
+
+Hal yang berguna diketahui:
+
+- `initState` dipanggil SEKALI saat layar dibuat; di sanalah nilai awal form diisi (lihat `buat_aktivitas_screen.dart`).
+- `Selector` dari Provider membangun ulang widget hanya bila nilai yang dipilihnya berubah (dipakai di `main.dart` untuk mode tampilan).
+- `ThemeExtension` menambahkan warna buatan sendiri ke tema (`app_palette.dart`).

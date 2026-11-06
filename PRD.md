@@ -2,7 +2,7 @@
 
 **Aplikasi Android pencarian lapangan olahraga dan rekan bermain berbasis lokasi**
 
-Versi 1.5 · 5 November 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
+Versi 1.5 · diperbarui 6 November 2026 · Diturunkan dari Pre-Thesis Bab 1–3 (revisi)
 
 > Dokumen ini adalah **sumber kebenaran tunggal** untuk implementasi. Jika ada pertentangan antara dokumen ini dan ingatan/asumsi, dokumen ini yang menang. Jika ada kebutuhan yang tidak tercantum di sini, **jangan dibangun** — tanyakan dulu.
 
@@ -62,13 +62,13 @@ Pak Gintoro menilai fitur tambahan seperti Forum dan fitur yang terinspirasi apl
 
 **Dokumen lama tetap terbaca.** Aktivitas yang dibuat sebelum v1.4 tidak punya ketiga atribut baru. `fromFirestore()` memberi nilai bawaan: `jenisAktivitas = "main_bareng"`, `tingkatKemampuan = null`, `biayaPerOrang = 0`. Tidak perlu migrasi data.
 
-**Yang belum dikerjakan dari 14 usulan** (tahap 2 dan 3, tetap di backlog `SPRINT-PLAN.md`): T-57, T-59, T-60, T-62, T-64, T-65, T-66, T-67. T-67 butuh package baru, jadi izin harus diminta dulu (`CLAUDE.md`).
+**Yang belum dikerjakan dari 14 usulan pada saat v1.4 ditulis (per 6 November 2026 semuanya sudah dikerjakan; lihat v1.5 di bawah)** (tahap 2 dan 3, tetap di backlog `SPRINT-PLAN.md`): T-57, T-59, T-60, T-62, T-64, T-65, T-66, T-67. T-67 butuh package baru, jadi izin harus diminta dulu (`CLAUDE.md`).
 
 > ⚠️ **Konsekuensi ke skripsi kecil, tapi ada.** T-54 sampai T-56 menambah tiga atribut ke entitas `AktivitasBermain` yang sudah ada di ERD Bab 3. Gambar ERD (M1 di "Putaran revisi 2") sebaiknya dibuat **setelah** atribut ini final, atau ketiganya disebut sebagai "tambahan di luar rancangan awal". Lihat §14 "Tambahan akibat v1.4".
 
 ### Perubahan v1.5 (5 November 2026) — Fitur tambahan terinspirasi AYO, tahap 2 dan 3
 
-Tim memutuskan (5 November 2026) melanjutkan sisa usulan terinspirasi AYO yang memang berasal dari AYO: T-57, T-59, T-60, T-62, T-64, dan T-65. **T-66 (mitra membalas ulasan) dan T-67 (pengingat jadwal) tidak ikut dikerjakan**: keduanya ide di luar AYO, dan T-67 butuh package baru yang belum diizinkan. (T-66 kemudian disetujui pemilik produk pada hari yang sama — lihat "Tambahan v1.5 … T-66" di bawah.) Seperti v1.4, ini fitur pemanis menurut Pak Gintoro, tanpa koleksi baru, tanpa pembayaran, **dan tanpa perubahan Security Rules** (rules yang ada sudah mengizinkan semua tulisan di bawah).
+Tim memutuskan (5 November 2026) melanjutkan sisa usulan terinspirasi AYO yang memang berasal dari AYO: T-57, T-59, T-60, T-62, T-64, dan T-65. **T-66 (mitra membalas ulasan) dan T-67 (pengingat jadwal) tidak ikut dikerjakan**: keduanya ide di luar AYO, dan T-67 butuh package baru yang belum diizinkan. (T-66 dan T-67 kemudian disetujui pemilik produk pada hari yang sama, T-67 beserta tiga package gratisnya — lihat "Tambahan v1.5 … T-66" dan "… T-67" di bawah.) Seperti v1.4, ini fitur pemanis menurut Pak Gintoro, tanpa koleksi baru, tanpa pembayaran, **dan tanpa perubahan Security Rules** (rules yang ada sudah mengizinkan semua tulisan di bawah).
 
 | # | Tugas | Perubahan | Bagian yang terdampak |
 |---|---|---|---|

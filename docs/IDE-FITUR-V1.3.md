@@ -56,44 +56,27 @@ Semuanya muat di Firestore + Provider. Hanya #14 yang butuh package baru (perlu 
 
 **Status per 5 November 2026:** enam usulan tahap 1 (nomor 1, 2, 3, 5, 8, 10 = T-54, T-55, T-56, T-58, T-61, T-63) sudah dikodekan dan masuk `main` (PRD v1.4); delapan lainnya belum. *(Per 4 November 2026 belum ada satu pun.)* Nomor tugasnya T-54…T-67 (T-53 + nomor usulan) dan dicatat di `SPRINT-PLAN.md`, bagian "Backlog v1.3". Cabang forum sudah di-merge ke `main` (4 November 2026), jadi pembagian "tunggu forum" di bawah tidak berlaku lagi.
 
-**Sengaja tidak dipakai:** fitur "venue tersedia hari ini" milik AYO. Itu menuntut membaca `slotBooking` untuk tiap lapangan sehingga boros pembacaan Firestore.
+**Status per 6 November 2026: seluruh 14 usulan di atas sudah dikodekan dan masuk `main`** (T-54…T-67), ditambah T-68 (mode gelap) yang diminta pemilik produk. Ringkasan per tahap ada di `SPRINT-PLAN.md`, bagian "Backlog v1.3", dan spesifikasinya di `PRD.md` (AB-14 sampai AB-26).
 
-## Urutan pengerjaan terkait cabang forum
+## Usulan tahap 4 (6 November 2026) — hasil riset ulang AYO
 
-Cabang `secondary` (forum, Martin) belum di-merge. Sampai 19 Oktober isinya baru model, repository, dan ViewModel forum, serta satu perubahan di `detail_lapangan_screen.dart`.
+Riset ulang halaman [App Store AYO](https://apps.apple.com/id/app/ayo/id1539581877) (catatan versi 6.6 sampai 6.10) dan [AVM, aplikasi pengelola venue](https://apps.apple.com/id/app/id1607354989). Masih berbasis halaman publik, bukan memakai aplikasinya. Hanya fitur yang belum ada di Sport Space yang didaftar.
 
-| Aman dikerjakan lebih dulu | Tunggu forum selesai atau di-merge |
-|---|---|
-| #1, #2, #3, #11 (aktivitas), #4 (Home), #5 (Profil), #10 (bagikan di Detail Aktivitas) | #8 (tombol WhatsApp, menyentuh `detail_lapangan_screen.dart` yang sedang konflik), #6, #7, #9, #12 (menyentuh `booking`/`lapangan`, rules, dan model) |
+| # | Usulan | Asal di AYO | Ukuran | Skema | Keputusan |
+|---|---|---|---|---|---|
+| 1 | Buat aktivitas dari booking | 6.10.0 "create a match, book a court, and invite opponents in one flow" | Kecil | Tidak ada | **Dikerjakan: T-69** |
+| 2 | Daftar tunggu aktivitas | 6.8.0 "Match Waiting List" | Sedang | +1 field `aktivitasBermain` | Pengembangan lanjutan (Bab 5) |
+| 3 | Level pemain (diisi sendiri) | 6.10.0 "Padel Levels" | Kecil–sedang | +1 field `users` | Pengembangan lanjutan (Bab 5) |
+| 4 | Bagi tim otomatis | "Game Matchmaker" | Kecil | Tidak ada (lebih bermakna dengan nomor 3) | Pengembangan lanjutan (Bab 5) |
+| 5 | Riwayat main (aktivitas selesai) | 6.10.0 "New profile / My Activity" | Kecil | Tidak ada | **Dikerjakan: T-70** |
+| 6 | Co-host | 6.8.0 | Sedang | +1 field `aktivitasBermain` | Pengembangan lanjutan (Bab 5) |
+| 7 | Autocomplete dan filter area | 6.8.0, 6.9.2 | Kecil | Tidak ada | Belum dipilih |
+| 8 | Booking mingguan berulang | AVM: jadwal berulang | Sedang | Tidak ada | Belum dipilih |
+| 9 | Bagikan pencapaian ke WhatsApp | "Share Results" | Kecil | Tidak ada | Belum dipilih |
+| 10 | Lupa password | Keluhan pengguna AYO soal pemulihan akun | Kecil | Tidak ada | Belum dipilih; masih di daftar yang ditolak `CLAUDE.md` |
 
-Aturan: satu cabang per fitur, mulai dari `main` terbaru, tarik `main` ke cabang secara berkala, dan perubahan di `models/` hanya oleh integrator.
+**Alasan keputusan:** ERD Bab 3 sudah berubah di empat entitas (`lapangan`, `booking`, `aktivitasBermain`, `rating`) dan T-39 (gambar ERD) menunggu atribut final, jadi hanya usulan **tanpa skema baru** yang dipilih (nomor 1 dan 5). Nomor 2, 3, 4, dan 6 baik dijadikan bahan bahasan "saran pengembangan lanjutan" di Bab 5.
 
-**Catatan untuk cabang `secondary`:** file `detail_lapangan_screen.dart` di cabang itu menghapus tombol "Buka di Google Maps" (T-51) dan import `url_launcher`, kemungkinan karena versi filenya lebih lama. Saat `main` digabung ke cabang itu, pakai versi `main` untuk file tersebut kecuali perubahannya memang disengaja.
+**Perlu keputusan eksplisit bila ingin dikerjakan** (menyentuh larangan): "kudos" antar pemain (dekat dengan larangan rating antar-pengguna, PRD §12c); tanda DP/lunas manual oleh mitra (harus tetap informasi saja, tanpa pembayaran); daftar pelanggan untuk mitra (dekat dengan larangan statistik dashboard mitra).
 
-## Fitur AYO yang tidak ditiru, dan alasannya
-
-**Terhalang batasan teknis atau biaya**
-
-- **Pembayaran online (DP, Gopay, virtual account):** butuh server untuk membuat transaksi dan menerima callback pembayaran, yaitu Cloud Functions (paket Blaze, dilarang PRD §2.1). Kalau logikanya dipindah ke klien, status "sudah bayar" bisa dipalsukan. Pembayaran tetap di lokasi.
-- **Push notification saat aplikasi tertutup:** butuh FCM dan server pengirim. Kita memakai notifikasi in-app lewat Firestore listener.
-
-**Secara teknis bisa, tapi dikunci PRD §2.2**
-
-- **Chat:** butuh banyak layar, moderasi, dan notifikasi pesan baru. Tidak menjawab rumusan masalah.
-- **Multi-bahasa:** semua teks dibuat dan diuji dua kali, tanpa nilai untuk penelitian.
-- **Lupa password:** Firebase Auth punya `sendPasswordResetEmail`, jadi ini yang paling murah dan layak dipertimbangkan ulang (pemulihan akun juga salah satu keluhan pengguna AYO). Kendala: akun uji memakai email palsu (`@sportspace.test`).
-- **Upload foto ke Storage:** butuh Blaze, sudah diputuskan di PRD §12b (Opsi A).
-- **Rating antar-pengguna:** subsistem baru yang utuh (PRD §12c), ditunda ke Bab 5.
-
-**Terlalu besar**
-
-- **Kompetisi, klasemen, turnamen Americano/Mexicano, direktori tim:** butuh entitas tim, aktor penyelenggara, validasi skor, dan algoritma klasemen. Hampir satu aplikasi tersendiri.
-
-## Bahan argumen untuk skripsi (Bab 5)
-
-Keluhan pengguna AYO bisa dipakai sebagai pembanding: aplikasi kita tidak punya biaya layanan karena bayar di lokasi, UI lebih sederhana, dan tidak bergantung pada server yang bisa macet saat ramai.
-
-## Hal yang perlu dibicarakan dengan dosen
-
-- Usulan 1, 2, 3, 11, 12, dan 13 mengubah skema yang tercantum di ERD Bab 3, jadi skripsi harus ikut direvisi. Dosen perlu tahu sebelum fitur dibangun.
-- Fitur forum (cabang `secondary`) belum ada di PRD maupun skripsi, memakai gambar Base64 per postingan (PRD membatasi pola ini untuk foto profil), dan mirip chat (PRD §2.2). Perlu diputuskan apakah dijadikan fitur resmi atau dikecilkan.
+**Tidak disarankan** (terlalu besar atau terhalang aturan): booking pelatih, turnamen Americano/Mexicano, direktori tim atau komunitas, liga, chat, multi-bahasa.

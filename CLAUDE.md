@@ -14,7 +14,7 @@ Dibangun dengan Flutter + Firebase oleh **tim 3 orang yang baru pertama kali mem
 | Berkas | Isi | Kapan dibaca |
 |---|---|---|
 | `PRD.md` | Spesifikasi lengkap — skema, layar, aturan bisnis, kasus uji | Selalu |
-| `SPRINT-PLAN.md` | Tugas T-00a…T-40, urutan, pembagian peran | Selalu |
+| `SPRINT-PLAN.md` | Tugas T-00a…T-70, urutan, pembagian peran | Selalu |
 | `SEED-DATA.md` | 30 lapangan + status verifikasi tiap field | T-10 |
 | `FIRESTORE-INDEXES.md` | 11 composite index, query mana butuh index mana | T-06, dan tiap kali menulis query baru |
 | `CONTOH-KODE-HOME.md` | Acuan gaya kode — satu fitur utuh Model→Repo→VM→View | Sebelum menulis fitur apa pun |
@@ -71,7 +71,7 @@ View  →  ViewModel  →  Repository  →  Firestore
 3. **Repository** satu-satunya lapisan yang berbicara dengan Firestore.
 4. **Model** hanya data + `fromFirestore()` / `toFirestore()`. Tanpa logika bisnis, tanpa akses jaringan. (Boleh `import cloud_firestore` karena butuh tipe `DocumentSnapshot` dan `Timestamp` — itu tipe data, bukan akses jaringan.)
 5. ViewModel memakai `ChangeNotifier` dan `notifyListeners()`.
-6. Provider dipasang hanya untuk state lintas layar: **status autentikasi**, **posisi GPS**, dan (sejak v1.5) **pengaturan di HP** (`PengaturanViewModel`: pengingat jadwal, dan mode tampilan bila ada). Untuk daftar data yang perlu langsung hidup (notifikasi, permintaan gabung), pakai `StreamBuilder` di dalam View yang membaca stream dari ViewModel. Untuk daftar yang diambil sekali lalu diolah di klien (Home, AB-02), pakai `ChangeNotifier` dengan state eksplisit — lihat `CONTOH-KODE-HOME.md`.
+6. Provider dipasang hanya untuk state lintas layar: **status autentikasi**, **posisi GPS**, dan (sejak v1.5) **pengaturan di HP** (`PengaturanViewModel`: pengingat jadwal dan mode tampilan). Untuk daftar data yang perlu langsung hidup (notifikasi, permintaan gabung), pakai `StreamBuilder` di dalam View yang membaca stream dari ViewModel. Untuk daftar yang diambil sekali lalu diolah di klien (Home, AB-02), pakai `ChangeNotifier` dengan state eksplisit — lihat `CONTOH-KODE-HOME.md`.
 
 Kalau sebuah perubahan memaksa melanggar salah satu aturan di atas, berhenti dan jelaskan masalahnya.
 
