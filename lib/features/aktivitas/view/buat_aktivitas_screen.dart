@@ -6,6 +6,7 @@ import '../../../core/constants/app_aktivitas.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/utils/cari_rekan_booking.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/utils/validators.dart';
 import '../../../repositories/aktivitas_repository.dart';
@@ -18,7 +19,12 @@ import '../viewmodel/buat_aktivitas_viewmodel.dart';
 ///
 /// ATURAN LAPISAN (CLAUDE.md): TIDAK ADA `cloud_firestore` di sini.
 class BuatAktivitasScreen extends StatelessWidget {
-  const BuatAktivitasScreen({super.key});
+  /// Nilai awal form kalau dibuka dari booking (T-69, AB-25): lapangan,
+  /// olahraga, tanggal, dan jam sudah terisi. `null` untuk pembukaan biasa
+  /// lewat tombol + di tab Teman.
+  final IsianAwalAktivitas? isianAwal;
+
+  const BuatAktivitasScreen({super.key, this.isianAwal});
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +33,15 @@ class BuatAktivitasScreen extends StatelessWidget {
         aktivitasRepository: context.read<AktivitasRepository>(),
         lapanganRepository: context.read<LapanganRepository>(),
       )..muatDaftarLapangan(),
-      child: const _BuatAktivitasBody(),
+      child: _BuatAktivitasBody(isianAwal: isianAwal),
     );
   }
 }
 
 class _BuatAktivitasBody extends StatefulWidget {
-  const _BuatAktivitasBody();
+  final IsianAwalAktivitas? isianAwal;
+
+  const _BuatAktivitasBody({required this.isianAwal});
 
   @override
   State<_BuatAktivitasBody> createState() => _BuatAktivitasBodyState();
@@ -57,6 +65,23 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
   String? _lapanganId;
   DateTime? _tanggal;
   TimeOfDay? _jam;
+
+  @override
+  void initState() {
+    super.initState();
+    // `initState` dipanggil SEKALI saat layar dibuat — tempat yang tepat untuk
+    // mengisi nilai awal, supaya pilihan pengguna tidak tertimpa tiap
+    // `setState`. Dari booking (T-69, AB-25): lapangan, tanggal, jam, dan
+    // olahraga sudah ditentukan oleh jadwal yang dipesan.
+    final isian = widget.isianAwal;
+    if (isian != null) {
+      _lapanganId = isian.lapanganId;
+      _tanggal = isian.tanggal;
+      _jam = TimeOfDay(hour: isian.jam, minute: isian.menit);
+      final olahraga = isian.olahraga;
+      if (olahraga != null) _olahraga = olahraga;
+    }
+  }
 
   @override
   void dispose() {
@@ -127,8 +152,18 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
     final user = context.read<AuthViewModel>().user;
     if (user == null) return;
 
-    final lapangan =
-        vm.daftarLapangan.firstWhere((l) => l.lapanganId == _lapanganId);
+    // `firstOrNull`, bukan `firstWhere`: lapangan dari booking bisa saja sudah
+    // tidak ada di daftar (dihapus mitra) — lebih baik pesan jelas daripada
+    // crash.
+    final lapangan = vm.daftarLapangan
+        .where((l) => l.lapanganId == _lapanganId)
+        .firstOrNull;
+    if (lapangan == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.errLapanganWajib)),
+      );
+      return;
+    }
 
     final berhasil = await vm.buatAktivitas(
       jenisOlahraga: _olahraga,
@@ -234,6 +269,11 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // T-69: penanda bahwa nilai awal datang dari booking.
+                if (widget.isianAwal != null) ...[
+                  _InfoDariBooking(namaLapangan: widget.isianAwal!.namaLapangan),
+                  const SizedBox(height: 16),
+                ],
                 Text(AppStrings.olahraga, style: AppTextStyles.judulSeksi(context)),
                 const SizedBox(height: 8),
                 Wrap(
@@ -438,6 +478,37 @@ class _BuatAktivitasBodyState extends State<_BuatAktivitasBody> {
   }
 }
 
+/// Kotak info di atas form saat dibuka dari booking (T-69, AB-25).
+class _InfoDariBooking extends StatelessWidget {
+  final String namaLapangan;
+
+  const _InfoDariBooking({required this.namaLapangan});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.warna.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.event_available, size: 18, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              AppStrings.infoDariBooking(namaLapangan),
+              style: AppTextStyles.metaLapangan(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DropdownLapangan extends StatelessWidget {
   final BuatAktivitasViewModel vm;
   final String? nilai;
@@ -477,8 +548,11 @@ class _DropdownLapangan extends StatelessWidget {
             style: AppTextStyles.metaLapangan(context),
           );
         }
+        // Nilai awal (mis. dari booking, T-69) yang TIDAK ada di daftar akan
+        // memicu galat bawaan DropdownButton — jatuhkan ke "belum dipilih".
+        final nilaiAda = vm.daftarLapangan.any((l) => l.lapanganId == nilai);
         return DropdownButtonFormField<String>(
-          initialValue: nilai,
+          initialValue: nilaiAda ? nilai : null,
           decoration: const InputDecoration(hintText: AppStrings.pilihLapangan),
           items: vm.daftarLapangan
               .map(

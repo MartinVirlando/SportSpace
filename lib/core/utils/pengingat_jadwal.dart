@@ -1,5 +1,6 @@
 import '../../models/booking_model.dart';
 import '../constants/app_strings.dart';
+import 'waktu_booking.dart';
 
 /// Satu pengingat yang harus muncul di HP — PRD AB-23, v1.5 (T-67).
 ///
@@ -73,7 +74,7 @@ List<PengingatJadwal> rencanakanPengingat(
   for (final booking in daftar) {
     if (booking.status != 'DIKONFIRMASI') continue;
 
-    final mulai = _waktuMulai(booking);
+    final mulai = waktuMulaiBooking(booking);
     if (mulai == null) continue;
 
     final waktuTampil = mulai.subtract(Duration(minutes: menitSebelum));
@@ -96,27 +97,4 @@ List<PengingatJadwal> rencanakanPengingat(
 
   hasil.sort((a, b) => a.waktuTampil.compareTo(b.waktuTampil));
   return hasil.length > batas ? hasil.sublist(0, batas) : hasil;
-}
-
-/// `tanggal` ("yyyy-MM-dd") + `jamMulai` ("HH:mm") menjadi `DateTime`
-/// setempat, atau `null` kalau formatnya tidak terbaca.
-DateTime? _waktuMulai(BookingModel booking) {
-  final tanggal = booking.tanggal.split('-');
-  final jam = booking.jamMulai.split(':');
-  if (tanggal.length != 3 || jam.length != 2) return null;
-
-  final tahun = int.tryParse(tanggal[0]);
-  final bulan = int.tryParse(tanggal[1]);
-  final hari = int.tryParse(tanggal[2]);
-  final jamMulai = int.tryParse(jam[0]);
-  final menit = int.tryParse(jam[1]);
-  if (tahun == null ||
-      bulan == null ||
-      hari == null ||
-      jamMulai == null ||
-      menit == null) {
-    return null;
-  }
-
-  return DateTime(tahun, bulan, hari, jamMulai, menit);
 }

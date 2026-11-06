@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/utils/cari_rekan_booking.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/utils/produk_tambahan.dart';
 import '../../../models/aktivitas_bermain_model.dart';
@@ -17,6 +18,7 @@ import '../../../repositories/aktivitas_repository.dart';
 import '../../../repositories/booking_repository.dart';
 import '../../../repositories/favorit_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
+import '../../aktivitas/view/buat_aktivitas_screen.dart';
 import '../../aktivitas/view/detail_aktivitas_screen.dart';
 import '../../booking/view/ajukan_reservasi_screen.dart';
 import '../../auth/view/login_screen.dart';
@@ -587,6 +589,44 @@ class _KartuRiwayatBooking extends StatefulWidget {
 class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
   bool _sedangBatal = false;
   bool _sedangUbah = false;
+  bool _sedangCariRekan = false;
+
+  /// "Cari rekan untuk jadwal ini" (T-69, AB-25): membuka form Buat Aktivitas
+  /// yang sudah terisi dari booking ini. Lapangan dimuat dulu karena olahraga
+  /// yang dipilih otomatis berasal dari `lapangan.jenisOlahraga` — Riwayat
+  /// Pemesanan hanya memegang `BookingModel` (pola yang sama dengan
+  /// [_ubahJadwal]).
+  Future<void> _cariRekan() async {
+    setState(() => _sedangCariRekan = true);
+
+    try {
+      final lapangan = await widget.vm.ambilLapangan(widget.booking.lapanganId);
+      final isian = isianAwalDariBooking(
+        widget.booking,
+        jenisOlahragaLapangan: lapangan.jenisOlahraga,
+      );
+      if (!mounted) return;
+
+      if (isian == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.errJadwalBookingTidakTerbaca)),
+        );
+      } else {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BuatAktivitasScreen(isianAwal: isian),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+
+    if (mounted) setState(() => _sedangCariRekan = false);
+  }
 
   /// Buka form Ubah Jadwal (T-62, AB-20). Lapangan dimuat dulu karena form
   /// butuh jam operasional, harga, dan promo SAAT INI — Riwayat Pemesanan
@@ -766,6 +806,31 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
                       ),
             ],
           ),
+          // v1.5 (T-69, AB-25): hanya booking DIKONFIRMASI yang belum mulai.
+          // Baris tersendiri — baris di atas sudah penuh oleh Ubah Jadwal dan
+          // Batalkan di layar sempit.
+          if (bolehCariRekan(widget.booking, DateTime.now()))
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _sedangCariRekan
+                  ? const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : TextButton.icon(
+                      onPressed: _cariRekan,
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 32),
+                      ),
+                      icon: const Icon(Icons.group_add_outlined, size: 18),
+                      label: const Text(AppStrings.cariRekanDariBooking),
+                    ),
+            ),
         ],
       ),
     );

@@ -139,6 +139,19 @@ Pemilik produk meminta mode gelap dengan pengaturannya di Profil (5 November 202
 
 > ⚠️ **Keterbatasan yang diakui (Bab 5).** Pengingat baru dijadwalkan ketika aplikasi **terbuka** dan melihat booking sudah dikonfirmasi. Kalau mitra mengonfirmasi saat aplikasi pengguna tertutup, pengingat baru terjadwal saat aplikasi dibuka berikutnya — jika itu sudah lewat waktu pengingatnya, tidak ada pengingat. Mengatasinya butuh push dari server (FCM), yang dilarang.
 
+### Tambahan v1.5 (6 November 2026) — T-69 Cari rekan dari booking
+
+Pemilik produk memilih dua usulan AYO tahap 4 yang **tanpa skema baru** (6 November 2026): nomor 1 (T-69) dan nomor 5 (T-70). Alasannya: ERD Bab 3 sudah berubah di empat entitas dan T-39 (gambar ERD) menunggu atribut final, jadi usulan yang mengubah skema (daftar tunggu, co-host, level pemain) dialihkan ke saran pengembangan lanjutan di Bab 5. Terinspirasi AYO 6.10.0: "create a match, book a court, and invite opponents in one flow".
+
+| # | Tugas | Perubahan | Bagian yang terdampak |
+|---|---|---|---|
+| 10 | **T-69** | **Cari rekan dari booking**: tombol "Cari rekan untuk jadwal ini" di Riwayat Pemesanan untuk booking `DIKONFIRMASI` yang belum mulai; membuka L-08 yang sudah terisi lapangan, olahraga, tanggal, dan jam dari booking. Tanpa field baru, tanpa query baru, tanpa perubahan Security Rules | §7 AB-25, §8 L-08, L-13, §11 BB-101–104 |
+
+**Keputusan yang diambil** (dicatat supaya bisa dijelaskan):
+- **Aktivitas tidak menyimpan rujukan ke booking.** Tidak ada `bookingId` di `aktivitasBermain`, sehingga ERD tidak berubah. Konsekuensinya, dari satu booking bisa dibuat lebih dari satu aktivitas, dan aktivitas tidak ikut berubah bila booking dibatalkan atau dijadwal ulang. Dicatat sebagai keterbatasan.
+- **Hanya booking `DIKONFIRMASI`.** Booking `MENUNGGU` bisa ditolak mitra, dan mengundang orang ke jadwal yang batal membingungkan mereka.
+- **Tingkat kemampuan dan jumlah pemain tidak diisi otomatis**: pembuat wajib memilih (aturan T-55) dan jumlah pemain tidak bisa diturunkan dari booking.
+
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
 Ditemukan dan diperbaiki selama implementasi Sprint 3 (T-13, T-14). Bukan perubahan ruang lingkup/fitur, jadi tidak menyentuh Bab 1–3 — murni supaya dokumen ini tetap cocok dengan kode dan Security Rules yang sudah di-deploy.
@@ -375,6 +388,8 @@ lib/
       harga.dart               # v1.5 — diskon + total booking (AB-18, AB-19), fungsi murni
       kode_akses.dart          # v1.5 — pembangkit kode aktivitas privat (AB-21), fungsi murni
       pengingat_jadwal.dart    # v1.5 — rencanakanPengingat() + idPengingatDari() (AB-23), fungsi murni
+      waktu_booking.dart       # v1.5 — waktuMulaiBooking(): tanggal + jamMulai → DateTime, dipakai AB-23 dan AB-25
+      cari_rekan_booking.dart  # v1.5 — bolehCariRekan() + isianAwalDariBooking() (AB-25), fungsi murni
     services/
       location_service.dart    # bungkus geolocator
       pengingat_service.dart   # v1.5 — bungkus flutter_local_notifications (AB-23)
@@ -1013,6 +1028,26 @@ Dibuka kembali → mode dibaca di main() SEBELUM runApp, jadi frame pertama suda
 - **Aturan untuk layar baru:** jangan menulis `Color(0x…)` atau `Colors.white`/`Colors.black` untuk latar atau teks; pakai `context.warna`. `Colors.white` hanya boleh sebagai warna teks/ikon DI ATAS hijau merek.
 - **Tanpa query, tanpa Security Rules, tanpa package baru.** Tidak mengubah ERD.
 
+### AB-25 · Cari rekan dari booking — **v1.5 (T-69)**
+
+```
+L-13, kartu Riwayat Pemesanan: bolehCariRekan(booking, sekarang) == true
+   → tampil "Cari rekan untuk jadwal ini" (baris tersendiri di bawah status)
+Ketuk → ProfilViewModel.ambilLapangan(booking.lapanganId)   // butuh jenisOlahraga
+        isianAwalDariBooking(booking, jenisOlahragaLapangan: lapangan.jenisOlahraga)
+        → buka BuatAktivitasScreen(isianAwal: …)            // L-08
+L-08 terisi: lapangan, tanggal, jam, olahraga; kotak info "Dari booking di …"
+Pembuat melengkapi jenis/visibilitas/tingkat/jumlah pemain → alur Buat Aktivitas biasa (L-08)
+```
+
+`bolehCariRekan` (fungsi murni, `core/utils/cari_rekan_booking.dart`): status **`DIKONFIRMASI`** dan **jam mulai masih di depan** sekarang (tepat pada jam mulai dianggap sudah mulai). Jam mulai yang tidak terbaca → `false`, bukan galat.
+
+`isianAwalDariBooking`: lapangan, tanggal (jam 00:00), jam, dan menit dari booking. **Olahraga** = yang pertama di `lapangan.jenisOlahraga` yang termasuk empat cabang didukung; bila tidak ada, `null` dan form memakai bawaannya. Membaca jam mulai lewat `waktuMulaiBooking` (`core/utils/waktu_booking.dart`), yang juga dipakai pengingat jadwal (AB-23).
+
+- **Tanpa query baru, tanpa Security Rules baru, tanpa package baru, tanpa field baru.** Memakai `ambilSatuLapangan` yang sudah ada.
+- **Pengaman form:** dropdown lapangan menjatuhkan nilai awal yang tidak ada di daftar ke "belum dipilih" (bukan galat bawaan Flutter), dan `_submit` memakai `firstOrNull` sehingga lapangan yang sudah dihapus mitra menghasilkan pesan, bukan crash.
+- **Keterbatasan yang diakui:** aktivitas tidak terhubung ke booking-nya (lihat "Keputusan yang diambil" di atas).
+
 ---
 
 ## 8. Spesifikasi Layar
@@ -1078,6 +1113,8 @@ Pilih olahraga, pilih lapangan (dari daftar lapangan), tanggal & jam, jumlah pem
 
 **v1.5 (T-64):** satu isian lagi, **Visibilitas** (Publik bawaan, atau Privat). Pilihan Privat menampilkan keterangan bahwa kode akses dibuat otomatis setelah aktivitas disimpan.
 
+**v1.5 (T-69):** kalau dibuka dari tombol "Cari rekan untuk jadwal ini" di L-13 (AB-25), form terisi **lapangan, olahraga, tanggal, dan jam** dari booking, dan di atasnya tampil kotak info "Dari booking di {nama lapangan}…". Pembukaan biasa lewat tombol + di tab Teman tetap kosong dan tanpa kotak info.
+
 ### L-09 · Detail Aktivitas
 Info lengkap aktivitas, daftar peserta. Jika pengguna adalah pembuat: tampilkan daftar permintaan gabung dengan tombol **Terima** / **Tolak**, plus tombol **"Batalkan Aktivitas"** di bagian bawah (T-47, 15 September 2026, dengan dialog konfirmasi — menghapus seluruh dokumen aktivitas dan mengirim notifikasi ke semua peserta selain pembuat, lihat AB-06 lanjutan). Jika bukan pembuat: tombol **Gabung**, atau kalau sudah bergabung, label status + tombol **"Batalkan Keikutsertaan"** (v1.2, dengan dialog konfirmasi — lihat AB-06), atau label status permintaannya. **v1.4:** menampilkan jenis, tingkat kemampuan, dan biaya per orang, serta tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan aktivitas. **v1.5 (T-64):** untuk aktivitas privat tampil label "Privat", dan **kode akses hanya terlihat oleh pembuat dan peserta**; teks Bagikan ikut memuat kode (AB-21).
 
@@ -1107,7 +1144,7 @@ Dibuka dari tab **Profil**.
 | Lencana | **v1.4 (T-58)** — lima lencana pencapaian dari tiga angka statistik di atas (AB-14). Yang belum diraih tampil redup beserta syaratnya |
 | Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
-| Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan. **v1.5:** pada syarat yang sama muncul juga tombol **"Ubah Jadwal"** (T-62, AB-20), dan produk tambahan yang dipesan ditampilkan sebagai baris "+ Sewa Bola ×2" (T-60) |
+| Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan. **v1.5:** pada syarat yang sama muncul juga tombol **"Ubah Jadwal"** (T-62, AB-20), dan produk tambahan yang dipesan ditampilkan sebagai baris "+ Sewa Bola ×2" (T-60). **v1.5 (T-69):** booking `DIKONFIRMASI` yang belum mulai punya tombol **"Cari rekan untuk jadwal ini"** di baris tersendiri (AB-25) |
 | Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
 | Pengaturan | **v1.5 (T-68)** — pemilih **"Mode tampilan"** Terang / Gelap / Ikuti HP (AB-24), bawaan Terang, berlaku seketika. **v1.5 (T-67)** — saklar **"Pengingat jadwal"** (AB-23), bawaan menyala. Kalau saklar menyala tetapi Android belum mengizinkan notifikasi, tampil petunjuk berwarna oranye; kalau gagal mengatur pengingat, tampil pesan galat berwarna merah. Pilihan disimpan di HP |
 | Menu statis | Bantuan, Kebijakan Privasi, Tentang — halaman statis saja |
@@ -1466,6 +1503,10 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-98** | **Pilih "Gelap"; buka Home, Map, Teman, Profil, Forum, Detail Lapangan, form reservasi, lembar rating/filter/Edit Profil, Notifikasi, Dashboard Mitra, Atur Slot, Form Lapangan, Login, Daftar** *(T-68)* | **Berganti seketika di layar yang sama tanpa kembali ke awal; tidak ada teks yang sulit dibaca, tidak ada kartu atau latar putih yang tertinggal, dialog dan pemilih tanggal ikut gelap** |
 | **BB-99** | **Pilih "Gelap", tutup aplikasi sepenuhnya, buka lagi** *(T-68)* | **Tetap Gelap sejak layar pertama (tidak berkedip terang di Flutter), pilihan di Profil tetap "Gelap"** |
 | **BB-100** | **Pilih "Ikuti HP", lalu ganti tema sistem HP terang ↔ gelap** *(T-68)* | **Aplikasi ikut berganti tanpa dibuka ulang** |
+| **BB-101** | **Booking `MENUNGGU` lalu dikonfirmasi mitra; buka Riwayat Pemesanan** *(T-69)* | **Saat `MENUNGGU` tidak ada tombol "Cari rekan untuk jadwal ini"; setelah `DIKONFIRMASI` dan belum mulai, tombol muncul; setelah dibatalkan atau lewat jam mulai, hilang** |
+| **BB-102** | **Ketuk "Cari rekan untuk jadwal ini"** *(T-69)* | **Form Buat Aktivitas terbuka dengan lapangan, olahraga (dari lapangan), tanggal, dan jam sesuai booking, plus kotak info "Dari booking di …"; tingkat dan jumlah pemain masih kosong** |
+| **BB-103** | **Lengkapi tingkat dan jumlah pemain, lalu Buat Aktivitas** *(T-69)* | **Aktivitas tampil di Cari Rekan dengan lapangan, tanggal, dan jam yang sama dengan booking; layar kembali ke Profil** |
+| **BB-104** | **Buka Buat Aktivitas lewat tombol + di tab Teman** *(T-69)* | **Form kosong seperti sebelumnya, tanpa kotak info** |
 
 ---
 
@@ -1680,7 +1721,7 @@ Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
 | 49 | ERD Bab 3 / Tabel 3.10 | Entitas `Lapangan` +`diskonPersen`, +`produkTambahan` (larik). Entitas `Booking` +`produkTambahan` (larik). Entitas `AktivitasBermain` +`visibilitas`, +`kodeAkses` (selain tiga atribut v1.4). Sesuai §6.2, §6.3, §6.6. **Gambar ERD (M1) setelah semua ini final** |
 | 50 | Bab 3.2 / pembahasan pengurutan hasil pencarian | AB-02 tetap benar: urutan **bawaan** murni jarak. Tambahkan satu kalimat bahwa pengguna boleh memilih urutan rating atau populer, dan itu tidak mengubah rancangan Haversine |
 | 51 | Bab 4 | Tambahkan ke paragraf fitur tambahan (#46): filter dan urut Home, blokir slot, promo, produk tambahan, ubah jadwal, aktivitas privat |
-| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-100 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-104 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
 | 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Balasan mitra (T-66, sudah dikerjakan) tidak bisa dihapus dan tidak memberi notifikasi ke pengguna. Pengingat jadwal (T-67, sudah dikerjakan) hanya terjadwal saat aplikasi terbuka dan boleh terlambat beberapa menit karena alarm tidak-tepat-waktu |
 | 56 | Bab 1 batasan masalah (jika menyebut mode gelap) dan Bab 3 perancangan antarmuka | Mode gelap (T-68) kini ada; Bab 3 menyatakan tampilan mengikuti Figma yang hanya punya mode terang. Tulis bahwa mode terang = Figma dan mode gelap = turunan, dengan palet di §AB-24. Peta tetap terang (keterbatasan, Bab 5) |
 | 55 | Bab 3 teknologi / Bab 4 implementasi (daftar package) | Tiga package baru: `flutter_local_notifications`, `timezone`, `shared_preferences` (§4). Notifikasi ini **lokal di HP**, bukan Firebase Cloud Messaging — penting dijelaskan karena Bab 3 menyatakan notifikasi dibuat in-app lewat Firestore listener. Konfigurasi Android (desugaring, izin, receiver) ikut berubah |

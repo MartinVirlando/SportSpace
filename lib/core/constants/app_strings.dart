@@ -242,6 +242,15 @@ class AppStrings {
       'supaya pengingat muncul.';
   static const errGagalAturPengingat = 'Gagal mengatur pengingat. Coba lagi.';
 
+  // Cari rekan dari booking — v1.5 (T-69), PRD AB-25.
+  static const cariRekanDariBooking = 'Cari rekan untuk jadwal ini';
+  static const errJadwalBookingTidakTerbaca =
+      'Jadwal booking ini tidak bisa dibaca, jadi form tidak bisa diisi '
+      'otomatis.';
+  static String infoDariBooking(String namaLapangan) =>
+      'Dari booking di $namaLapangan. Lapangan, tanggal, dan jam sudah '
+      'terisi sesuai jadwalmu; tinggal lengkapi sisanya.';
+
   // Mode tampilan — v1.5, PRD AB-24.
   static const modeTampilan = 'Mode tampilan';
   static const modeTerang = 'Terang';
