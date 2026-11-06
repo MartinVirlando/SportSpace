@@ -244,9 +244,13 @@ Diverifikasi langsung di emulator (`sport_space_avd`) via `adb`/`uiautomator` te
 | 2 | **Lencana Langganan Lapangan hanya menghitung booking `DIKONFIRMASI`/`SELESAI`** (semula semua status, sehingga bisa diraih dengan memesan lalu membatalkan). Pemesan Pertama tetap menghitung semua status | AB-14 |
 | 3 | **Tanggal booking ditampilkan lewat `Formatter.tanggalDariTeks()`** ("Jum, 27 Nov 2026") di Riwayat Pemesanan, Booking Masuk, dan teks notifikasi ubah jadwal, bukan `2026-11-27` mentah | L-12, L-13, L-14, AB-20 |
 | 4 | **Kartu lapangan di Dashboard Mitra menampilkan pil "Diskon X%"** bila promo aktif | L-14, AB-18 |
-| 5 | **Keyboard tidak muncul lagi setelah lembar Filter & Urutkan Home ditutup**; pesan galat harga produk di form mitra tidak lagi terpotong | L-04, L-15 |
+| 5 | **Keyboard tidak muncul lagi setelah lembar Filter & Urutkan Home ditutup.** Fokus kolom pencarian dilepas dengan `FocusManager.instance.primaryFocus?.unfocus()` sebelum lembar dibuka. (Percobaan pertama dengan `FocusScope.of(context).unfocus()` tidak bekerja karena hanya membersihkan riwayat fokus scope induk; scope layar Home tetap memulihkan fokus ke kolom pencarian.) | L-04 |
+| 6 | **Pesan galat harga produk di form mitra tidak lagi terpotong** (`errorMaxLines: 3`, kolom harga dilebarkan) | L-15 |
+| 7 | **Konflik tag Hero pada dua `FloatingActionButton`** (Cari Rekan dan Forum, keduanya hidup di shell navigasi) diperbaiki dengan `heroTag: null`. Sebelumnya mode debug melempar assertion saat layar baru dibuka; build rilis tidak terpengaruh | L-07, L-16 |
 
 Tidak ada perubahan skema, index, package, maupun Security Rules.
+
+**Verifikasi (6 November 2026).** `flutter analyze` bersih, 272 tes hijau, aturan lapisan MVVM bersih. Dilihat langsung di emulator dengan `pengguna.uji` dan `mitra.uji`, mode terang dan gelap: filter Cari Rekan (BB-51 dan BB-53 lewat lembar filter, dengan satu aktivitas uji yang sudah dibatalkan kembali), Reset, ringkasan filter, lencana Langganan Lapangan pada akun dengan banyak booking dibatalkan, format tanggal di Riwayat dan Booking Masuk, pil diskon di Dashboard Mitra (diskon disetel 20% lalu dikembalikan), pesan galat harga produk, keyboard Home (diukur lewat `dumpsys input_method`), dan log bersih dari error Hero. **Belum diuji:** HP fisik, WhatsApp sungguhan, dan pengingat jadwal di perangkat (Definisi Selesai §12 poin 1 untuk fitur T-54…T-70 masih terbuka).
 
 ### Koreksi teknis (7–19 Oktober 2026) — penyelarasan dengan skripsi `Highlight_2` + Definisi Selesai
 
