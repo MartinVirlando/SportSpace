@@ -34,6 +34,7 @@ class CariRekanScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.warna.background,
       floatingActionButton: FloatingActionButton(
+        heroTag: null, // lihat penjelasan di forum_screen.dart
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const BuatAktivitasScreen()),
         ),

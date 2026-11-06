@@ -47,6 +47,10 @@ class _ForumBody extends StatelessWidget {
         title: Text(AppStrings.forum, style: AppTextStyles.judulSeksi(context)),
       ),
       floatingActionButton: FloatingActionButton(
+        // Kedua tab (Teman dan Forum) hidup bersamaan di shell navigasi;
+        // tanpa ini keduanya memakai tag Hero bawaan yang sama dan Flutter
+        // (mode debug) melempar assertion saat layar baru dibuka.
+        heroTag: null,
         backgroundColor: AppColors.primary,
         onPressed: () {
           Navigator.of(context).push(
