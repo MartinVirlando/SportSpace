@@ -242,6 +242,14 @@ class AppStrings {
       'supaya pengingat muncul.';
   static const errGagalAturPengingat = 'Gagal mengatur pengingat. Coba lagi.';
 
+  // Riwayat main — v1.5 (T-70), PRD AB-26.
+  static const riwayatMain = 'Riwayat Main';
+  static const kosongRiwayatMain =
+      'Belum ada riwayat main. Aktivitas yang sudah lewat akan tampil di sini.';
+  static const kosongAktivitasMendatang = 'Belum ada aktivitas mendatang.';
+  static String infoBatasRiwayat(int tampil, int total) =>
+      'Menampilkan $tampil dari $total aktivitas terakhir.';
+
   // Cari rekan dari booking — v1.5 (T-69), PRD AB-25.
   static const cariRekanDariBooking = 'Cari rekan untuk jadwal ini';
   static const errJadwalBookingTidakTerbaca =

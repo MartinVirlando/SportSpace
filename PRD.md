@@ -147,10 +147,15 @@ Pemilik produk memilih dua usulan AYO tahap 4 yang **tanpa skema baru** (6 Novem
 |---|---|---|---|
 | 10 | **T-69** | **Cari rekan dari booking**: tombol "Cari rekan untuk jadwal ini" di Riwayat Pemesanan untuk booking `DIKONFIRMASI` yang belum mulai; membuka L-08 yang sudah terisi lapangan, olahraga, tanggal, dan jam dari booking. Tanpa field baru, tanpa query baru, tanpa perubahan Security Rules | §7 AB-25, §8 L-08, L-13, §11 BB-101–104 |
 
+| 11 | **T-70** | **Riwayat main**: di Profil, aktivitas dipisah menjadi "Aktivitas Saya" (mendatang, terdekat dulu) dan **"Riwayat Main"** (sudah lewat, terbaru dulu, 10 terakhir). Dipisahkan di klien dari stream yang sama; tanpa field, query, atau rules baru | §7 AB-26, §8 L-13, §11 BB-105–107 |
+
 **Keputusan yang diambil** (dicatat supaya bisa dijelaskan):
 - **Aktivitas tidak menyimpan rujukan ke booking.** Tidak ada `bookingId` di `aktivitasBermain`, sehingga ERD tidak berubah. Konsekuensinya, dari satu booking bisa dibuat lebih dari satu aktivitas, dan aktivitas tidak ikut berubah bila booking dibatalkan atau dijadwal ulang. Dicatat sebagai keterbatasan.
 - **Hanya booking `DIKONFIRMASI`.** Booking `MENUNGGU` bisa ditolak mitra, dan mengundang orang ke jadwal yang batal membingungkan mereka.
 - **Tingkat kemampuan dan jumlah pemain tidak diisi otomatis**: pembuat wajib memilih (aturan T-55) dan jumlah pemain tidak bisa diturunkan dari booking.
+- **(T-70) "Sudah lewat" dihitung dari `waktu` (jam mulai), bukan status `SELESAI`.** Tidak ada proses yang mengubah status aktivitas menjadi `SELESAI` (tidak ada Cloud Functions), dan durasi aktivitas tidak disimpan, jadi satu-satunya patokan yang jujur adalah jam mulai terhadap jam HP.
+- **(T-70) Statistik dan lencana tidak berubah**: kotak "Aktivitas" (AB-12) dan lencana (AB-14) tetap menghitung seluruh aktivitas, mendatang maupun lampau. Pemisahan hanya untuk tampilan daftar.
+- **(T-70) Daftar dihitung saat layar digambar**, bukan dengan pewaktu: aktivitas yang jam mulainya terlewati saat Profil sedang terbuka baru pindah ke riwayat setelah layar digambar ulang (mis. berpindah tab atau membuka kembali aplikasi).
 
 ### Koreksi teknis pasca-v1.1 (18 Agustus 2026)
 
@@ -390,6 +395,7 @@ lib/
       pengingat_jadwal.dart    # v1.5 — rencanakanPengingat() + idPengingatDari() (AB-23), fungsi murni
       waktu_booking.dart       # v1.5 — waktuMulaiBooking(): tanggal + jamMulai → DateTime, dipakai AB-23 dan AB-25
       cari_rekan_booking.dart  # v1.5 — bolehCariRekan() + isianAwalDariBooking() (AB-25), fungsi murni
+      riwayat_aktivitas.dart   # v1.5 — pisahkanAktivitasSaya() mendatang vs riwayat (AB-26), fungsi murni
     services/
       location_service.dart    # bungkus geolocator
       pengingat_service.dart   # v1.5 — bungkus flutter_local_notifications (AB-23)
@@ -1048,6 +1054,22 @@ Pembuat melengkapi jenis/visibilitas/tingkat/jumlah pemain → alur Buat Aktivit
 - **Pengaman form:** dropdown lapangan menjatuhkan nilai awal yang tidak ada di daftar ke "belum dipilih" (bukan galat bawaan Flutter), dan `_submit` memakai `firstOrNull` sehingga lapangan yang sudah dihapus mitra menghasilkan pesan, bukan crash.
 - **Keterbatasan yang diakui:** aktivitas tidak terhubung ke booking-nya (lihat "Keputusan yang diambil" di atas).
 
+### AB-26 · Riwayat main — **v1.5 (T-70)**
+
+```
+ProfilViewModel.streamAktivitasSaya  (stream yang SUDAH ada: peserta arrayContains uid, urut waktu menurun)
+   → pisahkanAktivitasSaya(daftar, sekarang)          // core/utils/riwayat_aktivitas.dart, fungsi murni
+       mendatang  = waktu belum lewat, urut TERDEKAT dulu
+       riwayat    = waktu sudah lewat, urut TERBARU dulu, dipotong 10 (batasRiwayatMain)
+       jumlahRiwayat = total lampau sebelum dipotong
+L-13: "Aktivitas Saya" menampilkan mendatang; "Riwayat Main" menampilkan riwayat.
+```
+
+- **Aturan:** `waktu` tepat sama dengan sekarang masih mendatang. Status `DIBATALKAN` tidak masuk ke keduanya. Waktu yang sama diurutkan menurut `aktivitasId` (urutan stabil).
+- **Pesan kosong menyesuaikan keadaan:** keduanya kosong → "Belum ada aktivitas yang kamu buat atau ikuti." dan "Belum ada riwayat main. Aktivitas yang sudah lewat akan tampil di sini."; hanya mendatang yang kosong → "Belum ada aktivitas mendatang."
+- **Kartu riwayat** digambar sedikit redup (opasitas 0,7) tetapi tetap bisa dibuka ke L-09. Bila lebih dari 10, tampil "Menampilkan 10 dari N aktivitas terakhir."
+- **Tanpa query baru** (satu langganan Firestore dipakai dua bagian), tanpa Security Rules baru, tanpa field baru, tanpa package baru.
+
 ---
 
 ## 8. Spesifikasi Layar
@@ -1145,7 +1167,8 @@ Dibuka dari tab **Profil**.
 | Olahraga Favorit | Menampilkan `olahragaFavorit`, bisa diubah (pilih dari 4 olahraga) |
 | Lokasi Default | Menampilkan `lokasiDefault.nama`, bisa diubah — dipakai AB-03 |
 | Riwayat Pemesanan | Daftar booking pengguna dengan 5 status; tombol **"Batalkan"** (merah, dengan dialog konfirmasi) muncul selama status masih `MENUNGGU`/`DIKONFIRMASI` dan belum lewat jam selesai — T-46, 15 September 2026, lihat AB-04 lanjutan. **v1.5:** pada syarat yang sama muncul juga tombol **"Ubah Jadwal"** (T-62, AB-20), dan produk tambahan yang dipesan ditampilkan sebagai baris "+ Sewa Bola ×2" (T-60). **v1.5 (T-69):** booking `DIKONFIRMASI` yang belum mulai punya tombol **"Cari rekan untuk jadwal ini"** di baris tersendiri (AB-25) |
-| Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti |
+| Aktivitas Saya | Aktivitas yang dibuat dan yang diikuti. **v1.5 (T-70):** hanya yang **mendatang**, terdekat dulu |
+| Riwayat Main | **v1.5 (T-70)** — aktivitas yang **sudah lewat**, terbaru dulu, 10 terakhir, kartu sedikit redup (AB-26) |
 | Pengaturan | **v1.5 (T-68)** — pemilih **"Mode tampilan"** Terang / Gelap / Ikuti HP (AB-24), bawaan Terang, berlaku seketika. **v1.5 (T-67)** — saklar **"Pengingat jadwal"** (AB-23), bawaan menyala. Kalau saklar menyala tetapi Android belum mengizinkan notifikasi, tampil petunjuk berwarna oranye; kalau gagal mengatur pengingat, tampil pesan galat berwarna merah. Pilihan disimpan di HP |
 | Menu statis | Bantuan, Kebijakan Privasi, Tentang — halaman statis saja |
 | Dashboard Mitra | Hanya muncul jika `role == "mitra"` |
@@ -1507,6 +1530,9 @@ Nomor BB di bawah dipakai langsung sebagai tabel pengujian Black Box di Bab 4.
 | **BB-102** | **Ketuk "Cari rekan untuk jadwal ini"** *(T-69)* | **Form Buat Aktivitas terbuka dengan lapangan, olahraga (dari lapangan), tanggal, dan jam sesuai booking, plus kotak info "Dari booking di …"; tingkat dan jumlah pemain masih kosong** |
 | **BB-103** | **Lengkapi tingkat dan jumlah pemain, lalu Buat Aktivitas** *(T-69)* | **Aktivitas tampil di Cari Rekan dengan lapangan, tanggal, dan jam yang sama dengan booking; layar kembali ke Profil** |
 | **BB-104** | **Buka Buat Aktivitas lewat tombol + di tab Teman** *(T-69)* | **Form kosong seperti sebelumnya, tanpa kotak info** |
+| **BB-105** | **Buka Profil saat ada aktivitas yang belum mulai dan yang sudah lewat** *(T-70)* | **"Aktivitas Saya" hanya memuat yang mendatang (terdekat dulu); "Riwayat Main" hanya yang lampau (terbaru dulu, kartu redup); kotak "Aktivitas" dan lencana tetap menghitung keduanya** |
+| **BB-106** | **Lebih dari 10 aktivitas lampau** *(T-70)* | **Hanya 10 terbaru yang tampil, disertai "Menampilkan 10 dari N aktivitas terakhir."** |
+| **BB-107** | **Tidak ada aktivitas sama sekali; lalu hanya ada yang sudah lewat** *(T-70)* | **Pesan kosong menyesuaikan: "Belum ada aktivitas yang kamu buat atau ikuti." + "Belum ada riwayat main…"; lalu "Belum ada aktivitas mendatang." di Aktivitas Saya** |
 
 ---
 
@@ -1721,7 +1747,7 @@ Sama seperti v1.4: fitur pemanis, tanpa use case atau diagram baru.
 | 49 | ERD Bab 3 / Tabel 3.10 | Entitas `Lapangan` +`diskonPersen`, +`produkTambahan` (larik). Entitas `Booking` +`produkTambahan` (larik). Entitas `AktivitasBermain` +`visibilitas`, +`kodeAkses` (selain tiga atribut v1.4). Sesuai §6.2, §6.3, §6.6. **Gambar ERD (M1) setelah semua ini final** |
 | 50 | Bab 3.2 / pembahasan pengurutan hasil pencarian | AB-02 tetap benar: urutan **bawaan** murni jarak. Tambahkan satu kalimat bahwa pengguna boleh memilih urutan rating atau populer, dan itu tidak mengubah rancangan Haversine |
 | 51 | Bab 4 | Tambahkan ke paragraf fitur tambahan (#46): filter dan urut Home, blokir slot, promo, produk tambahan, ubah jadwal, aktivitas privat |
-| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-104 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
+| 52 | Bab 4 tabel Black Box | Tambah BB-62 sampai BB-107 bila tim ingin mengujinya di skripsi; kalau tidak, tulis bahwa fitur tambahan di luar ruang lingkup pengujian |
 | 53 | Bab 5 keterbatasan dan saran | Aktivitas privat hanya disembunyikan dari daftar, bukan dilindungi Security Rules. Promo dan produk tambahan hanya informasi tanpa pembayaran. Balasan mitra (T-66, sudah dikerjakan) tidak bisa dihapus dan tidak memberi notifikasi ke pengguna. Pengingat jadwal (T-67, sudah dikerjakan) hanya terjadwal saat aplikasi terbuka dan boleh terlambat beberapa menit karena alarm tidak-tepat-waktu |
 | 56 | Bab 1 batasan masalah (jika menyebut mode gelap) dan Bab 3 perancangan antarmuka | Mode gelap (T-68) kini ada; Bab 3 menyatakan tampilan mengikuti Figma yang hanya punya mode terang. Tulis bahwa mode terang = Figma dan mode gelap = turunan, dengan palet di §AB-24. Peta tetap terang (keterbatasan, Bab 5) |
 | 55 | Bab 3 teknologi / Bab 4 implementasi (daftar package) | Tiga package baru: `flutter_local_notifications`, `timezone`, `shared_preferences` (§4). Notifikasi ini **lokal di HP**, bukan Firebase Cloud Messaging — penting dijelaskan karena Bab 3 menyatakan notifikasi dibuat in-app lewat Firestore listener. Konfigurasi Android (desugaring, izin, receiver) ikut berubah |

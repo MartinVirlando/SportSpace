@@ -10,6 +10,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/cari_rekan_booking.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../core/utils/produk_tambahan.dart';
+import '../../../core/utils/riwayat_aktivitas.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/favorit_model.dart';
@@ -155,6 +156,16 @@ class _ProfilBody extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             _SeksiAktivitasSaya(vm: vm, userId: user.userId),
+            const SizedBox(height: 24),
+            // v1.5 (T-70, AB-26) — aktivitas yang sudah lewat dipisah dari
+            // yang akan datang. Stream-nya SAMA dengan "Aktivitas Saya" di
+            // atas (satu langganan Firestore); dipisahkan di klien.
+            Text(
+              AppStrings.riwayatMain,
+              style: AppTextStyles.judulSeksi(context),
+            ),
+            const SizedBox(height: 10),
+            _SeksiAktivitasSaya(vm: vm, userId: user.userId, riwayat: true),
             const Divider(height: 36),
             // v1.5 (T-67) — pengaturan yang tersimpan di HP.
             const SeksiPengaturan(),
@@ -837,11 +848,20 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
   }
 }
 
+/// Dipakai DUA kali di Profil (T-70, AB-26): [riwayat] `false` untuk
+/// "Aktivitas Saya" (yang akan datang) dan `true` untuk "Riwayat Main" (yang
+/// sudah lewat). Keduanya membaca stream yang sama dan memisahkannya dengan
+/// `pisahkanAktivitasSaya`, jadi tidak ada langganan Firestore tambahan.
 class _SeksiAktivitasSaya extends StatelessWidget {
   final ProfilViewModel vm;
   final String userId;
+  final bool riwayat;
 
-  const _SeksiAktivitasSaya({required this.vm, required this.userId});
+  const _SeksiAktivitasSaya({
+    required this.vm,
+    required this.userId,
+    this.riwayat = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -857,19 +877,41 @@ class _SeksiAktivitasSaya extends StatelessWidget {
             style: AppTextStyles.metaLapangan(context),
           );
         }
-        final daftar = snapshot.data ?? const [];
+        final hasil = pisahkanAktivitasSaya(
+          snapshot.data ?? const [],
+          DateTime.now(),
+        );
+        final daftar = riwayat ? hasil.riwayat : hasil.mendatang;
+
         if (daftar.isEmpty) {
-          return Text(
-            AppStrings.kosongAktivitasSaya,
-            style: AppTextStyles.metaLapangan(context),
-          );
+          // Pesan kosong menyesuaikan keadaan: kalau kedua daftar kosong,
+          // "Aktivitas Saya" memakai pesan lamanya; kalau hanya satu yang
+          // kosong, pesannya menjelaskan yang mana.
+          final String pesan;
+          if (riwayat) {
+            pesan = AppStrings.kosongRiwayatMain;
+          } else if (hasil.jumlahRiwayat == 0) {
+            pesan = AppStrings.kosongAktivitasSaya;
+          } else {
+            pesan = AppStrings.kosongAktivitasMendatang;
+          }
+          return Text(pesan, style: AppTextStyles.metaLapangan(context));
         }
         return Column(
           children: [
             for (final a in daftar) ...[
-              _KartuAktivitasSaya(aktivitas: a, userId: userId),
+              _KartuAktivitasSaya(
+                aktivitas: a,
+                userId: userId,
+                lampau: riwayat,
+              ),
               const SizedBox(height: 10),
             ],
+            if (riwayat && hasil.jumlahRiwayat > daftar.length)
+              Text(
+                AppStrings.infoBatasRiwayat(daftar.length, hasil.jumlahRiwayat),
+                style: AppTextStyles.metaLapangan(context),
+              ),
           ],
         );
       },
@@ -881,12 +923,27 @@ class _KartuAktivitasSaya extends StatelessWidget {
   final AktivitasBermainModel aktivitas;
   final String userId;
 
-  const _KartuAktivitasSaya({required this.aktivitas, required this.userId});
+  /// True untuk kartu di "Riwayat Main" (T-70): digambar sedikit redup supaya
+  /// terlihat sudah lewat, tetapi tetap bisa dibuka.
+  final bool lampau;
+
+  const _KartuAktivitasSaya({
+    required this.aktivitas,
+    required this.userId,
+    this.lampau = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final apakahPembuat = aktivitas.pembuatId == userId;
 
+    return Opacity(
+      opacity: lampau ? 0.7 : 1,
+      child: _bangunKartu(context, apakahPembuat),
+    );
+  }
+
+  Widget _bangunKartu(BuildContext context, bool apakahPembuat) {
     return InkWell(
       borderRadius: BorderRadius.circular(AppSizes.radiusKartu),
       onTap: () => Navigator.of(context).push(
