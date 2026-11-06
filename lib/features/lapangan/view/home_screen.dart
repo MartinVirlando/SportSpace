@@ -88,7 +88,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Lepas fokus kolom pencarian dulu. Kalau tidak, Flutter
                   // mengembalikan fokus ke kolom itu saat lembar ditutup
                   // dan keyboard muncul lagi.
-                  FocusScope.of(context).unfocus();
+                  //
+                  // Sengaja `primaryFocus?.unfocus()`, BUKAN
+                  // `FocusScope.of(context).unfocus()`: yang kedua hanya
+                  // membersihkan riwayat scope di atasnya, sehingga scope
+                  // layar ini masih mengingat kolom pencarian dan
+                  // memulihkan fokusnya begitu lembar ditutup.
+                  FocusManager.instance.primaryFocus?.unfocus();
                   showLembarFilterLapangan(context);
                 },
               ),
