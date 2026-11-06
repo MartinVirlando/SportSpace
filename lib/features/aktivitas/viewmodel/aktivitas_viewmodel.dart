@@ -60,6 +60,23 @@ class AktivitasViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// `true` kalau jenis atau tingkat sedang dipilih (bukan "Semua"). Filter
+  /// olahraga sengaja TIDAK dihitung: chip-nya selalu terlihat di layar,
+  /// sedangkan jenis dan tingkat tersembunyi di lembar Filter — jadi hanya
+  /// keduanya yang perlu penanda dan ringkasan.
+  bool get adaFilterLanjutan =>
+      _filterJenis != AppJenisAktivitas.semua ||
+      _filterTingkat != AppTingkat.semua;
+
+  /// Kembalikan jenis dan tingkat ke "Semua". Filter olahraga tidak ikut
+  /// diubah (lihat [adaFilterLanjutan]).
+  void resetFilterLanjutan() {
+    if (!adaFilterLanjutan) return;
+    _filterJenis = AppJenisAktivitas.semua;
+    _filterTingkat = AppTingkat.semua;
+    notifyListeners();
+  }
+
   /// Terapkan filter klien ke daftar yang datang dari [streamAktivitas].
   List<AktivitasBermainModel> saring(List<AktivitasBermainModel> daftar) {
     return saringAktivitas(

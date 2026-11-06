@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/app_slot.dart';
+import '../core/utils/formatter.dart';
 import '../core/utils/produk_tambahan.dart';
 import '../core/utils/status_booking.dart';
 import '../core/utils/ubah_jadwal.dart';
@@ -431,7 +432,8 @@ class BookingRepository {
             tipe: 'BOOKING_DIJADWALKAN_ULANG',
             judul: 'Jadwal reservasi diubah',
             pesan: '${lama.namaUser} mengubah jadwal reservasi '
-                '"${lama.namaLapangan}" menjadi $tanggalBaru '
+                '"${lama.namaLapangan}" menjadi '
+                '${Formatter.tanggalDariTeks(tanggalBaru)} '
                 '$jamMulaiBaru–$jamSelesaiBaru. Mohon konfirmasi ulang.',
             refId: booking.bookingId,
             dibuatPada: DateTime.now(),

@@ -84,7 +84,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 hanyaFavorit: vm.hanyaFavorit,
                 onTapFavorit: context.read<HomeViewModel>().ubahHanyaFavorit,
                 adaFilterLanjutan: vm.adaFilterLanjutan,
-                onTapFilter: () => showLembarFilterLapangan(context),
+                onTapFilter: () {
+                  // Lepas fokus kolom pencarian dulu. Kalau tidak, Flutter
+                  // mengembalikan fokus ke kolom itu saat lembar ditutup
+                  // dan keyboard muncul lagi.
+                  FocusScope.of(context).unfocus();
+                  showLembarFilterLapangan(context);
+                },
               ),
               const SizedBox(height: 10),
               BarisChipOlahraga(

@@ -292,6 +292,9 @@ class AppStrings {
   static const kosongAktivitas = 'Belum ada aktivitas yang bisa diikuti.';
   static const kosongFilterAktivitas =
       'Tidak ada aktivitas yang cocok dengan filter.';
+  // Filter jenis dan tingkat dipindah ke lembar bawah (T-28, 6 Nov 2026).
+  static const filterAktivitas = 'Filter Aktivitas';
+  static const filterAktif = 'Filter';
   static const jenisAktivitas = 'Jenis Aktivitas';
   static const tingkatKemampuan = 'Tingkat Kemampuan';
   static const errTingkatWajib = 'Pilih tingkat kemampuan dulu.';
@@ -388,7 +391,7 @@ class AppStrings {
   static const lencanaPemesanPertama = 'Pemesan Pertama';
   static const syaratPemesanPertama = 'Buat 1 booking';
   static const lencanaLangganan = 'Langganan Lapangan';
-  static const syaratLangganan = 'Buat 5 booking';
+  static const syaratLangganan = 'Dapat 5 booking terkonfirmasi';
   static const lencanaRekanBermain = 'Rekan Bermain';
   static const syaratRekanBermain = 'Buat atau ikut 1 aktivitas';
   static const lencanaPenggerak = 'Penggerak Komunitas';

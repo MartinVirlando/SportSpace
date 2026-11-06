@@ -3,9 +3,18 @@ import 'package:sport_space/core/constants/app_strings.dart';
 import 'package:sport_space/core/utils/lencana.dart';
 
 /// Uji otomatis untuk BB-56 dan BB-57 (lencana pencapaian, T-58).
-List<String> _diraih(int booking, int aktivitas, int favorit) {
+///
+/// [terkonfirmasi] bernilai sama dengan [booking] kalau tidak diisi: semua
+/// booking dianggap diterima mitra.
+List<String> _diraih(
+  int booking,
+  int aktivitas,
+  int favorit, {
+  int? terkonfirmasi,
+}) {
   return hitungLencana(
     jumlahBooking: booking,
+    jumlahBookingTerkonfirmasi: terkonfirmasi ?? booking,
     jumlahAktivitas: aktivitas,
     jumlahFavorit: favorit,
   ).where((l) => l.diraih).map((l) => l.nama).toList();
@@ -15,6 +24,7 @@ void main() {
   test('ada tepat lima lencana, urutannya tetap', () {
     final daftar = hitungLencana(
       jumlahBooking: 0,
+      jumlahBookingTerkonfirmasi: 0,
       jumlahAktivitas: 0,
       jumlahFavorit: 0,
     );
@@ -43,6 +53,22 @@ void main() {
     ]);
   });
 
+  test('Langganan hanya menghitung booking terkonfirmasi (T-28)', () {
+    // Lima booking, tetapi tiga dibatalkan/ditolak → belum Langganan.
+    expect(_diraih(5, 0, 0, terkonfirmasi: 2), [
+      AppStrings.lencanaPemesanPertama,
+    ]);
+    // Pemesan Pertama tetap menghitung semua status.
+    expect(_diraih(1, 0, 0, terkonfirmasi: 0), [
+      AppStrings.lencanaPemesanPertama,
+    ]);
+    // Lima terkonfirmasi dari tujuh booking → Langganan menyala.
+    expect(_diraih(7, 0, 0, terkonfirmasi: 5), [
+      AppStrings.lencanaPemesanPertama,
+      AppStrings.lencanaLangganan,
+    ]);
+  });
+
   test('batas aktivitas: 1 Rekan Bermain, 4 belum Penggerak, 5 sudah', () {
     expect(_diraih(0, 1, 0), [AppStrings.lencanaRekanBermain]);
     expect(_diraih(0, 4, 0), [AppStrings.lencanaRekanBermain]);
@@ -64,6 +90,7 @@ void main() {
   test('setiap lencana punya ikon, nama, dan syarat yang terisi', () {
     final daftar = hitungLencana(
       jumlahBooking: 0,
+      jumlahBookingTerkonfirmasi: 0,
       jumlahAktivitas: 0,
       jumlahFavorit: 0,
     );

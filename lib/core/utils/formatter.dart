@@ -40,6 +40,15 @@ class Formatter {
   static String tanggal(DateTime waktu) =>
       DateFormat('EEE, d MMM yyyy', 'id_ID').format(waktu);
 
+  /// Tanggal booking yang disimpan sebagai teks "yyyy-MM-dd" (lihat
+  /// `BookingModel.tanggal`) → "Sen, 17 Agu 2026". Kalau teksnya bukan
+  /// tanggal yang valid, dikembalikan apa adanya supaya layar tidak crash.
+  static String tanggalDariTeks(String teks) {
+    final waktu = DateTime.tryParse(teks);
+    if (waktu == null) return teks;
+    return tanggal(waktu);
+  }
+
   /// DateTime → "19:00"
   static String jam(DateTime waktu) => DateFormat('HH:mm').format(waktu);
 

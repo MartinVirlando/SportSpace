@@ -29,11 +29,14 @@ class LencanaProfil {
 /// Firestore dan tanpa state, sehingga bisa diuji otomatis
 /// (`test/lencana_test.dart`, BB-56 dan BB-57).
 ///
-/// Ketiga angka sama persis dengan kotak statistik AB-12: panjang `Stream`
-/// riwayat booking (semua status), aktivitas yang dibuat maupun diikuti, dan
-/// daftar favorit.
+/// Angka masuk: [jumlahBooking] sama persis dengan kotak statistik AB-12
+/// (semua status), begitu pula aktivitas yang dibuat maupun diikuti dan
+/// daftar favorit. [jumlahBookingTerkonfirmasi] hanya booking yang benar-benar
+/// diterima mitra (`DIKONFIRMASI` atau `SELESAI`) — dipakai Langganan Lapangan
+/// supaya lencana tidak bisa diraih dengan memesan lalu membatalkan.
 List<LencanaProfil> hitungLencana({
   required int jumlahBooking,
+  required int jumlahBookingTerkonfirmasi,
   required int jumlahAktivitas,
   required int jumlahFavorit,
 }) {
@@ -48,7 +51,7 @@ List<LencanaProfil> hitungLencana({
       ikon: '🏆',
       nama: AppStrings.lencanaLangganan,
       syarat: AppStrings.syaratLangganan,
-      diraih: jumlahBooking >= 5,
+      diraih: jumlahBookingTerkonfirmasi >= 5,
     ),
     LencanaProfil(
       ikon: '🤝',

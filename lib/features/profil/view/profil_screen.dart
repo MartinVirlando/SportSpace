@@ -754,7 +754,8 @@ class _KartuRiwayatBookingState extends State<_KartuRiwayatBooking> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${widget.booking.tanggal} · ${widget.booking.jamMulai}–'
+            '${Formatter.tanggalDariTeks(widget.booking.tanggal)} · '
+            '${widget.booking.jamMulai}–'
             '${widget.booking.jamSelesai}',
             style: AppTextStyles.metaLapangan(context),
           ),

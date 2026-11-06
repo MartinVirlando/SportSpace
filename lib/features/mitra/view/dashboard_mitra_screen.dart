@@ -10,6 +10,7 @@ import '../../../models/booking_model.dart';
 import '../../../models/lapangan_model.dart';
 import '../../../repositories/booking_repository.dart';
 import '../../../repositories/lapangan_repository.dart';
+import '../../../widgets/harga_lapangan.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/dashboard_mitra_viewmodel.dart';
 import 'atur_slot_screen.dart';
@@ -214,9 +215,20 @@ class _KartuLapanganMitra extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
-                  style: AppTextStyles.harga,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${Formatter.rupiahRingkas(lapangan.harga)}/${AppStrings.satuanJam}',
+                      style: AppTextStyles.harga,
+                    ),
+                    // v1.5 (T-65): tandai promo yang sedang berjalan supaya
+                    // mitra tahu tanpa membuka form.
+                    if (lapangan.diskonPersen > 0) ...[
+                      const SizedBox(height: 4),
+                      LabelDiskon(persen: lapangan.diskonPersen),
+                    ],
+                  ],
                 ),
                 const SizedBox(width: 4),
                 Icon(Icons.chevron_right, size: 18, color: context.warna.textSecondary),
@@ -339,7 +351,8 @@ class _BarisBookingState extends State<_BarisBooking> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${b.namaUser} · ${b.tanggal} · ${b.jamMulai}–${b.jamSelesai}',
+            '${b.namaUser} · ${Formatter.tanggalDariTeks(b.tanggal)} · '
+            '${b.jamMulai}–${b.jamSelesai}',
             style: AppTextStyles.metaLapangan(context),
           ),
           // v1.5 (T-60): produk tambahan yang dipesan, mis. "+ Sewa Bola ×2".

@@ -7,13 +7,13 @@ import '../../../core/constants/app_sports.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/formatter.dart';
 import '../../../models/aktivitas_bermain_model.dart';
-import '../../../widgets/baris_chip_filter.dart';
 import '../../../widgets/chip_olahraga.dart';
 import '../../../widgets/label_aktivitas.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/aktivitas_viewmodel.dart';
 import 'buat_aktivitas_screen.dart';
 import 'detail_aktivitas_screen.dart';
+import 'lembar_filter_aktivitas.dart';
 
 /// Halaman Cari Rekan — PRD L-07. Dibuka dari tab Teman.
 ///
@@ -45,26 +45,27 @@ class CariRekanScreen extends StatelessWidget {
           children: [
             _Header(),
             const SizedBox(height: 10),
-            BarisChipOlahraga(
-              terpilih: vm.filterOlahraga,
-              onPilih: context.read<AktivitasViewModel>().ubahFilterOlahraga,
+            // Satu baris: chip olahraga bisa digeser di kiri, ikon Filter
+            // diam di kanan. Jenis (T-54) dan tingkat (T-55) ada di lembar
+            // bawah yang dibuka ikon itu — disaring di klien.
+            Row(
+              children: [
+                Expanded(
+                  child: BarisChipOlahraga(
+                    terpilih: vm.filterOlahraga,
+                    onPilih:
+                        context.read<AktivitasViewModel>().ubahFilterOlahraga,
+                  ),
+                ),
+                _TombolFilter(
+                  aktif: vm.adaFilterLanjutan,
+                  onTap: () => showLembarFilterAktivitas(context, vm),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            // v1.4 (T-54) — filter jenis aktivitas, disaring di klien.
-            BarisChipFilter(
-              daftarKode: AppJenisAktivitas.daftarFilter,
-              label: AppJenisAktivitas.label,
-              terpilih: vm.filterJenis,
-              onPilih: context.read<AktivitasViewModel>().ubahFilterJenis,
-            ),
-            const SizedBox(height: 8),
-            // v1.4 (T-55) — filter tingkat kemampuan, disaring di klien.
-            BarisChipFilter(
-              daftarKode: AppTingkat.daftarFilter,
-              label: AppTingkat.label,
-              terpilih: vm.filterTingkat,
-              onPilih: context.read<AktivitasViewModel>().ubahFilterTingkat,
-            ),
+            // Ringkasan hanya muncul saat ada filter jenis/tingkat aktif,
+            // supaya daftar yang pendek tidak disangka rusak.
+            if (vm.adaFilterLanjutan) _RingkasanFilter(vm: vm),
             const SizedBox(height: 14),
             Expanded(
               child: StreamBuilder<List<AktivitasBermainModel>>(
@@ -101,9 +102,7 @@ class CariRekanScreen extends StatelessWidget {
                     // daftar kosong bukan karena filter — mis. satu-satunya
                     // aktivitas adalah yang PRIVAT (T-64), yang memang
                     // disembunyikan. Pesannya jangan menyalahkan filter.
-                    final adaFilterAktif =
-                        vm.filterJenis != AppJenisAktivitas.semua ||
-                            vm.filterTingkat != AppTingkat.semua;
+                    final adaFilterAktif = vm.adaFilterLanjutan;
                     return _Pesan(
                       ikon: adaFilterAktif
                           ? Icons.filter_alt_off_outlined
@@ -130,6 +129,95 @@ class CariRekanScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Ikon Filter di ujung kanan baris chip olahraga. Titik hijau dan warna
+/// hijau menandakan ada filter jenis/tingkat yang aktif — pola yang sama
+/// dengan ikon Filter di Home.
+class _TombolFilter extends StatelessWidget {
+  final bool aktif;
+  final VoidCallback onTap;
+
+  const _TombolFilter({required this.aktif, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: AppStrings.filterAktivitas,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.only(right: AppSizes.marginLayar),
+          // Area ketuk 40×40, lebih besar dari ikonnya (20), supaya mudah
+          // ditekan dengan jempol.
+          child: SizedBox(
+            width: 40,
+            height: 40,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.tune,
+                  size: 20,
+                  color: aktif
+                      ? AppColors.primary
+                      : context.warna.textSecondary,
+                ),
+                if (aktif)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Baris teks kecil "Filter: Sparring · Pemula" — hanya memuat filter yang
+/// bukan "Semua".
+class _RingkasanFilter extends StatelessWidget {
+  final AktivitasViewModel vm;
+
+  const _RingkasanFilter({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    final bagian = <String>[
+      if (vm.filterJenis != AppJenisAktivitas.semua)
+        AppJenisAktivitas.labelDari(vm.filterJenis),
+      if (vm.filterTingkat != AppTingkat.semua)
+        AppTingkat.labelDari(vm.filterTingkat),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSizes.marginLayar,
+        2,
+        AppSizes.marginLayar,
+        0,
+      ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          '${AppStrings.filterAktif}: ${bagian.join(' · ')}',
+          style: AppTextStyles.metaLapangan(context),
         ),
       ),
     );

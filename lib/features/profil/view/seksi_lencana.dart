@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/utils/lencana.dart';
+import '../../../core/utils/status_booking.dart';
 import '../../../models/aktivitas_bermain_model.dart';
 import '../../../models/booking_model.dart';
 import '../../../models/favorit_model.dart';
@@ -65,6 +66,13 @@ class SeksiLencana extends StatelessWidget {
 
                 final daftar = hitungLencana(
                   jumlahBooking: snapBooking.data!.length,
+                  jumlahBookingTerkonfirmasi: snapBooking.data!
+                      .where(
+                        (b) =>
+                            statusTampilanBooking(b) == 'DIKONFIRMASI' ||
+                            statusTampilanBooking(b) == 'SELESAI',
+                      )
+                      .length,
                   jumlahAktivitas: snapAktivitas.data!.length,
                   jumlahFavorit: snapFavorit.data!.length,
                 );

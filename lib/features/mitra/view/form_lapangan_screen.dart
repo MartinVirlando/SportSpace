@@ -533,13 +533,16 @@ class _FormLapanganBodyState extends State<_FormLapanganBody> {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: TextFormField(
                           controller: _produk[i].harga,
                           keyboardType: TextInputType.number,
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           decoration: const InputDecoration(
                             labelText: AppStrings.hargaProduk,
+                            // Kolom ini sempit; tanpa ini pesan galat yang
+                            // panjang dipotong satu baris.
+                            errorMaxLines: 3,
                           ),
                           validator: Validators.hargaProduk,
                         ),
