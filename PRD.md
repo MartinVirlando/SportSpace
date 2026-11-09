@@ -257,7 +257,7 @@ Tidak ada perubahan skema, index, package, maupun Security Rules.
 | # | Perubahan | Bagian yang terdampak |
 |---|---|---|
 | 1 | **Badge "🏅 Terverifikasi" dihapus** dari Detail Lapangan (7 Oktober). Survei lapangan (T-00e) tidak pernah dilakukan dan klaim observasi sudah dicabut dari skripsi. Konstanta `AppStrings.badgeTerverifikasi` ikut dihapus | AB-11, L-06, BB-33/BB-34 |
-| 2 | **`sumberData` `"places_api"` dan `"observasi"` digabung jadi `"direktori_daring"`** (19 Oktober) di `seed_lapangan.dart` dan default `LapanganModel.fromFirestore()`. Tidak ada efek fungsional — tidak ada layar yang membaca field ini. 25 dokumen produksi diubah manual lewat Firebase Console, **bukan reseed** | §6.2, §10, BB-34 |
+| 2 | **`sumberData` `"places_api"` dan `"observasi"` digabung jadi `"direktori_daring"`** (19 Oktober) di `seed_lapangan.dart` dan default `LapanganModel.fromFirestore()`. Tidak ada efek fungsional — tidak ada layar yang membaca field ini. 25 dokumen produksi diubah manual lewat Firebase Console, **bukan reseed** — *koreksi: pada 19 Oktober yang berubah hanya kode; dokumen produksinya baru diubah 9 November 2026* | §6.2, §10, BB-34 |
 | 3 | **Dialog bawaan Flutter berbahasa Indonesia** — `flutter_localizations` (bawaan Flutter SDK) ditambahkan dan `MaterialApp` dikunci ke `Locale('id', 'ID')`. Sebelumnya dialog pilih tanggal/jam di L-08, L-10, L-15 tampil "Select date", "Cancel", "OK" — melanggar §12 poin 4. `intl` ikut naik dari 0.19 ke 0.20 karena versinya dikunci oleh `flutter_localizations`. Efek samping yang disengaja: dialog jam jadi format 24 jam | §4, §12 poin 4 |
 | 4 | **Jam hasil dialog ditampilkan lewat `Formatter.jamDariPilihan()`** ("19:00"). Dengan bahasa Indonesia, `TimeOfDay.format(context)` menghasilkan "19.00" (titik) — tidak cocok dengan tampilan lain dan data Firestore. Dua tampilan tanggal di widget (L-08, L-10) yang memakai `DateFormat` langsung juga dipindah ke `Formatter.tanggal()` | L-08, L-10, L-15 |
 | 5 | **~65 teks antarmuka yang tertulis langsung di widget, ViewModel, dan `validators.dart` dipindah ke `AppStrings`** — termasuk label tab bawah, label status booking (dulu ditulis dua kali di Profil dan Dashboard Mitra), dan seluruh pesan validasi form. Teks yang tampil tidak berubah. Pesan `Exception` di Repository sengaja tidak dipindah (konvensi CLAUDE.md: Repository melempar pesan siap tampil) | §2.3 |
@@ -1393,7 +1393,7 @@ Sumber data dan atribut `sumberData`:
 >
 > **Update 8 Oktober 2026:** skripsi (`Highlight_2`) sudah menulis sumber data sebagai direktori daring + verifikasi manual Google Maps, tanpa Places API, observasi, maupun konfirmasi telepon (telepon tidak dilakukan, survei T-00e dibatalkan). Artinya **nilai `"places_api"` dan `"observasi"` sama-sama label lama yang tidak sesuai skripsi.**
 >
-> **Diputuskan dan dikerjakan 19 Oktober 2026:** keduanya digabung jadi **`"direktori_daring"`** di `seed_lapangan.dart` (25 entri) dan default `LapanganModel.fromFirestore()`. Tidak ada efek fungsional (tidak ada layar yang membaca `sumberData`). **25 dokumen di Firestore produksi diubah manual lewat Firebase Console** (field `sumberData` → `direktori_daring`) — **bukan reseed**, karena seed membuat ID dokumen baru (rating/booking/favorit/aktivitas putus) dan `fotoURL` di file seed masih kosong (30 foto hilang).
+> **Diputuskan dan dikerjakan 19 Oktober 2026:** keduanya digabung jadi **`"direktori_daring"`** di `seed_lapangan.dart` (25 entri) dan default `LapanganModel.fromFirestore()`. Tidak ada efek fungsional (tidak ada layar yang membaca `sumberData`). **25 dokumen di Firestore produksi diubah manual lewat Firebase Console** (field `sumberData` → `direktori_daring`; **koreksi: pengubahan dokumen produksinya baru selesai 9 November 2026, 16 dari `places_api` dan 9 dari `observasi`; cek akhir: hanya 5 dokumen `mitra` yang bukan `direktori_daring`**) — **bukan reseed**, karena seed membuat ID dokumen baru (rating/booking/favorit/aktivitas putus) dan `fotoURL` di file seed masih kosong (30 foto hilang).
 
 Format satu entri seed:
 
@@ -1433,6 +1433,8 @@ Dua akun tetap untuk pengujian manual — **pakai ini, jangan bikin akun baru ti
 | Mitra | `mitra.uji@sportspace.test` | `Testing123` |
 
 Dibuat 15 September 2026 sebagai pengganti akun-akun test lama (`qa1`, `qa2`, `*.bb`, `*.demo*`) yang sudah dihapus dari Firebase Console (Authentication + dokumen Firestore terkait) supaya data test tidak terus menumpuk. Akun asli (bukan test) milik anggota tim/teman yang mencoba aplikasi — **jangan dihapus/pakai untuk eksperimen**.
+
+**Data uji di produksi dibersihkan 9 November 2026** (persiapan SUS): koleksi `booking`, `slotBooking`, dan `notifikasi` dikosongkan; seluruh dokumen `rating` dihapus (semuanya dibuat akun uji atau developer) dan `ratingTotal`/`jumlahRating`/`ratingRata2` lima lapangan direset ke 0. Akibatnya semua lapangan kini tanpa rating, dan kasus BB-62/BB-63 (urutan menurut rating) perlu rating baru untuk diulang. Rincian di SPRINT-PLAN "Pembersihan data produksi". Kalau menguji rating atau booking di produksi lagi sebelum SUS, bersihkan datanya sebelum APK dibagikan.
 
 ---
 
