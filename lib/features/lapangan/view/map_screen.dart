@@ -301,11 +301,7 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
         Positioned(
           left: 8,
           bottom: vm.lapanganTerpilih != null ? 132 : 8,
-          child: SimpleAttributionWidget(
-            source: const Text(AppStrings.atribusiOsm),
-            onTap: () => _bukaHakCiptaOsm(context),
-            alignment: Alignment.bottomLeft,
-          ),
+          child: _AtribusiOsm(onTap: () => _bukaHakCiptaOsm(context)),
         ),
       ],
     );
@@ -342,6 +338,37 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
 /// eksplisit, ditambahkan karena marker posisi bisa keluar layar begitu
 /// peta digeser untuk lihat lapangan lain, dan tidak ada cara lain untuk
 /// kembali selain geser manual.
+/// Kotak atribusi "© OpenStreetMap contributors" di pojok peta.
+///
+/// Dibuat sendiri, bukan `SimpleAttributionWidget` bawaan flutter_map,
+/// karena widget bawaan itu selalu menambahkan teks "flutter_map |" di
+/// depannya (tertulis mati di dalam package, tidak bisa dimatikan).
+/// Teks itu tidak wajib: lisensi flutter_map (BSD-3) sudah terpenuhi lewat
+/// daftar lisensi yang otomatis ikut di aplikasi Flutter. Yang wajib
+/// tampil hanya atribusi OSM.
+class _AtribusiOsm extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AtribusiOsm({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ColoredBox(
+        color: context.warna.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(3),
+          child: Text(
+            AppStrings.atribusiOsm,
+            style: TextStyle(color: context.warna.textPrimary),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TombolRecenter extends StatelessWidget {
   final VoidCallback onTap;
 
