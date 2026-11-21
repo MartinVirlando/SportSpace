@@ -85,7 +85,7 @@ Hasil pemeriksaan: Word membuka `_3` tanpa pesan perbaikan; 93 halaman; semua ga
 ## 2. Pekerjaan manual yang tersisa (Bab 1–3)
 
 ### 2.1 Gambar: diagram dan rancangan Figma
-Instruksi rinci ada di kotak kuning masing-masing gambar (21 kotak).
+Instruksi rinci ada di kotak kuning masing-masing gambar (21 kotak). Untuk flowchart dan activity diagram, alur lengkap yang sudah dicocokkan dengan kode ada di `docs/ALUR-PENGGUNAAN-APLIKASI.md`.
 
 | Prioritas | Gambar | Pekerjaan | PRD |
 |---|---|---|---|
@@ -137,20 +137,19 @@ Opsional: tautan Google Cloud (n.d.) dialihkan ke https://docs.cloud.google.com/
 4. Bila pembimbing meminta: sitasi untuk definisi Google Maps di paragraf pertama 2.5 (M11). Jangan mengarang referensi.
 
 ### 2.5 Perbaikan kode: atribusi OpenStreetMap di peta
-**Sudah dikerjakan (21 November 2026), belum di-commit.**
-- `map_screen.dart` kini menampilkan "flutter_map | © OpenStreetMap contributors" di pojok kiri bawah peta.
+**Sudah dikerjakan dan di-push ke `main` (21 November 2026).**
+- `map_screen.dart` kini menampilkan "© OpenStreetMap contributors" di pojok kiri bawah peta (widget `_AtribusiOsm`; awalan "flutter_map |" dari widget bawaan package sengaja dibuang karena tidak wajib).
 - Atribusi ikut naik saat kartu ringkas muncul, supaya tidak tertutup.
 - Mengetuknya membuka `openstreetmap.org/copyright`.
 - Teks atribusi ada di `AppStrings.atribusiOsm`.
 - `flutter analyze` bersih dan `flutter test` lulus (272 tes).
 
-Sudah dicek di emulator (21 November 2026):
+Sudah dicek di emulator (21 November 2026, diulang setelah awalan "flutter_map |" dibuang):
 - Atribusi tampil di mode terang dan mode gelap.
 - Saat kartu ringkas muncul, atribusi ikut naik dan tidak tertutup.
 - Ketukan pada atribusi membuka `openstreetmap.org/copyright` di Chrome.
 
 Sisa langkah manual:
-- Commit di cabang tersendiri, misalnya `fitur/atribusi-osm`.
 - Bila tangkapan layar Map untuk Bab 4 sudah diambil sebelumnya, ambil ulang supaya atribusinya ikut terlihat.
 
 ---

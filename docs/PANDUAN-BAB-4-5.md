@@ -179,7 +179,7 @@ Kasus uji sudah siap di **`PRD.md` §11**, lengkap dengan kolom "Skenario" dan "
 
 | Kelompok | ID | Keputusan |
 |---|---|---|
-| Fitur yang ada di rancangan Bab 3 | BB-01…BB-30, BB-33, BB-34, BB-38, BB-39, BB-40, BB-41 | **Wajib** |
+| Fitur yang ada di rancangan Bab 3 | BB-01…BB-30, BB-33, BB-34, BB-38, BB-39, BB-40, BB-41, BB-108, BB-109 | **Wajib**. BB-108 (batalkan keikutsertaan) dan BB-109 (edit lapangan mitra) ditambahkan 21 November 2026, karena kedua use case Bab 3 ini belum punya kasus uji |
 | Forum | BB-42…BB-49 | **Wajib** (Forum masuk skripsi, PRD §14 #43) |
 | Favorit, lokasi default, statistik | BB-31, BB-32, BB-35, BB-36, BB-37 | Fitur ini tidak ada di Bab 3. Pilih salah satu: masukkan sebagai pengujian fitur tambahan, atau keluarkan. Kalau BB-36 dipakai, angka "Favorit" termasuk di dalamnya |
 | Fitur tambahan lain | BB-50…BB-107 | Pilih: ikut diuji, atau tulis bahwa fitur tambahan di luar ruang lingkup pengujian (#47, #52) |
