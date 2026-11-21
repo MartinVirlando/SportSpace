@@ -45,6 +45,8 @@ Fitur **Forum** dibangun Martin di cabang `secondary` (1 Oktober–3 November 20
 
 > ⚠️ **Keputusan belum final, tetapi arahnya sudah ada (5 November 2026):** Pak Gintoro menyebut forum fitur pemanis, jadi jalur **(b)** di bawah yang paling mungkin. Forum tidak menjawab satu pun dari tiga rumusan masalah Bab 1 (pencarian lapangan berbasis lokasi, cari rekan bermain, reservasi) — posisinya sama dengan favorit pada putaran revisi 2. Tim dan Pak Gintoro masih harus memutuskan: **(a)** forum dimasukkan ke Bab 3–4 (tab jadi 5, ERD tambah dua entitas, kasus BB-42–BB-49), atau **(b)** forum tidak dimasukkan ke bab itu dan disebut sebagai pengembangan lanjutan di Bab 5. Kodenya sudah ada di aplikasi, jadi tangkapan layar Bab 4 akan menampilkan 5 tab kecuali tab Forum disembunyikan — lihat §14. Sampai diputuskan, PRD ini menganggap forum **bagian dari aplikasi**.
 
+> ✅ **Diputuskan 21 November 2026: jalur (a).** Menurut tim, Pak Gintoro sudah menyetujui forum masuk skripsi. Teks Bab 1–3 sudah disesuaikan di `SportSpace_Revisi Bab 1-3 Highlight hijau_3.docx`. Rinciannya ada di §14.
+
 ### Perubahan v1.4 (5 November 2026) — Fitur tambahan terinspirasi aplikasi AYO, tahap 1
 
 Pak Gintoro menilai fitur tambahan seperti Forum dan fitur yang terinspirasi aplikasi **AYO** (`docs/IDE-FITUR-V1.3.md`) hanyalah **pemanis**; hanya **modul besar** yang perlu masuk Bab 3. Berdasarkan itu tim memutuskan (5 November 2026) membangun **enam fitur kecil tahap 1** tanpa meminta persetujuan per fitur, dan **tidak** menambahkannya ke Bab 3 sebagai use case atau diagram baru. Semuanya perluasan dari fitur yang sudah ada, tanpa koleksi baru, tanpa package baru, dan tanpa pembayaran.
@@ -1127,6 +1129,7 @@ Dibuka dari tab **Map**. `FlutterMap` dengan tile OpenStreetMap, marker posisi p
 
 Tile URL: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`
 `userAgentPackageName` wajib diisi sesuai package aplikasi.
+**Atribusi wajib (21 November 2026):** `SimpleAttributionWidget` menampilkan "flutter_map | © OpenStreetMap contributors" di pojok kiri bawah. Widget ini ikut naik saat kartu ringkas muncul, supaya tidak tertutup elemen lain. Mengetuknya membuka `openstreetmap.org/copyright`. Ini memenuhi kebijakan tile OSM yang dirujuk di Bab 2.4 skripsi.
 
 ### L-06 · Detail Lapangan — **diperbarui v1.1**
 Foto (satu gambar cukup), **ikon ♡ favorit di pojok kanan atas foto** (AB-10), nama + jenis olahraga + rating rata-rata, **badge status** (AB-11), alamat + tombol lihat di peta (internal, tab Map) + **tombol "Buka di Google Maps" (v1.2, T-51, hanya tampil kalau `tautanMaps` terisi, buka aplikasi/browser eksternal lewat `url_launcher`)**, jam operasional, daftar fasilitas (ikon + label), harga sewa, **kontak (v1.2, hanya tampil kalau `nomorTelepon` terisi)**, daftar ulasan pengguna, tombol **"Beri Rating"**, dan tombol **"Ajukan Reservasi"** — muncul hanya bila `isMitra == true`. **v1.5 (T-65):** kalau `diskonPersen > 0`, baris harga menampilkan harga asli dicoret, harga setelah diskon, dan badge "Diskon X%" (AB-18). **v1.4:** di samping nomor telepon ada tombol **WhatsApp** (T-61, hanya untuk nomor seluler, AB-15) dan di bagian atas ada tombol **Bagikan** (T-63, AB-15) yang membuka WhatsApp dengan ringkasan lapangan.
@@ -1729,6 +1732,15 @@ Catatan dari diskusi sebelumnya yang belum tercatat di tabel atas:
 ### Tambahan akibat Forum (4 November 2026) — **hanya kalau forum diputuskan masuk skripsi**
 
 > **Arah sudah condong ke (b) — 5 November 2026.** Pak Gintoro menyebut forum sebagai fitur pemanis dan hanya modul besar yang perlu masuk Bab 3 (lihat "Perubahan v1.4"). Jadi #38–#44 **tidak perlu dikerjakan**, kecuali tim memutuskan lain. Jalur (b) di bawah yang berlaku sampai ada keputusan resmi.
+
+> **Diputuskan 21 November 2026: jalur (a)**, disetujui Pak Gintoro menurut tim. #38–#42 sudah dikerjakan di `SportSpace_Revisi Bab 1-3 Highlight hijau_3.docx`:
+> - navigasi 5 tab;
+> - ERD 10 entitas (kini Gambar 3.22 dan Tabel 3.17);
+> - dua use case Forum dan fungsi ke-6 di Tabel 3.3;
+> - subbab rancangan "j. Perancangan Halaman Forum" (Gambar 3.19–3.21, Tabel 3.14–3.16);
+> - kalimat Base64.
+>
+> Activity Diagram Forum sengaja tidak dibuat, karena fitur rating juga tidak punya. Yang tersisa: menggambar diagram dan rancangan Figma (manual), #43 (BB-42…BB-49 di Bab 4), dan #44 (Bab 5). Daftar lengkapnya ada di `docs/SISA-REVISI-SKRIPSI.md`.
 
 Dua jalur:
 
