@@ -98,6 +98,12 @@ class AppStrings {
   static const bukaGoogleMaps = 'Buka di Google Maps';
   static const gagalBukaTautan = 'Tidak bisa membuka tautan peta.';
 
+  // ---------- Atribusi peta (Map, L-05) ----------
+  /// Wajib tampil di peta menurut kebijakan tile OpenStreetMap
+  /// (operations.osmfoundation.org/policies/tiles). Sengaja tidak
+  /// diterjemahkan: kebijakan itu meminta nama proyek ditulis apa adanya.
+  static const atribusiOsm = 'OpenStreetMap contributors';
+
   // ---------- Promo / diskon (T-65, AB-18) ----------
   static const diskonPersenOpsional = 'Diskon (%) (opsional)';
   static const hintDiskon = 'Kosongkan kalau tanpa promo';

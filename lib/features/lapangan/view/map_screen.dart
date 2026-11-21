@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sports.dart';
@@ -292,8 +293,37 @@ class _PetaBerhasilState extends State<_PetaBerhasil> {
             onTap: () => _mapController.move(posisiPengguna, 14),
           ),
         ),
+        // Atribusi "© OpenStreetMap contributors" — wajib menurut kebijakan
+        // tile OSM (Bab 2.4). Sengaja diletakkan di luar FlutterMap dan ikut
+        // naik saat kartu ringkas muncul, karena kebijakan itu melarang
+        // atribusi tertutup elemen lain. Pojok kiri dipakai supaya tidak
+        // bertabrakan dengan tombol zoom dan "posisi saya" di kanan.
+        Positioned(
+          left: 8,
+          bottom: vm.lapanganTerpilih != null ? 132 : 8,
+          child: SimpleAttributionWidget(
+            source: const Text(AppStrings.atribusiOsm),
+            onTap: () => _bukaHakCiptaOsm(context),
+            alignment: Alignment.bottomLeft,
+          ),
+        ),
       ],
     );
+  }
+
+  /// Membuka halaman hak cipta OSM di browser — pola sama dengan
+  /// "Buka di Google Maps" di Detail Lapangan (AB-15: tanpa canLaunchUrl,
+  /// gagal ditampilkan lewat SnackBar).
+  Future<void> _bukaHakCiptaOsm(BuildContext context) async {
+    final berhasil = await launchUrl(
+      Uri.parse('https://www.openstreetmap.org/copyright'),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!berhasil && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.gagalBukaTautan)),
+      );
+    }
   }
 
   /// Zoom in/out lewat tombol — tidak ada di PRD L-05 eksplisit.
